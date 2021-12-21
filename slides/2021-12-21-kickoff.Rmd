@@ -1,7 +1,7 @@
 ---
-title: 'Submitting tsbox to ropensci'
-author: ['cynkra GmbH', 'Nicolas', 'Christoph']
-date: '10\. Juni 2021'        # 1\. to avoid itemizing
+title: "BAG R-Courses"
+author: ["Nicolas & Christoph", "cynkra GmbH"]
+date: "December 21, 2021"
 output:
   cynkradown::cynkra_slides:
     nature:
@@ -10,7 +10,7 @@ output:
       countIncrementalSlides: false
     seal: true
 fontsize: 10pt
-lang: english                # ngerman, english, italian, french
+lang: english
 font: frutiger
 wide: false
 colorlinks: false
@@ -18,36 +18,69 @@ logo: true
 header-includes:
   - \usepackage{parskip}
 ---
-class: inverse
 
+# Syllabus I
 
-# `r rmarkdown::metadata$title`
+Introductory courses (each held once)
 
-
-<br>
-
-# Christoph Sax
-
-
----
-
-# Tsbox
-
-- converts time series objects
-
-    `ts_xts(fdeaths)`, `ts_ts(ts_xts(fdeaths))`, `ts_df(fdeaths)`
-
-
-- provides a standard toolkit that works on all time series
-
-    `ts_pc(fdeaths)`, `ts_pc(ts_xts(fdeaths))`
-
-
-- makes existing functions ts-boxable
-
-    `ts_forecast(fdeaths)`
-
+* Tidyverse introduction I: data transformation, **dplyr** verbs select, filter, arrange, etc.
+* Tidyverse introduction II: relational data and joins, tidy data and long vs. wide data representation
+* Data visualization I: data import and preprocessing for visualization, simple plotting
+* Data visualization II: more advanced visualization techniques using **ggplot2**
 
 ---
 
+# Syllabus II
 
+More advanced courses (each held twice)
+
+* Advanced tidyverse: functional programming using **purrr**, nested `data.frame`s and more advanced tidyverse
+* R-package creation: helper tools for creating R packages and illustration of "package-first" approach
+* Databases: constructing database queries using the **dplyr**/**dbplyr** packages, representation of relational data models using the **dm** package
+* Parallelization: different types of parallelization paradigms, application of functional programming concepts in parallel
+* Advanced topics: more databases? Advanced workflows (Gh actions?)
+
+---
+
+# Course structure I
+
+* Half-day courses, rough idea: 4x45 min, 5 min, 20 min, 5 min breaks: 8:30-12:10 or 13:00-16:40
+* Introductory courses will start mid-end January, followed by advanced courses on a weekly basis
+* Mix of blocks with lecture-style teaching and blocks of hands-on problem solving with our assistance
+* We would like to tailor some of our content to applications specific to your problems
+
+---
+
+# Course structure II
+
+* For each course, two lecturers: an expert on the given topic and Nicolas/Christoph
+* Per half day, we offer 4 hours of ad-hoc consulting
+  * participants receive support with their specific applications/problems
+  * 30/60 min 1:1 slots that can be booked after respective courses (specifics tbd)
+  * Via video-conferencing (more flexible in terms of dates) or in-person (full days)?
+
+---
+
+# Open questions
+
+* Morning/afternoon? Specific dates? Frequency of courses? Specific ordering of courses?
+* How many participants can we roughly expect? Does this vary over courses? Who intends to attend what?
+* Feedback regarding syllabus/course structure, intro courses held once/advanced held twice?
+* Homework? Or as part of hands-on blocks? Github (private repo) for exchange of teaching materials
+* Discuss specifics of ad-hoc slots
+
+---
+
+# BAG introduction
+
+* For us to gain some understanding of the issues you are facing, we'd like to hear from you
+* Daniel Lawniczak & Samuel Colin
+
+---
+
+# Initial coaching
+
+* In order for us being able to make some of our course content more specific to you, we would like to have short 1:1 intro meetings
+* We (Christoph/Nicolas) each spend ~a half day and offer maybe 10x30 min slots
+* Open questions: How many of you would be interested? On-site or remote?
+* Organization: KW1/2, Doodle?
