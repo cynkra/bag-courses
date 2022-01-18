@@ -31,6 +31,12 @@ header-includes:
 }
 </style>
 
+<!-- TODO looks good! feels more polished than the first set of slides -->
+<!-- TODO maybe start out with `select()`? or do you want to do that after
+  `filter()`?, connect to base R `[()`?, also, `subset()` kind of combines
+  `select()` with `filter()`
+-->
+
 # Tidyverse Intro I-2
 
 * Filtering data
@@ -63,6 +69,8 @@ all flights on January 1st with:
 ---
 
 # Filter rows with `filter()`
+
+<!-- TODO mention, this is a stats function, which is available by default? -->
 
 * forgetting to load {dplyr} triggers surprising error
 * base R has a different `filter()` function!
@@ -291,6 +299,8 @@ code above:
 
 # De Morgan's law
 
+<!-- TODO maybe this is a bit overkill? -->
+
 * simplify conditions when you can!
 * `!(x & y)` is the same as `!x | !y`
 * `!(x | y)` is the same as `!x & !y`
@@ -439,6 +449,8 @@ filter(pixar_films, run_time >= 91, run_time <= 94)
 filter(pixar_films, between(run_time, 91, 94))
 ```
 
+<!-- TODO `%in%`, `near()`?-->
+
 ---
 
 # Useful helpers
@@ -466,6 +478,8 @@ filter(pixar_films, between(release_date, as_date("1998-01-01"), as_date("1998-1
 
 filter(pixar_films, release_date >= "1998-01-01", release_date <= "1998-12-31")
 ```
+
+<!-- TODO more fancy stuff like `filter_at(vars(-x, -y), all_vars(is.na(.)))`, just to show, there's more? -->
 
 ---
 
