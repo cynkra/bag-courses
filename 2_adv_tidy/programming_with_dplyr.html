@@ -1,0 +1,1594 @@
+<!DOCTYPE html>
+<html lang="english" xml:lang="english">
+  <head>
+    <title>Avanced Tidyverse: advanced {dplyr}</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Antoine &amp; Nicolas" />
+    <meta name="author" content="cynkra GmbH" />
+    <meta name="date" content="2022-01-25" />
+    <script src="programming_with_dplyr_files/header-attrs-2.11/header-attrs.js"></script>
+    <link href="programming_with_dplyr_files/remark-css-0.0.1/default.css" rel="stylesheet" />
+    <link rel="stylesheet" href="/Library/Frameworks/R.framework/Versions/4.1-arm64/Resources/library/cynkradown/css/slides.css" type="text/css" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+# Avanced Tidyverse: advanced {dplyr}
+### Antoine &amp; Nicolas
+### cynkra GmbH
+### January 25, 2022
+
+---
+
+
+&lt;style type="text/css"&gt;
+.remark-code {
+    font-size: 12px;
+}
+.font17 {
+    font-size: 17px;
+}
+.font14 {
+    font-size: 14px;
+}
+&lt;/style&gt;
+
+&lt;!-- xaringan::inf_mr() --&gt;
+
+# {dplyr} refresher
+
+
+```r
+library(dplyr, warn.conflicts = FALSE)
+starwars
+```
+
+```
+## # A tibble: 87 × 14
+##    name   height  mass hair_color skin_color eye_color birth_year sex   gender homeworld
+##    &lt;chr&gt;   &lt;int&gt; &lt;dbl&gt; &lt;chr&gt;      &lt;chr&gt;      &lt;chr&gt;          &lt;dbl&gt; &lt;chr&gt; &lt;chr&gt;  &lt;chr&gt;    
+##  1 Luke …    172    77 blond      fair       blue            19   male  mascu… Tatooine 
+##  2 C-3PO     167    75 &lt;NA&gt;       gold       yellow         112   none  mascu… Tatooine 
+##  3 R2-D2      96    32 &lt;NA&gt;       white, bl… red             33   none  mascu… Naboo    
+##  4 Darth…    202   136 none       white      yellow          41.9 male  mascu… Tatooine 
+##  5 Leia …    150    49 brown      light      brown           19   fema… femin… Alderaan 
+##  6 Owen …    178   120 brown, gr… light      blue            52   male  mascu… Tatooine 
+##  7 Beru …    165    75 brown      light      blue            47   fema… femin… Tatooine 
+##  8 R5-D4      97    32 &lt;NA&gt;       white, red red             NA   none  mascu… Tatooine 
+##  9 Biggs…    183    84 black      light      brown           24   male  mascu… Tatooine 
+## 10 Obi-W…    182    77 auburn, w… fair       blue-gray       57   male  mascu… Stewjon  
+## # … with 77 more rows, and 4 more variables: species &lt;chr&gt;, films &lt;list&gt;,
+## #   vehicles &lt;list&gt;, starships &lt;list&gt;
+```
+
+???
+To start off we'll do a quick review on the main dplyr functions (often called
+verbs). Then we'll dig in to learn some advanced features, especially useful
+when programming.
+
+We'll use the `starwars` dataset. It's loaded with the {dplyr} package and
+contains a lot of cool information about starwars characters.
+
+This dataset is a tibble, it's a special kind of data frame that prints nicer
+and is easier to program with.
+
+---
+
+# {dplyr} refresher
+
+`select()`
+
+
+```r
+sw_selected &lt;- select(starwars, name, height, homeworld, species)
+sw_selected
+```
+
+```
+## # A tibble: 87 × 4
+##    name               height homeworld species
+##    &lt;chr&gt;               &lt;int&gt; &lt;chr&gt;     &lt;chr&gt;  
+##  1 Luke Skywalker        172 Tatooine  Human  
+##  2 C-3PO                 167 Tatooine  Droid  
+##  3 R2-D2                  96 Naboo     Droid  
+##  4 Darth Vader           202 Tatooine  Human  
+##  5 Leia Organa           150 Alderaan  Human  
+##  6 Owen Lars             178 Tatooine  Human  
+##  7 Beru Whitesun lars    165 Tatooine  Human  
+##  8 R5-D4                  97 Tatooine  Droid  
+##  9 Biggs Darklighter     183 Tatooine  Human  
+## 10 Obi-Wan Kenobi        182 Stewjon   Human  
+## # … with 77 more rows
+```
+
+???
+
+The names function gives the column names of a tibble or data frame. 
+Here we can see the names of the 13 columns of starwars dataset
+
+The select function expects the columns we'd like to choose as unquoted 
+arguments separated by commas. We can see the result of choosing a few columns here.
+
+We'll see more advanced ways of selecting columns, through a feature called
+"tidy selection"
+
+---
+
+# {dplyr} refresher
+
+`filter()`
+
+
+```r
+sw_filtered &lt;- filter(sw_selected, homeworld %in% c("Alderaan", "Coruscant"))
+sw_filtered
+```
+
+```
+## # A tibble: 6 × 4
+##   name                height homeworld species   
+##   &lt;chr&gt;                &lt;int&gt; &lt;chr&gt;     &lt;chr&gt;     
+## 1 Leia Organa            150 Alderaan  Human     
+## 2 Finis Valorum          170 Coruscant Human     
+## 3 Adi Gallia             184 Coruscant Tholothian
+## 4 Bail Prestor Organa    191 Alderaan  Human     
+## 5 Jocasta Nu             167 Coruscant Human     
+## 6 Raymus Antilles        188 Alderaan  Human
+```
+
+???
+
+If we'd like to return only rows that match certain criteria, we use the filter function.
+
+We'll see more advanced ways of filtering columns, through the features
+`across()`, `if_any()`, `if_all()`
+
+---
+
+# {dplyr} refresher
+
+`mutate()`
+
+
+```r
+library(glue)
+sw_mutated &lt;- mutate(sw_filtered, height_m = height / 100)
+sw_mutated
+```
+
+```
+## # A tibble: 6 × 5
+##   name                height homeworld species    height_m
+##   &lt;chr&gt;                &lt;int&gt; &lt;chr&gt;     &lt;chr&gt;         &lt;dbl&gt;
+## 1 Leia Organa            150 Alderaan  Human          1.5 
+## 2 Finis Valorum          170 Coruscant Human          1.7 
+## 3 Adi Gallia             184 Coruscant Tholothian     1.84
+## 4 Bail Prestor Organa    191 Alderaan  Human          1.91
+## 5 Jocasta Nu             167 Coruscant Human          1.67
+## 6 Raymus Antilles        188 Alderaan  Human          1.88
+```
+
+???
+
+The mutate function can create a new column based either on combining multiple columns or on doing a calculation with a constant value. 
+
+We'll see more advanced ways of mutating columns, through the features
+`across()` , `rowwise()` and `c_across()`
+
+---
+
+# {dplyr} refresher
+
+`group_by()` and `summarize()`
+
+
+```r
+sw_grouped &lt;- group_by(sw_mutated, species)
+sw_summarized &lt;- summarize(sw_grouped, avg_height_m = mean(height_m), .groups = "drop")
+sw_summarized
+```
+
+```
+## # A tibble: 2 × 2
+##   species    avg_height_m
+##   &lt;chr&gt;             &lt;dbl&gt;
+## 1 Human              1.73
+## 2 Tholothian         1.84
+```
+
+???
+
+Finally, we can use the group_by and summarize functions to aggregate values by groups.
+Note the `.groups = "drop"` argument, it's not necessary here because each
+`summarize()` call peels of one group, but in my opinion it's good practice to
+always use it, unless we really want to keep groups, in which case
+I recommend using an explicit `.groups = "keep"` arg.
+
+We'll see more advanced ways of grouping and summarizing columns, building on what
+we'll learn before.
+
+---
+
+# {dplyr} refresher
+
+Full analysis
+
+
+```r
+sw_selected &lt;- select(starwars, name, height, homeworld, species)
+sw_filtered &lt;- filter(sw_selected, homeworld %in% c("Alderaan", "Coruscant"))
+sw_mutated &lt;- mutate(sw_filtered, height_m = height / 100)
+sw_grouped &lt;- group_by(sw_mutated, species)
+sw_summarized &lt;- summarize(sw_grouped, avg_height_m = mean(height_m), .groups = "drop")
+sw_summarized
+```
+
+```
+## # A tibble: 2 × 2
+##   species    avg_height_m
+##   &lt;chr&gt;             &lt;dbl&gt;
+## 1 Human              1.73
+## 2 Tholothian         1.84
+```
+
+???
+we see we created a lot of temp variables, they're only useful for the
+next step, this can be simplified by using a single temporary variable
+
+---
+
+# {dplyr} refresher
+
+Using a single temp variable
+
+
+```r
+. &lt;- starwars
+. &lt;- select(., name, height, homeworld, species)
+. &lt;- filter(., homeworld %in% c("Alderaan", "Coruscant"))
+. &lt;- mutate(., height_m = height / 100)
+. &lt;- group_by(., species)
+. &lt;- summarize(., avg_height_m = mean(height_m), .groups = "drop")
+sw_summarized &lt;- .
+sw_summarized
+```
+
+```
+## # A tibble: 2 × 2
+##   species    avg_height_m
+##   &lt;chr&gt;             &lt;dbl&gt;
+## 1 Human              1.73
+## 2 Tholothian         1.84
+```
+
+---
+
+# {dplyr} refresher
+
+Using the pipe `%&gt;%` (Ctrl + Shift + M), keeping dots explicit
+
+
+```r
+sw_summarized &lt;-
+  starwars %&gt;% 
+  select(., name, height, homeworld, species) %&gt;% 
+  filter(., homeworld %in% c("Alderaan", "Coruscant")) %&gt;% 
+  mutate(., height_m = height / 100) %&gt;% 
+  group_by(., species) %&gt;% 
+  summarize(., avg_height_m = mean(height_m), .groups = "drop")
+```
+
+---
+
+# {dplyr} refresher
+
+Using the pipe `%&gt;%` (Ctrl + Shift + M), with implicit dots
+
+
+```r
+sw_summarized &lt;-
+  starwars %&gt;% 
+  select(name, height, homeworld, species) %&gt;% 
+  filter(homeworld %in% c("Alderaan", "Coruscant")) %&gt;% 
+  mutate(height_m = height / 100) %&gt;% 
+  group_by(species) %&gt;% 
+  summarize(avg_height_m = mean(height_m), .groups = "drop")
+```
+
+???
+We often skip the dot argument, making it seem like we push the previous
+result into the new function call. With some functions that don't have
+their data argument first, we need to be explicit about the dot!
+
+---
+
+# Tidy selection
+
+* {tidyselect} implements a dialect of R where operators make it easy
+to select variables
+* Used by several tidyverse functions, especially `dplyr::select()`
+
+
+???
+
+tidy selection is found in many places in dplyr and the rest of the tidyverse,
+once you realize it many operations become much easier. We'll get familiars
+with its features using `select()` and then will encounter it again later in the
+course.
+
+---
+
+# Tidy selection
+
+`:` for selecting a range of consecutive variables.
+
+
+```r
+select(starwars[1:2,], name:eye_color)
+```
+
+```
+## # A tibble: 2 × 6
+##   name           height  mass hair_color skin_color eye_color
+##   &lt;chr&gt;           &lt;int&gt; &lt;dbl&gt; &lt;chr&gt;      &lt;chr&gt;      &lt;chr&gt;    
+## 1 Luke Skywalker    172    77 blond      fair       blue     
+## 2 C-3PO             167    75 &lt;NA&gt;       gold       yellow
+```
+
+???
+You've probably used the colon operator `:` to define a sequence. With tidy 
+selection we can use it to select a sequence of consecutive columns.
+
+---
+
+# Tidy selection
+
+`!` for taking the complement of a set of variables.
+
+
+```r
+select(starwars[1:2,], !name:eye_color)
+```
+
+```
+## # A tibble: 2 × 8
+##   birth_year sex   gender    homeworld species films     vehicles  starships
+##        &lt;dbl&gt; &lt;chr&gt; &lt;chr&gt;     &lt;chr&gt;     &lt;chr&gt;   &lt;list&gt;    &lt;list&gt;    &lt;list&gt;   
+## 1         19 male  masculine Tatooine  Human   &lt;chr [5]&gt; &lt;chr [2]&gt; &lt;chr [2]&gt;
+## 2        112 none  masculine Tatooine  Droid   &lt;chr [6]&gt; &lt;chr [0]&gt; &lt;chr [0]&gt;
+```
+
+???
+Note that we can compose different tidy selection features, as we do above.
+
+---
+
+# Tidy selection
+
+`!` for taking the complement of a set of variables.
+
+
+```r
+select(starwars[1:2,], -name)
+```
+
+```
+## # A tibble: 2 × 13
+##   height  mass hair_color skin_color eye_color birth_year sex   gender homeworld species
+##    &lt;int&gt; &lt;dbl&gt; &lt;chr&gt;      &lt;chr&gt;      &lt;chr&gt;          &lt;dbl&gt; &lt;chr&gt; &lt;chr&gt;  &lt;chr&gt;     &lt;chr&gt;  
+## 1    172    77 blond      fair       blue              19 male  mascu… Tatooine  Human  
+## 2    167    75 &lt;NA&gt;       gold       yellow           112 none  mascu… Tatooine  Droid  
+## # … with 3 more variables: films &lt;list&gt;, vehicles &lt;list&gt;, starships &lt;list&gt;
+```
+
+```r
+select(starwars[1:2,], !name)
+```
+
+```
+## # A tibble: 2 × 13
+##   height  mass hair_color skin_color eye_color birth_year sex   gender homeworld species
+##    &lt;int&gt; &lt;dbl&gt; &lt;chr&gt;      &lt;chr&gt;      &lt;chr&gt;          &lt;dbl&gt; &lt;chr&gt; &lt;chr&gt;  &lt;chr&gt;     &lt;chr&gt;  
+## 1    172    77 blond      fair       blue              19 male  mascu… Tatooine  Human  
+## 2    167    75 &lt;NA&gt;       gold       yellow           112 none  mascu… Tatooine  Droid  
+## # … with 3 more variables: films &lt;list&gt;, vehicles &lt;list&gt;, starships &lt;list&gt;
+```
+
+???
+
+`!` and `-` seem to be similar, do they do the same thing ?
+
+---
+
+# Tidy selection
+
+`!` for taking the complement of a set of variables.
+
+
+```r
+select(starwars[1:2,], -name, -height)
+```
+
+```
+## # A tibble: 2 × 12
+##    mass hair_color skin_color eye_color birth_year sex   gender  homeworld species films
+##   &lt;dbl&gt; &lt;chr&gt;      &lt;chr&gt;      &lt;chr&gt;          &lt;dbl&gt; &lt;chr&gt; &lt;chr&gt;   &lt;chr&gt;     &lt;chr&gt;   &lt;lis&gt;
+## 1    77 blond      fair       blue              19 male  mascul… Tatooine  Human   &lt;chr…
+## 2    75 &lt;NA&gt;       gold       yellow           112 none  mascul… Tatooine  Droid   &lt;chr…
+## # … with 2 more variables: vehicles &lt;list&gt;, starships &lt;list&gt;
+```
+
+```r
+select(starwars[1:2,], !name, !height)
+```
+
+```
+## # A tibble: 2 × 14
+##   height  mass hair_color skin_color eye_color birth_year sex   gender homeworld species
+##    &lt;int&gt; &lt;dbl&gt; &lt;chr&gt;      &lt;chr&gt;      &lt;chr&gt;          &lt;dbl&gt; &lt;chr&gt; &lt;chr&gt;  &lt;chr&gt;     &lt;chr&gt;  
+## 1    172    77 blond      fair       blue              19 male  mascu… Tatooine  Human  
+## 2    167    75 &lt;NA&gt;       gold       yellow           112 none  mascu… Tatooine  Droid  
+## # … with 4 more variables: films &lt;list&gt;, vehicles &lt;list&gt;, starships &lt;list&gt;, name &lt;chr&gt;
+```
+
+???
+`!` is different from `-`, `-` is used to remove the columns that are specified,
+while `!` takes the complement, the last calls takes the union of the 2 complements
+so the first argument selects everything except names, and the second, everything
+except `height`, repeated columns are ignored by tidy selection so the second
+argument is only adding a `name` column at the end.
+
+---
+
+
+# Tidy selection
+
+`c()` for combining selections
+
+Useful for functions have a single tidyselect argument and we can't use `...`.
+
+
+```r
+select(starwars[1:2,], c(name, eye_color))
+```
+
+```
+## # A tibble: 2 × 2
+##   name           eye_color
+##   &lt;chr&gt;          &lt;chr&gt;    
+## 1 Luke Skywalker blue     
+## 2 C-3PO          yellow
+```
+
+```r
+select(starwars[1:2,], c(name:eye_color, gender:species))
+```
+
+```
+## # A tibble: 2 × 9
+##   name           height  mass hair_color skin_color eye_color gender   homeworld species
+##   &lt;chr&gt;           &lt;int&gt; &lt;dbl&gt; &lt;chr&gt;      &lt;chr&gt;      &lt;chr&gt;     &lt;chr&gt;    &lt;chr&gt;     &lt;chr&gt;  
+## 1 Luke Skywalker    172    77 blond      fair       blue      masculi… Tatooine  Human  
+## 2 C-3PO             167    75 &lt;NA&gt;       gold       yellow    masculi… Tatooine  Droid
+```
+
+???
+
+Not so useful here since we can use several `...` args, but some 
+functions have a single tidyselect argument and we can't use `...`.
+
+---
+
+# Tidy selection
+
+`everything()` matches all variables.
+
+
+```r
+select(starwars[1:2,], homeworld, everything())
+```
+
+```
+## # A tibble: 2 × 14
+##   homeworld name    height  mass hair_color skin_color eye_color birth_year sex   gender
+##   &lt;chr&gt;     &lt;chr&gt;    &lt;int&gt; &lt;dbl&gt; &lt;chr&gt;      &lt;chr&gt;      &lt;chr&gt;          &lt;dbl&gt; &lt;chr&gt; &lt;chr&gt; 
+## 1 Tatooine  Luke S…    172    77 blond      fair       blue              19 male  mascu…
+## 2 Tatooine  C-3PO      167    75 &lt;NA&gt;       gold       yellow           112 none  mascu…
+## # … with 4 more variables: species &lt;chr&gt;, films &lt;list&gt;, vehicles &lt;list&gt;,
+## #   starships &lt;list&gt;
+```
+
+???
+You might wonder the point of selecting "everything", if you only select
+`everything()` it is indeed a no-op, however as we saw, tidy selection prevents you
+from selecting several times the same column, so `everything()` can be used
+to reorder the columns.
+
+It will find other uses with functions that apply a modification on a tidy selection
+of columns, in that case "everything" will generally not be the default.
+
+---
+
+# Tidy selection
+
+`last_col()` selects the last variable, possibly with an offset.
+
+
+```r
+select(starwars[1:2,], homeworld, last_col())
+```
+
+```
+## # A tibble: 2 × 2
+##   homeworld starships
+##   &lt;chr&gt;     &lt;list&gt;   
+## 1 Tatooine  &lt;chr [2]&gt;
+## 2 Tatooine  &lt;chr [0]&gt;
+```
+
+```r
+select(starwars[1:2,], homeworld, last_col(c(1, 3)))
+```
+
+```
+## # A tibble: 2 × 3
+##   homeworld vehicles  species
+##   &lt;chr&gt;     &lt;list&gt;    &lt;chr&gt;  
+## 1 Tatooine  &lt;chr [2]&gt; Human  
+## 2 Tatooine  &lt;chr [0]&gt; Droid
+```
+
+---
+
+# Tidy selection
+
+* `starts_with()` : Starts with a prefix.
+* `ends_with()` : Ends with a suffix.
+* `contains()`: Contains a literal string.
+
+
+```r
+select(starwars[1:2,], starts_with("s"))
+```
+
+```
+## # A tibble: 2 × 4
+##   skin_color sex   species starships
+##   &lt;chr&gt;      &lt;chr&gt; &lt;chr&gt;   &lt;list&gt;   
+## 1 fair       male  Human   &lt;chr [2]&gt;
+## 2 gold       none  Droid   &lt;chr [0]&gt;
+```
+
+???
+
+These are quite easy to understand intuitively but be careful, they are case
+insensitive by default! We recommend having all columns lower case much
+as possible, in those case that won't make a difference
+
+---
+
+# Tidy selection
+
+* `starts_with()` : Starts with a prefix.
+* `ends_with()` : Ends with a suffix.
+* `contains()`: Contains a literal string.
+
+
+```r
+select(starwars[1:2,], ends_with("color"))
+```
+
+```
+## # A tibble: 2 × 3
+##   hair_color skin_color eye_color
+##   &lt;chr&gt;      &lt;chr&gt;      &lt;chr&gt;    
+## 1 blond      fair       blue     
+## 2 &lt;NA&gt;       gold       yellow
+```
+
+---
+
+# Tidy selection
+
+* `starts_with()` : Starts with a prefix.
+* `ends_with()` : Ends with a suffix.
+* `contains()`: Contains a literal string.
+
+
+```r
+select(starwars[1:2,], contains("_"))
+```
+
+```
+## # A tibble: 2 × 4
+##   hair_color skin_color eye_color birth_year
+##   &lt;chr&gt;      &lt;chr&gt;      &lt;chr&gt;          &lt;dbl&gt;
+## 1 blond      fair       blue              19
+## 2 &lt;NA&gt;       gold       yellow           112
+```
+
+---
+
+# Tidy selection
+
+`matches()` : Matches a regular expression.
+
+
+```r
+select(starwars[1:2,], matches("^.a")) # string starts ('^') with any character ('.') then 'a'
+```
+
+```
+## # A tibble: 2 × 3
+##   name            mass hair_color
+##   &lt;chr&gt;          &lt;dbl&gt; &lt;chr&gt;     
+## 1 Luke Skywalker    77 blond     
+## 2 C-3PO             75 &lt;NA&gt;
+```
+
+???
+
+`matches()` can be seen as a generalized version of `contains()`, 
+regular expressions (aka regex) is a language of its own and anybody who manipulates
+character strings often enough would gain from taking the time to learn them. 
+
+---
+
+# Tidy selection
+
+How could you recreate these outputs without using `matches()` ?
+
+
+```r
+select(starwars[1:2,], matches("^s"))      # '^' is the start of the string
+```
+
+```
+## # A tibble: 2 × 4
+##   skin_color sex   species starships
+##   &lt;chr&gt;      &lt;chr&gt; &lt;chr&gt;   &lt;list&gt;   
+## 1 fair       male  Human   &lt;chr [2]&gt;
+## 2 gold       none  Droid   &lt;chr [0]&gt;
+```
+
+```r
+select(starwars[1:2,], matches("color$"))  # '$' is the end of the string
+```
+
+```
+## # A tibble: 2 × 3
+##   hair_color skin_color eye_color
+##   &lt;chr&gt;      &lt;chr&gt;      &lt;chr&gt;    
+## 1 blond      fair       blue     
+## 2 &lt;NA&gt;       gold       yellow
+```
+
+???
+
+However given the flexibility of the other features that tidy selection proposes,
+there is often a way around using `matches()`
+
+---
+
+# Tidy selection
+
+`num_range()` : Matches a numerical range like `x01`, `x02`, `x03`.
+
+
+```r
+billboard_short &lt;- tidyr::billboard[1:2, 1:15]
+billboard_short
+```
+
+```
+## # A tibble: 2 × 15
+##   artist  track date.entered   wk1   wk2   wk3   wk4   wk5   wk6   wk7   wk8   wk9  wk10
+##   &lt;chr&gt;   &lt;chr&gt; &lt;date&gt;       &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
+## 1 2 Pac   Baby… 2000-02-26      87    82    72    77    87    94    99    NA    NA    NA
+## 2 2Ge+her The … 2000-09-02      91    87    92    NA    NA    NA    NA    NA    NA    NA
+## # … with 2 more variables: wk11 &lt;dbl&gt;, wk12 &lt;dbl&gt;
+```
+
+```r
+select(billboard_short, artist, num_range("wk", 3:8))
+```
+
+```
+## # A tibble: 2 × 7
+##   artist    wk3   wk4   wk5   wk6   wk7   wk8
+##   &lt;chr&gt;   &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
+## 1 2 Pac      72    77    87    94    99    NA
+## 2 2Ge+her    92    NA    NA    NA    NA    NA
+```
+
+???
+
+---
+
+# Tidy selection
+
+`&amp;` and `|` for selecting the intersection or the union of two sets of variables.
+
+
+```r
+select(starwars[1:2,], starts_with("s") | ends_with("color"))
+```
+
+```
+## # A tibble: 2 × 6
+##   skin_color sex   species starships hair_color eye_color
+##   &lt;chr&gt;      &lt;chr&gt; &lt;chr&gt;   &lt;list&gt;    &lt;chr&gt;      &lt;chr&gt;    
+## 1 fair       male  Human   &lt;chr [2]&gt; blond      blue     
+## 2 gold       none  Droid   &lt;chr [0]&gt; &lt;NA&gt;       yellow
+```
+
+```r
+select(starwars[1:2,], starts_with("s") &amp; ends_with("color"))
+```
+
+```
+## # A tibble: 2 × 1
+##   skin_color
+##   &lt;chr&gt;     
+## 1 fair      
+## 2 gold
+```
+
+
+---
+
+# Tidy selection
+
+`all_of()`: Matches variable names in a character vector. All names must be present, otherwise an out-of-bounds error is thrown.
+
+
+```r
+cols &lt;- c("name", "mass", "potatoe")
+select(starwars[1:2,], all_of(cols))
+```
+
+```
+## Error in `select()`:
+## ! Can't subset columns that don't exist.
+## x Column `potatoe` doesn't exist.
+```
+
+```r
+cols &lt;- c("name", "mass")
+select(starwars[1:2,], all_of(cols))
+```
+
+```
+## # A tibble: 2 × 2
+##   name            mass
+##   &lt;chr&gt;          &lt;dbl&gt;
+## 1 Luke Skywalker    77
+## 2 C-3PO             75
+```
+
+???
+Sometimes you'll have columns stored as character, `all_of()` and `any_of()`
+are the most convenient ways to use them. 
+
+---
+
+# Tidy selection
+
+`any_of()`: Same as all_of(), except that no error is thrown for names that don't exist.
+
+
+```r
+cols &lt;- c("name", "mass", "potatoe")
+select(starwars[1:2,], any_of(cols))
+```
+
+```
+## # A tibble: 2 × 2
+##   name            mass
+##   &lt;chr&gt;          &lt;dbl&gt;
+## 1 Luke Skywalker    77
+## 2 C-3PO             75
+```
+
+---
+
+# Tidy selection
+
+`where()`: Applies a predicate function to all columns
+
+
+```r
+select(starwars[1:2,], where(is.numeric))
+```
+
+```
+## # A tibble: 2 × 3
+##   height  mass birth_year
+##    &lt;int&gt; &lt;dbl&gt;      &lt;dbl&gt;
+## 1    172    77         19
+## 2    167    75        112
+```
+
+```r
+select(starwars, where(~n_distinct(.x) &lt; 10))
+```
+
+```
+## # A tibble: 87 × 2
+##    sex    gender   
+##    &lt;chr&gt;  &lt;chr&gt;    
+##  1 male   masculine
+##  2 none   masculine
+##  3 none   masculine
+##  4 male   masculine
+##  5 female feminine 
+##  6 male   masculine
+##  7 female feminine 
+##  8 none   masculine
+##  9 male   masculine
+## 10 male   masculine
+## # … with 77 more rows
+```
+
+???
+
+`where()` applies a predicate on the column's data, and not on the column names
+as all the others we've seen.
+
+It's often used to select variables according to type but more complexe predicates
+are possible
+
+---
+
+# Tidy selection
+
+Exercise!
+
+Find 3 ways to select the columns 4 to 7 of the `starwars` dataset
+
+---
+
+# Tidy selection
+
+* `relocate()` : used to move columns after of before other columns 
+  (using `.after` or `.before` arguments)
+
+
+```r
+relocate(starwars[1:2, 1:8], name, .after = height)
+```
+
+```
+## # A tibble: 2 × 8
+##   height name            mass hair_color skin_color eye_color birth_year sex  
+##    &lt;int&gt; &lt;chr&gt;          &lt;dbl&gt; &lt;chr&gt;      &lt;chr&gt;      &lt;chr&gt;          &lt;dbl&gt; &lt;chr&gt;
+## 1    172 Luke Skywalker    77 blond      fair       blue              19 male 
+## 2    167 C-3PO             75 &lt;NA&gt;       gold       yellow           112 none
+```
+
+All arguments support tidy selection!
+
+
+```r
+relocate(starwars[1:2, 1:8], c(name, height), .after = ends_with("color"))
+```
+
+```
+## # A tibble: 2 × 8
+##    mass hair_color skin_color eye_color name           height birth_year sex  
+##   &lt;dbl&gt; &lt;chr&gt;      &lt;chr&gt;      &lt;chr&gt;     &lt;chr&gt;           &lt;int&gt;      &lt;dbl&gt; &lt;chr&gt;
+## 1    77 blond      fair       blue      Luke Skywalker    172         19 male 
+## 2    75 &lt;NA&gt;       gold       yellow    C-3PO             167        112 none
+```
+
+???
+
+This examples shows you the power of tidy selection, it's not reserved to
+`select()` and has been implemented in all tidyverse functions where it makes sense.
+
+---
+
+# Advanced mutating
+
+Use `.keep` to keep or drop columns depending on mutate expressions
+
+
+```r
+# keep all, the default
+mutate(starwars[1:2,], bmi = mass / height^2, .keep = "all")
+```
+
+```
+## # A tibble: 2 × 15
+##   name    height  mass hair_color skin_color eye_color birth_year sex   gender homeworld
+##   &lt;chr&gt;    &lt;int&gt; &lt;dbl&gt; &lt;chr&gt;      &lt;chr&gt;      &lt;chr&gt;          &lt;dbl&gt; &lt;chr&gt; &lt;chr&gt;  &lt;chr&gt;    
+## 1 Luke S…    172    77 blond      fair       blue              19 male  mascu… Tatooine 
+## 2 C-3PO      167    75 &lt;NA&gt;       gold       yellow           112 none  mascu… Tatooine 
+## # … with 5 more variables: species &lt;chr&gt;, films &lt;list&gt;, vehicles &lt;list&gt;,
+## #   starships &lt;list&gt;, bmi &lt;dbl&gt;
+```
+
+```r
+# keep only computed columns and their sources
+mutate(starwars[1:2, 1:8], bmi = mass / height^2, .keep = "used")
+```
+
+```
+## # A tibble: 2 × 3
+##   height  mass     bmi
+##    &lt;int&gt; &lt;dbl&gt;   &lt;dbl&gt;
+## 1    172    77 0.00260
+## 2    167    75 0.00269
+```
+
+---
+
+# Advanced mutating
+
+Use `.keep` to keep or drop columns depending on mutate expressions
+
+
+```r
+# remove columns you don't need
+mutate(starwars[1:2, 1:8], bmi = mass / height^2, .keep = "unused") 
+```
+
+```
+## # A tibble: 2 × 7
+##   name           hair_color skin_color eye_color birth_year sex       bmi
+##   &lt;chr&gt;          &lt;chr&gt;      &lt;chr&gt;      &lt;chr&gt;          &lt;dbl&gt; &lt;chr&gt;   &lt;dbl&gt;
+## 1 Luke Skywalker blond      fair       blue              19 male  0.00260
+## 2 C-3PO          &lt;NA&gt;       gold       yellow           112 none  0.00269
+```
+
+```r
+# same as using `transmute()`
+mutate(starwars[1:2, 1:8], bmi = mass / height^2, .keep = "none") 
+```
+
+```
+## # A tibble: 2 × 1
+##       bmi
+##     &lt;dbl&gt;
+## 1 0.00260
+## 2 0.00269
+```
+
+???
+This is a quite recent features that I have not seen much in the wild yet,
+but it really nice compared to following `mutate()` by a `select()` call
+in that it is much more compact and makes the intent explicit
+
+---
+
+# Advanced mutating
+
+Use `across()` to apply a modification to columns using tidy selection
+
+
+```r
+starwars[1:2, 1:5] %&gt;%
+  mutate(
+    across(ends_with("color"), toupper),
+    height_m = height / 100
+  )
+```
+
+```
+## # A tibble: 2 × 6
+##   name           height  mass hair_color skin_color height_m
+##   &lt;chr&gt;           &lt;int&gt; &lt;dbl&gt; &lt;chr&gt;      &lt;chr&gt;         &lt;dbl&gt;
+## 1 Luke Skywalker    172    77 BLOND      FAIR           1.72
+## 2 C-3PO             167    75 &lt;NA&gt;       GOLD           1.67
+```
+
+???
+
+`across()` is also a recent addition, and a very important one because it renders
+obsolete a full family of functions called "scoped variants" and suffixed with
+"_at", "_if" or "_all".
+
+---
+
+# Advanced mutating
+
+The default behavior when providing a named list is to use the name as a 
+suffix for new columns.
+
+
+```r
+mutate(starwars[1:2, 1:5], across(ends_with("color"), list(up = toupper)))
+```
+
+```
+## # A tibble: 2 × 7
+##   name           height  mass hair_color skin_color hair_color_up skin_color_up
+##   &lt;chr&gt;           &lt;int&gt; &lt;dbl&gt; &lt;chr&gt;      &lt;chr&gt;      &lt;chr&gt;         &lt;chr&gt;        
+## 1 Luke Skywalker    172    77 blond      fair       BLOND         FAIR         
+## 2 C-3PO             167    75 &lt;NA&gt;       gold       &lt;NA&gt;          GOLD
+```
+
+???
+You might also provide several functions!
+
+---
+
+# Advanced mutating
+
+If you need more control on the column names, the `.names` argument takes a
+glue specification, with special values `.col` for the name of the column,
+and `.fn` for the name of the function. 
+
+
+```r
+mutate(starwars[1:2, 1:5], across(ends_with("color"), list(up = toupper), .names = "{.fn}{.fn}_{.col}"))
+```
+
+```
+## # A tibble: 2 × 7
+##   name           height  mass hair_color skin_color upup_hair_color upup_skin_color
+##   &lt;chr&gt;           &lt;int&gt; &lt;dbl&gt; &lt;chr&gt;      &lt;chr&gt;      &lt;chr&gt;           &lt;chr&gt;          
+## 1 Luke Skywalker    172    77 blond      fair       BLOND           FAIR           
+## 2 C-3PO             167    75 &lt;NA&gt;       gold       &lt;NA&gt;            GOLD
+```
+
+---
+
+# Advanced mutating
+
+Instead of functions we can use formulas
+
+
+```r
+mutate(starwars[1:2, 1:5], across(where(is.numeric), ~ .x * 10))
+```
+
+```
+## # A tibble: 2 × 5
+##   name           height  mass hair_color skin_color
+##   &lt;chr&gt;           &lt;dbl&gt; &lt;dbl&gt; &lt;chr&gt;      &lt;chr&gt;     
+## 1 Luke Skywalker   1720   770 blond      fair      
+## 2 C-3PO            1670   750 &lt;NA&gt;       gold
+```
+
+---
+
+# Advanced mutating
+
+`c_across()` is a tidy selection aware version of `c()`, especially
+useful with `rowwise()` 
+
+
+```r
+# using `c()`
+starwars[1:2, 1:5] %&gt;% 
+  rowwise() %&gt;% 
+  mutate(color_missing_rate = 
+          c(hair_color, skin_color) %&gt;% 
+           is.na() %&gt;% 
+           mean()) %&gt;%  
+  ungroup()
+```
+
+```
+## # A tibble: 2 × 6
+##   name           height  mass hair_color skin_color color_missing_rate
+##   &lt;chr&gt;           &lt;int&gt; &lt;dbl&gt; &lt;chr&gt;      &lt;chr&gt;                   &lt;dbl&gt;
+## 1 Luke Skywalker    172    77 blond      fair                      0  
+## 2 C-3PO             167    75 &lt;NA&gt;       gold                      0.5
+```
+
+```r
+# using `c_across()`
+starwars[1:2, 1:5] %&gt;% 
+  rowwise() %&gt;% 
+  mutate(color_missing_rate = 
+           c_across(ends_with("color")) %&gt;% 
+           is.na() %&gt;% 
+           mean()) %&gt;%  
+  ungroup()
+```
+
+```
+## # A tibble: 2 × 6
+##   name           height  mass hair_color skin_color color_missing_rate
+##   &lt;chr&gt;           &lt;int&gt; &lt;dbl&gt; &lt;chr&gt;      &lt;chr&gt;                   &lt;dbl&gt;
+## 1 Luke Skywalker    172    77 blond      fair                      0  
+## 2 C-3PO             167    75 &lt;NA&gt;       gold                      0.5
+```
+
+---
+
+# Advanced grouping and summarizing
+
+`across()` works with `summarize()` too!
+
+
+```r
+starwars %&gt;% 
+  group_by(sex) %&gt;% 
+  summarize(across(where(is.numeric), lst(min, max) , na.rm = TRUE))
+```
+
+```
+## # A tibble: 5 × 7
+##   sex            height_min height_max mass_min mass_max birth_year_min birth_year_max
+##   &lt;chr&gt;               &lt;int&gt;      &lt;int&gt;    &lt;dbl&gt;    &lt;dbl&gt;          &lt;dbl&gt;          &lt;dbl&gt;
+## 1 female                150        213       45       75             19             72
+## 2 hermaphroditic        175        175     1358     1358            600            600
+## 3 male                   66        264       15      159              8            896
+## 4 none                   96        200       32      140             15            112
+## 5 &lt;NA&gt;                  178        183       48       48             62             62
+```
+
+---
+
+# Advanced grouping and summarizing
+
+* `group_by()` looks like a selecting verb, but it is a mutating verb!
+ (in fact `group_by` works exactly like mutate, except that it sets groups)
+* It means for instance we can `group_by(data, col1 + col2)`
+* For this reason we cannot use tidy selection **directly** in `group_by()`
+* However, we can use `across()` with a single argument!
+
+
+```r
+starwars %&gt;% 
+  group_by(across(starts_with("se"))) %&gt;% 
+  summarize(across(where(is.numeric), lst(min, max) , na.rm = TRUE))
+```
+
+```
+## # A tibble: 5 × 7
+##   sex            height_min height_max mass_min mass_max birth_year_min birth_year_max
+##   &lt;chr&gt;               &lt;int&gt;      &lt;int&gt;    &lt;dbl&gt;    &lt;dbl&gt;          &lt;dbl&gt;          &lt;dbl&gt;
+## 1 female                150        213       45       75             19             72
+## 2 hermaphroditic        175        175     1358     1358            600            600
+## 3 male                   66        264       15      159              8            896
+## 4 none                   96        200       32      140             15            112
+## 5 &lt;NA&gt;                  178        183       48       48             62             62
+```
+
+---
+
+# Advanced grouping and summarizing
+
+`count()` is another mutating verb that looks like a selecting verb.
+
+Recognize the error to know when to use `across()`
+
+
+```r
+count(starwars, ends_with("color"))
+```
+
+```
+## Error in `group_by()`:
+## ! Problem adding computed columns.
+## Caused by error in `mutate()`:
+## ! Problem while computing `..1 = ends_with("color")`.
+## Caused by error in `peek_vars()`:
+## ! `ends_with()` must be used within a *selecting* function.
+## ℹ See &lt;https://tidyselect.r-lib.org/reference/faq-selection-context.html&gt;.
+```
+
+---
+
+# Advanced grouping and summarizing
+
+`count()` is another mutating verb that looks like a selecting verb.
+
+Recognize the error to know when to use `across()`
+
+
+```r
+count(starwars, across(ends_with("color")))
+```
+
+```
+## # A tibble: 67 × 4
+##    hair_color    skin_color eye_color     n
+##    &lt;chr&gt;         &lt;chr&gt;      &lt;chr&gt;     &lt;int&gt;
+##  1 auburn        fair       blue          1
+##  2 auburn, grey  fair       blue          1
+##  3 auburn, white fair       blue-gray     1
+##  4 black         blue, grey yellow        1
+##  5 black         brown      brown         1
+##  6 black         dark       brown         3
+##  7 black         dark       dark          1
+##  8 black         fair       brown         2
+##  9 black         light      brown         1
+## 10 black         tan        brown         2
+## # … with 57 more rows
+```
+
+???
+
+If you check the documentation of a function, you will see that arguments that
+directly support tidy selection are documented as "&lt;tidy-select&gt;" (see `?select` or `?across`),
+arguments documented as "&lt;data-masking&gt;" on the other hand will work with `across()`
+so can leverage tidy selection indirectly as we see in above example.
+
+
+---
+
+# Advanced filtering
+
+Can you guess what these do ?
+
+
+```r
+filter(starwars[1:8], if_any(ends_with("color"), ~ .x == "unknown"))
+```
+
+```
+## # A tibble: 4 × 8
+##   name           height  mass hair_color skin_color  eye_color birth_year sex  
+##   &lt;chr&gt;           &lt;int&gt; &lt;dbl&gt; &lt;chr&gt;      &lt;chr&gt;       &lt;chr&gt;          &lt;dbl&gt; &lt;chr&gt;
+## 1 Chewbacca         228   112 brown      unknown     blue             200 male 
+## 2 Ratts Tyerell      79    15 none       grey, blue  unknown           NA male 
+## 3 Wat Tambor        193    48 none       green, grey unknown           NA male 
+## 4 Captain Phasma     NA    NA unknown    unknown     unknown           NA &lt;NA&gt;
+```
+
+```r
+filter(starwars[1:8], if_all(ends_with("color"), ~ .x == "unknown"))
+```
+
+```
+## # A tibble: 1 × 8
+##   name           height  mass hair_color skin_color eye_color birth_year sex  
+##   &lt;chr&gt;           &lt;int&gt; &lt;dbl&gt; &lt;chr&gt;      &lt;chr&gt;      &lt;chr&gt;          &lt;dbl&gt; &lt;chr&gt;
+## 1 Captain Phasma     NA    NA unknown    unknown    unknown           NA &lt;NA&gt;
+```
+
+---
+
+# Advanced filtering
+
+* `if_all()` and `if_any()` apply the same predicate function to a selection of columns and combine the results into a single logical vector
+* `if_any()` is `TRUE` when the predicate is `TRUE` for any of the selected columns
+* `if_all()` is `TRUE` when the predicate is `TRUE` for all selected columns
+* They'll be mostly useful in `filter()` calls
+
+
+```r
+filter(starwars[1:8], if_any(ends_with("color"), ~ .x == "unknown"))
+```
+
+```
+## # A tibble: 4 × 8
+##   name           height  mass hair_color skin_color  eye_color birth_year sex  
+##   &lt;chr&gt;           &lt;int&gt; &lt;dbl&gt; &lt;chr&gt;      &lt;chr&gt;       &lt;chr&gt;          &lt;dbl&gt; &lt;chr&gt;
+## 1 Chewbacca         228   112 brown      unknown     blue             200 male 
+## 2 Ratts Tyerell      79    15 none       grey, blue  unknown           NA male 
+## 3 Wat Tambor        193    48 none       green, grey unknown           NA male 
+## 4 Captain Phasma     NA    NA unknown    unknown     unknown           NA &lt;NA&gt;
+```
+
+```r
+filter(starwars[1:8], if_all(ends_with("color"), ~ .x == "unknown"))
+```
+
+```
+## # A tibble: 1 × 8
+##   name           height  mass hair_color skin_color eye_color birth_year sex  
+##   &lt;chr&gt;           &lt;int&gt; &lt;dbl&gt; &lt;chr&gt;      &lt;chr&gt;      &lt;chr&gt;          &lt;dbl&gt; &lt;chr&gt;
+## 1 Captain Phasma     NA    NA unknown    unknown    unknown           NA &lt;NA&gt;
+```
+
+
+---
+
+# Advanced filtering
+
+Exercise!
+
+* Find all rows of `starwars` that have `NA`s in either `height`, `mass`, or `birth_year`
+* Find all rows of `starwars` that have `NA`s in all `height`, `mass`, or `birth_year`
+
+Hint : 
+
+* This can be done using `if_any()` or `if_all()` or by testing columns separately
+for missingness and using `|` or `&amp;`. 
+* Which is more compact ?
+* Which is more readable ?
+
+---
+
+# Tunnelling data-variables
+
+* We've learnt how to specify variables to tidyverse functions in many ways
+* We still have to learn how to provide them through functions 
+
+This doesn't work, why ?
+
+
+```r
+mean_by &lt;- function(data, by, var) {
+  data %&gt;%
+    group_by(by) %&gt;%
+    summarise(avg = mean(var, na.rm = TRUE))
+}
+
+mean_by(starwars, gender, height)
+```
+
+```
+## Error in `group_by()`:
+## ! Must group by variables found in `.data`.
+## x Column `by` is not found.
+```
+
+???
+
+The naive approach above doesn't work because `group_by()` and `summarize()`
+look for the `by` and `var` variables in the data, whatever was provided
+to `mean_by()` (`gender`, `height`) is not looked at
+
+---
+
+# Tunnelling data-variables
+
+We could try to put into use what we have learnt about tidy selection, but we'd
+need to provide strings to the function :
+
+
+```r
+mean_by &lt;- function(data, by, var) {
+  data %&gt;%
+    group_by(across(all_of(by))) %&gt;%
+    summarise(across(all_of(var), mean, na.rm = TRUE, .names = "avg"))
+}
+
+mean_by(starwars, "gender", "height")
+```
+
+```
+## # A tibble: 3 × 2
+##   gender      avg
+##   &lt;chr&gt;     &lt;dbl&gt;
+## 1 feminine   165.
+## 2 masculine  177.
+## 3 &lt;NA&gt;       181.
+```
+
+???
+
+The naive approach above works but is not totally satisfying. The tidyverse
+design guide recommends that variables be specified unquoted, and it'd be nice
+to build functions that follow these principles
+
+---
+
+# Tunnelling data-variables
+
+We could try to put into use what we have learnt about tidy selection, but we'd
+need to provide strings to the function :
+
+
+```r
+mean_by &lt;- function(data, by, var) {
+  data %&gt;%
+    group_by(across(all_of(by))) %&gt;%
+    summarise(across(all_of(var), mean, na.rm = TRUE, .names = "avg"))
+}
+
+mean_by(starwars, "gender", "height")
+```
+
+```
+## # A tibble: 3 × 2
+##   gender      avg
+##   &lt;chr&gt;     &lt;dbl&gt;
+## 1 feminine   165.
+## 2 masculine  177.
+## 3 &lt;NA&gt;       181.
+```
+
+???
+
+The naive approach above works but is not totally satisfying. The tidyverse
+design guide recommends that variables be specified unquoted, and it'd be nice
+to build functions that follow these principles
+
+
+---
+
+# Tunnelling data-variables
+
+Tidyverse functions support a special `{{` operator, called "curly curly" or
+the "embrace" operator, the act of using it is called "tunneling" a variable.
+
+It's a lot of words, but in practice it's beautiful in simplicity.
+Using it guarantees that the tidyverse functions sees the variable as it was
+provided to the parent function
+
+
+```r
+mean_by &lt;- function(data, by, var) {
+  data %&gt;%
+    group_by({{ by }}) %&gt;%
+    summarise(avg = mean({{ var }}))
+}
+
+mean_by(starwars, gender, height)
+```
+
+```
+## # A tibble: 3 × 2
+##   gender      avg
+##   &lt;chr&gt;     &lt;dbl&gt;
+## 1 feminine     NA
+## 2 masculine    NA
+## 3 &lt;NA&gt;         NA
+```
+
+???
+
+The naive approach above works but is not totally satisfying. The tidyverse
+design guide recommends that variables be specified unquoted, and it'd be nice
+to build functions that follow these principles
+
+---
+
+# Tunnelling data-variables
+
+We can go even further and control the names of the arguments fed to the 
+tidyverse functions. For this we need to use `:=` rather than `=`,
+and use a glue a special glue syntax.
+
+
+```r
+mean_by &lt;- function(data, by, var, prefix = "avg") {
+  data %&gt;%
+    group_by({{ by }}) %&gt;%
+    summarise("{prefix}_{{ var }}" := mean({{ var }}, na.rm = TRUE))
+}
+
+mean_by(starwars, gender, height)
+```
+
+```
+## # A tibble: 3 × 2
+##   gender    avg_height
+##   &lt;chr&gt;          &lt;dbl&gt;
+## 1 feminine        165.
+## 2 masculine       177.
+## 3 &lt;NA&gt;            181.
+```
+
+---
+
+# Summary
+
+* tidy selection : `:`, `!`, `starts_with()`, `where()`, `all_of()` ...
+* Selecting functions recognize tidy selection directly : `select()`, `relocate()`, `across()`, `if_any()` ...
+* Data masking functions recognize tidy selection through `across()`: `mutate()`, `summarize()`, `group_by()`, `filter()`
+* `if_any()` and `if_all()` are useful in `filter`
+* Use `{{` to feed naked variables to tidyverse functions just like they are fed
+to their parent functions.
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script>var slideshow = remark.create({
+"highlightStyle": "github",
+"highlightLines": true,
+"countIncrementalSlides": false
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();
+(function() {
+  "use strict"
+  // Replace <script> tags in slides area to make them executable
+  var scripts = document.querySelectorAll(
+    '.remark-slides-area .remark-slide-container script'
+  );
+  if (!scripts.length) return;
+  for (var i = 0; i < scripts.length; i++) {
+    var s = document.createElement('script');
+    var code = document.createTextNode(scripts[i].textContent);
+    s.appendChild(code);
+    var scriptAttrs = scripts[i].attributes;
+    for (var j = 0; j < scriptAttrs.length; j++) {
+      s.setAttribute(scriptAttrs[j].name, scriptAttrs[j].value);
+    }
+    scripts[i].parentElement.replaceChild(s, scripts[i]);
+  }
+})();
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+// adds .remark-code-has-line-highlighted class to <pre> parent elements
+// of code chunks containing highlighted lines with class .remark-code-line-highlighted
+(function(d) {
+  const hlines = d.querySelectorAll('.remark-code-line-highlighted');
+  const preParents = [];
+  const findPreParent = function(line, p = 0) {
+    if (p > 1) return null; // traverse up no further than grandparent
+    const el = line.parentElement;
+    return el.tagName === "PRE" ? el : findPreParent(el, ++p);
+  };
+
+  for (let line of hlines) {
+    let pre = findPreParent(line);
+    if (pre && !preParents.includes(pre)) preParents.push(pre);
+  }
+  preParents.forEach(p => p.classList.add("remark-code-has-line-highlighted"));
+})(document);</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>

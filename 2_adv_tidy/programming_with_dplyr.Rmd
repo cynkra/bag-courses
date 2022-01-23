@@ -1,0 +1,865 @@
+---
+title: "Avanced Tidyverse: advanced {dplyr}"
+author: ["Antoine & Nicolas", "cynkra GmbH"]
+date: "January 25, 2022"
+output:
+  cynkradown::cynkra_slides:
+    nature:
+      highlightStyle: github
+      highlightLines: true
+      countIncrementalSlides: false
+    seal: true
+fontsize: 10pt
+lang: english
+font: frutiger
+wide: false
+colorlinks: false
+logo: true
+header-includes:
+  - \usepackage{parskip}
+editor_options: 
+  chunk_output_type: console
+---
+
+<style type="text/css">
+.remark-code {
+    font-size: 12px;
+}
+.font17 {
+    font-size: 17px;
+}
+.font14 {
+    font-size: 14px;
+}
+</style>
+
+<!-- xaringan::inf_mr() -->
+
+# {dplyr} refresher
+
+```{r programming-with-dplyr-1}
+library(dplyr, warn.conflicts = FALSE)
+starwars
+```
+
+???
+To start off we'll do a quick review on the main dplyr functions (often called
+verbs). Then we'll dig in to learn some advanced features, especially useful
+when programming.
+
+We'll use the `starwars` dataset. It's loaded with the {dplyr} package and
+contains a lot of cool information about starwars characters.
+
+This dataset is a tibble, it's a special kind of data frame that prints nicer
+and is easier to program with.
+
+---
+
+# {dplyr} refresher
+
+`select()`
+
+```{r programming-with-dplyr-2}
+sw_selected <- select(starwars, name, height, homeworld, species)
+sw_selected
+```
+
+???
+
+The names function gives the column names of a tibble or data frame. 
+Here we can see the names of the 13 columns of starwars dataset
+
+The select function expects the columns we'd like to choose as unquoted 
+arguments separated by commas. We can see the result of choosing a few columns here.
+
+We'll see more advanced ways of selecting columns, through a feature called
+"tidy selection"
+
+---
+
+# {dplyr} refresher
+
+`filter()`
+
+```{r programming-with-dplyr-3}
+sw_filtered <- filter(sw_selected, homeworld %in% c("Alderaan", "Coruscant"))
+sw_filtered
+```
+
+???
+
+If we'd like to return only rows that match certain criteria, we use the filter function.
+
+We'll see more advanced ways of filtering columns, through the features
+`across()`, `if_any()`, `if_all()`
+
+---
+
+# {dplyr} refresher
+
+`mutate()`
+
+```{r programming-with-dplyr-4}
+library(glue)
+sw_mutated <- mutate(sw_filtered, height_m = height / 100)
+sw_mutated
+```
+
+???
+
+The mutate function can create a new column based either on combining multiple columns or on doing a calculation with a constant value. 
+
+We'll see more advanced ways of mutating columns, through the features
+`across()` , `rowwise()` and `c_across()`
+
+---
+
+# {dplyr} refresher
+
+`group_by()` and `summarize()`
+
+```{r programming-with-dplyr-5}
+sw_grouped <- group_by(sw_mutated, species)
+sw_summarized <- summarize(sw_grouped, avg_height_m = mean(height_m), .groups = "drop")
+sw_summarized
+```
+
+???
+
+Finally, we can use the group_by and summarize functions to aggregate values by groups.
+Note the `.groups = "drop"` argument, it's not necessary here because each
+`summarize()` call peels of one group, but in my opinion it's good practice to
+always use it, unless we really want to keep groups, in which case
+I recommend using an explicit `.groups = "keep"` arg.
+
+We'll see more advanced ways of grouping and summarizing columns, building on what
+we'll learn before.
+
+---
+
+# {dplyr} refresher
+
+Full analysis
+
+```{r programming-with-dplyr-6}
+sw_selected <- select(starwars, name, height, homeworld, species)
+sw_filtered <- filter(sw_selected, homeworld %in% c("Alderaan", "Coruscant"))
+sw_mutated <- mutate(sw_filtered, height_m = height / 100)
+sw_grouped <- group_by(sw_mutated, species)
+sw_summarized <- summarize(sw_grouped, avg_height_m = mean(height_m), .groups = "drop")
+sw_summarized
+```
+
+???
+we see we created a lot of temp variables, they're only useful for the
+next step, this can be simplified by using a single temporary variable
+
+---
+
+# {dplyr} refresher
+
+Using a single temp variable
+
+```{r programming-with-dplyr-7}
+. <- starwars
+. <- select(., name, height, homeworld, species)
+. <- filter(., homeworld %in% c("Alderaan", "Coruscant"))
+. <- mutate(., height_m = height / 100)
+. <- group_by(., species)
+. <- summarize(., avg_height_m = mean(height_m), .groups = "drop")
+sw_summarized <- .
+sw_summarized
+```
+
+---
+
+# {dplyr} refresher
+
+Using the pipe `%>%` (Ctrl + Shift + M), keeping dots explicit
+
+```{r programming-with-dplyr-8}
+sw_summarized <-
+  starwars %>% 
+  select(., name, height, homeworld, species) %>% 
+  filter(., homeworld %in% c("Alderaan", "Coruscant")) %>% 
+  mutate(., height_m = height / 100) %>% 
+  group_by(., species) %>% 
+  summarize(., avg_height_m = mean(height_m), .groups = "drop")
+```
+
+---
+
+# {dplyr} refresher
+
+Using the pipe `%>%` (Ctrl + Shift + M), with implicit dots
+
+```{r programming-with-dplyr-9}
+sw_summarized <-
+  starwars %>% 
+  select(name, height, homeworld, species) %>% 
+  filter(homeworld %in% c("Alderaan", "Coruscant")) %>% 
+  mutate(height_m = height / 100) %>% 
+  group_by(species) %>% 
+  summarize(avg_height_m = mean(height_m), .groups = "drop")
+```
+
+???
+We often skip the dot argument, making it seem like we push the previous
+result into the new function call. With some functions that don't have
+their data argument first, we need to be explicit about the dot!
+
+---
+
+# Tidy selection
+
+* {tidyselect} implements a dialect of R where operators make it easy
+to select variables
+* Used by several tidyverse functions, especially `dplyr::select()`
+
+
+???
+
+tidy selection is found in many places in dplyr and the rest of the tidyverse,
+once you realize it many operations become much easier. We'll get familiars
+with its features using `select()` and then will encounter it again later in the
+course.
+
+---
+
+# Tidy selection
+
+`:` for selecting a range of consecutive variables.
+
+```{r programming-with-dplyr-11}
+select(starwars[1:2,], name:eye_color)
+```
+
+???
+You've probably used the colon operator `:` to define a sequence. With tidy 
+selection we can use it to select a sequence of consecutive columns.
+
+---
+
+# Tidy selection
+
+`!` for taking the complement of a set of variables.
+
+```{r programming-with-dplyr-12}
+select(starwars[1:2,], !name:eye_color)
+```
+
+???
+Note that we can compose different tidy selection features, as we do above.
+
+---
+
+# Tidy selection
+
+`!` for taking the complement of a set of variables.
+
+```{r programming-with-dplyr-13}
+select(starwars[1:2,], -name)
+select(starwars[1:2,], !name)
+```
+
+???
+
+`!` and `-` seem to be similar, do they do the same thing ?
+
+---
+
+# Tidy selection
+
+`!` for taking the complement of a set of variables.
+
+```{r programming-with-dplyr-14}
+select(starwars[1:2,], -name, -height)
+select(starwars[1:2,], !name, !height)
+```
+
+???
+`!` is different from `-`, `-` is used to remove the columns that are specified,
+while `!` takes the complement, the last calls takes the union of the 2 complements
+so the first argument selects everything except names, and the second, everything
+except `height`, repeated columns are ignored by tidy selection so the second
+argument is only adding a `name` column at the end.
+
+---
+
+
+# Tidy selection
+
+`c()` for combining selections
+
+Useful for functions have a single tidyselect argument and we can't use `...`.
+
+```{r programming-with-dplyr-15}
+select(starwars[1:2,], c(name, eye_color))
+
+select(starwars[1:2,], c(name:eye_color, gender:species))
+```
+
+???
+
+Not so useful here since we can use several `...` args, but some 
+functions have a single tidyselect argument and we can't use `...`.
+
+---
+
+# Tidy selection
+
+`everything()` matches all variables.
+
+```{r programming-with-dplyr-16}
+select(starwars[1:2,], homeworld, everything())
+```
+
+???
+You might wonder the point of selecting "everything", if you only select
+`everything()` it is indeed a no-op, however as we saw, tidy selection prevents you
+from selecting several times the same column, so `everything()` can be used
+to reorder the columns.
+
+It will find other uses with functions that apply a modification on a tidy selection
+of columns, in that case "everything" will generally not be the default.
+
+---
+
+# Tidy selection
+
+`last_col()` selects the last variable, possibly with an offset.
+
+```{r programming-with-dplyr-17}
+select(starwars[1:2,], homeworld, last_col())
+
+select(starwars[1:2,], homeworld, last_col(c(1, 3)))
+```
+
+---
+
+# Tidy selection
+
+* `starts_with()` : Starts with a prefix.
+* `ends_with()` : Ends with a suffix.
+* `contains()`: Contains a literal string.
+
+```{r programming-with-dplyr-18a}
+select(starwars[1:2,], starts_with("s"))
+```
+
+???
+
+These are quite easy to understand intuitively but be careful, they are case
+insensitive by default! We recommend having all columns lower case much
+as possible, in those case that won't make a difference
+
+---
+
+# Tidy selection
+
+* `starts_with()` : Starts with a prefix.
+* `ends_with()` : Ends with a suffix.
+* `contains()`: Contains a literal string.
+
+```{r programming-with-dplyr-18b}
+select(starwars[1:2,], ends_with("color"))
+```
+
+---
+
+# Tidy selection
+
+* `starts_with()` : Starts with a prefix.
+* `ends_with()` : Ends with a suffix.
+* `contains()`: Contains a literal string.
+
+```{r programming-with-dplyr-18c}
+select(starwars[1:2,], contains("_"))
+```
+
+---
+
+# Tidy selection
+
+`matches()` : Matches a regular expression.
+
+```{r programming-with-dplyr-19a}
+select(starwars[1:2,], matches("^.a")) # string starts ('^') with any character ('.') then 'a'
+```
+
+???
+
+`matches()` can be seen as a generalized version of `contains()`, 
+regular expressions (aka regex) is a language of its own and anybody who manipulates
+character strings often enough would gain from taking the time to learn them. 
+
+---
+
+# Tidy selection
+
+How could you recreate these outputs without using `matches()` ?
+
+```{r programming-with-dplyr-19}
+select(starwars[1:2,], matches("^s"))      # '^' is the start of the string
+select(starwars[1:2,], matches("color$"))  # '$' is the end of the string
+```
+
+???
+
+However given the flexibility of the other features that tidy selection proposes,
+there is often a way around using `matches()`
+
+---
+
+# Tidy selection
+
+`num_range()` : Matches a numerical range like `x01`, `x02`, `x03`.
+
+```{r programming-with-dplyr-21}
+billboard_short <- tidyr::billboard[1:2, 1:15]
+billboard_short
+
+select(billboard_short, artist, num_range("wk", 3:8))
+```
+
+???
+
+---
+
+# Tidy selection
+
+`&` and `|` for selecting the intersection or the union of two sets of variables.
+
+```{r programming-with-dplyr-20}
+select(starwars[1:2,], starts_with("s") | ends_with("color"))
+
+select(starwars[1:2,], starts_with("s") & ends_with("color"))
+```
+
+
+---
+
+# Tidy selection
+
+`all_of()`: Matches variable names in a character vector. All names must be present, otherwise an out-of-bounds error is thrown.
+
+```{r programming-with-dplyr-22a, error = TRUE}
+cols <- c("name", "mass", "potatoe")
+select(starwars[1:2,], all_of(cols))
+
+cols <- c("name", "mass")
+select(starwars[1:2,], all_of(cols))
+```
+
+???
+Sometimes you'll have columns stored as character, `all_of()` and `any_of()`
+are the most convenient ways to use them. 
+
+---
+
+# Tidy selection
+
+`any_of()`: Same as all_of(), except that no error is thrown for names that don't exist.
+
+```{r programming-with-dplyr-22b, error = TRUE}
+cols <- c("name", "mass", "potatoe")
+select(starwars[1:2,], any_of(cols))
+```
+
+---
+
+# Tidy selection
+
+`where()`: Applies a predicate function to all columns
+
+```{r programming-with-dplyr-23}
+select(starwars[1:2,], where(is.numeric))
+
+select(starwars, where(~n_distinct(.x) < 10))
+```
+
+???
+
+`where()` applies a predicate on the column's data, and not on the column names
+as all the others we've seen.
+
+It's often used to select variables according to type but more complexe predicates
+are possible
+
+---
+
+# Tidy selection
+
+Exercise!
+
+Find 3 ways to select the columns 4 to 7 of the `starwars` dataset
+
+---
+
+# Tidy selection
+
+* `relocate()` : used to move columns after of before other columns 
+  (using `.after` or `.before` arguments)
+
+```{r programming-with-dplyr-25}
+relocate(starwars[1:2, 1:8], name, .after = height)
+```
+
+All arguments support tidy selection!
+
+```{r programming-with-dplyr-26}
+relocate(starwars[1:2, 1:8], c(name, height), .after = ends_with("color"))
+```
+
+???
+
+This examples shows you the power of tidy selection, it's not reserved to
+`select()` and has been implemented in all tidyverse functions where it makes sense.
+
+---
+
+# Advanced mutating
+
+Use `.keep` to keep or drop columns depending on mutate expressions
+
+```{r programming-with-dplyr-27}
+# keep all, the default
+mutate(starwars[1:2,], bmi = mass / height^2, .keep = "all")
+
+# keep only computed columns and their sources
+mutate(starwars[1:2, 1:8], bmi = mass / height^2, .keep = "used")
+```
+
+---
+
+# Advanced mutating
+
+Use `.keep` to keep or drop columns depending on mutate expressions
+
+```{r programming-with-dplyr-27b}
+# remove columns you don't need
+mutate(starwars[1:2, 1:8], bmi = mass / height^2, .keep = "unused") 
+
+# same as using `transmute()`
+mutate(starwars[1:2, 1:8], bmi = mass / height^2, .keep = "none") 
+```
+
+???
+This is a quite recent features that I have not seen much in the wild yet,
+but it really nice compared to following `mutate()` by a `select()` call
+in that it is much more compact and makes the intent explicit
+
+---
+
+# Advanced mutating
+
+Use `across()` to apply a modification to columns using tidy selection
+
+```{r programming-with-dplyr-28}
+starwars[1:2, 1:5] %>%
+  mutate(
+    across(ends_with("color"), toupper),
+    height_m = height / 100
+  )
+```
+
+???
+
+`across()` is also a recent addition, and a very important one because it renders
+obsolete a full family of functions called "scoped variants" and suffixed with
+"_at", "_if" or "_all".
+
+---
+
+# Advanced mutating
+
+The default behavior when providing a named list is to use the name as a 
+suffix for new columns.
+
+```{r programming-with-dplyr-29}
+mutate(starwars[1:2, 1:5], across(ends_with("color"), list(up = toupper)))
+```
+
+???
+You might also provide several functions!
+
+---
+
+# Advanced mutating
+
+If you need more control on the column names, the `.names` argument takes a
+glue specification, with special values `.col` for the name of the column,
+and `.fn` for the name of the function. 
+
+```{r programming-with-dplyr-30}
+mutate(starwars[1:2, 1:5], across(ends_with("color"), list(up = toupper), .names = "{.fn}{.fn}_{.col}"))
+```
+
+---
+
+# Advanced mutating
+
+Instead of functions we can use formulas
+
+```{r programming-with-dplyr-31}
+mutate(starwars[1:2, 1:5], across(where(is.numeric), ~ .x * 10))
+```
+
+---
+
+# Advanced mutating
+
+`c_across()` is a tidy selection aware version of `c()`, especially
+useful with `rowwise()` 
+
+```{r programming-with-dplyr-32}
+# using `c()`
+starwars[1:2, 1:5] %>% 
+  rowwise() %>% 
+  mutate(color_missing_rate = 
+          c(hair_color, skin_color) %>% 
+           is.na() %>% 
+           mean()) %>%  
+  ungroup()
+
+# using `c_across()`
+starwars[1:2, 1:5] %>% 
+  rowwise() %>% 
+  mutate(color_missing_rate = 
+           c_across(ends_with("color")) %>% 
+           is.na() %>% 
+           mean()) %>%  
+  ungroup()
+```
+
+---
+
+# Advanced grouping and summarizing
+
+`across()` works with `summarize()` too!
+
+```{r programming-with-dplyr-33}
+starwars %>% 
+  group_by(sex) %>% 
+  summarize(across(where(is.numeric), lst(min, max) , na.rm = TRUE))
+```
+
+---
+
+# Advanced grouping and summarizing
+
+* `group_by()` looks like a selecting verb, but it is a mutating verb!
+ (in fact `group_by` works exactly like mutate, except that it sets groups)
+* It means for instance we can `group_by(data, col1 + col2)`
+* For this reason we cannot use tidy selection **directly** in `group_by()`
+* However, we can use `across()` with a single argument!
+
+```{r programming-with-dplyr-34}
+starwars %>% 
+  group_by(across(starts_with("se"))) %>% 
+  summarize(across(where(is.numeric), lst(min, max) , na.rm = TRUE))
+```
+
+---
+
+# Advanced grouping and summarizing
+
+`count()` is another mutating verb that looks like a selecting verb.
+
+Recognize the error to know when to use `across()`
+
+```{r programming-with-dplyr-35, error = TRUE}
+count(starwars, ends_with("color"))
+```
+
+---
+
+# Advanced grouping and summarizing
+
+`count()` is another mutating verb that looks like a selecting verb.
+
+Recognize the error to know when to use `across()`
+
+```{r programming-with-dplyr-35b}
+count(starwars, across(ends_with("color")))
+```
+
+???
+
+If you check the documentation of a function, you will see that arguments that
+directly support tidy selection are documented as "<tidy-select>" (see `?select` or `?across`),
+arguments documented as "<data-masking>" on the other hand will work with `across()`
+so can leverage tidy selection indirectly as we see in above example.
+
+
+---
+
+# Advanced filtering
+
+Can you guess what these do ?
+
+```{r}
+filter(starwars[1:8], if_any(ends_with("color"), ~ .x == "unknown"))
+
+filter(starwars[1:8], if_all(ends_with("color"), ~ .x == "unknown"))
+```
+
+---
+
+# Advanced filtering
+
+* `if_all()` and `if_any()` apply the same predicate function to a selection of columns and combine the results into a single logical vector
+* `if_any()` is `TRUE` when the predicate is `TRUE` for any of the selected columns
+* `if_all()` is `TRUE` when the predicate is `TRUE` for all selected columns
+* They'll be mostly useful in `filter()` calls
+
+```{r}
+filter(starwars[1:8], if_any(ends_with("color"), ~ .x == "unknown"))
+
+filter(starwars[1:8], if_all(ends_with("color"), ~ .x == "unknown"))
+```
+
+
+---
+
+# Advanced filtering
+
+Exercise!
+
+* Find all rows of `starwars` that have `NA`s in either `height`, `mass`, or `birth_year`
+* Find all rows of `starwars` that have `NA`s in all `height`, `mass`, or `birth_year`
+
+Hint : 
+
+* This can be done using `if_any()` or `if_all()` or by testing columns separately
+for missingness and using `|` or `&`. 
+* Which is more compact ?
+* Which is more readable ?
+
+---
+
+# Tunnelling data-variables
+
+* We've learnt how to specify variables to tidyverse functions in many ways
+* We still have to learn how to provide them through functions 
+
+This doesn't work, why ?
+
+```{r, error = TRUE}
+mean_by <- function(data, by, var) {
+  data %>%
+    group_by(by) %>%
+    summarise(avg = mean(var, na.rm = TRUE))
+}
+
+mean_by(starwars, gender, height)
+```
+
+???
+
+The naive approach above doesn't work because `group_by()` and `summarize()`
+look for the `by` and `var` variables in the data, whatever was provided
+to `mean_by()` (`gender`, `height`) is not looked at
+
+---
+
+# Tunnelling data-variables
+
+We could try to put into use what we have learnt about tidy selection, but we'd
+need to provide strings to the function :
+
+```{r, error = TRUE}
+mean_by <- function(data, by, var) {
+  data %>%
+    group_by(across(all_of(by))) %>%
+    summarise(across(all_of(var), mean, na.rm = TRUE, .names = "avg"))
+}
+
+mean_by(starwars, "gender", "height")
+```
+
+???
+
+The naive approach above works but is not totally satisfying. The tidyverse
+design guide recommends that variables be specified unquoted, and it'd be nice
+to build functions that follow these principles
+
+---
+
+# Tunnelling data-variables
+
+We could try to put into use what we have learnt about tidy selection, but we'd
+need to provide strings to the function :
+
+```{r, error = TRUE}
+mean_by <- function(data, by, var) {
+  data %>%
+    group_by(across(all_of(by))) %>%
+    summarise(across(all_of(var), mean, na.rm = TRUE, .names = "avg"))
+}
+
+mean_by(starwars, "gender", "height")
+```
+
+???
+
+The naive approach above works but is not totally satisfying. The tidyverse
+design guide recommends that variables be specified unquoted, and it'd be nice
+to build functions that follow these principles
+
+
+---
+
+# Tunnelling data-variables
+
+Tidyverse functions support a special `{{` operator, called "curly curly" or
+the "embrace" operator, the act of using it is called "tunneling" a variable.
+
+It's a lot of words, but in practice it's beautiful in simplicity.
+Using it guarantees that the tidyverse functions sees the variable as it was
+provided to the parent function
+
+```{r, error = TRUE}
+mean_by <- function(data, by, var) {
+  data %>%
+    group_by({{ by }}) %>%
+    summarise(avg = mean({{ var }}))
+}
+
+mean_by(starwars, gender, height)
+```
+
+???
+
+The naive approach above works but is not totally satisfying. The tidyverse
+design guide recommends that variables be specified unquoted, and it'd be nice
+to build functions that follow these principles
+
+---
+
+# Tunnelling data-variables
+
+We can go even further and control the names of the arguments fed to the 
+tidyverse functions. For this we need to use `:=` rather than `=`,
+and use a glue a special glue syntax.
+
+```{r}
+mean_by <- function(data, by, var, prefix = "avg") {
+  data %>%
+    group_by({{ by }}) %>%
+    summarise("{prefix}_{{ var }}" := mean({{ var }}, na.rm = TRUE))
+}
+
+mean_by(starwars, gender, height)
+```
+
+---
+
+# Summary
+
+* tidy selection : `:`, `!`, `starts_with()`, `where()`, `all_of()` ...
+* Selecting functions recognize tidy selection directly : `select()`, `relocate()`, `across()`, `if_any()` ...
+* Data masking functions recognize tidy selection through `across()`: `mutate()`, `summarize()`, `group_by()`, `filter()`
+* `if_any()` and `if_all()` are useful in `filter`
+* Use `{{` to feed naked variables to tidyverse functions just like they are fed
+to their parent functions.

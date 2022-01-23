@@ -1,0 +1,226 @@
+---
+title: "Tidyverse Intro I"
+author: ["Antoine & Nicolas", "cynkra GmbH"]
+date: "January 25, 2022"
+output:
+  cynkradown::cynkra_slides:
+    nature:
+      highlightStyle: github
+      highlightLines: true
+      countIncrementalSlides: false
+    seal: true
+fontsize: 10pt
+lang: english
+font: frutiger
+wide: false
+colorlinks: false
+logo: true
+header-includes:
+  - \usepackage{parskip}
+---
+
+<style type="text/css">
+.remark-code {
+    font-size: 12px;
+}
+.font17 {
+    font-size: 17px;
+}
+.font14 {
+    font-size: 14px;
+}
+</style>
+
+# Tidyverse Intro I-4
+
+* `summarize()`
+* `group_by()`
+* `%>%`
+
+---
+
+# Grouped summaries with `summarize()`
+
+`summarize()` collapses a data frame to a single row:
+
+```{r}
+library(tidyverse)
+library(pixarfilms)
+# summarize(<data frame>, <summarizing expressions>, ...)
+summarize(public_response, mean_rt_score = mean(rotten_tomatoes, na.rm = TRUE))
+```
+
+---
+
+# Grouped summaries with `summarize()`
+
+* Most often we use `summarize()` with `group_by()`
+* `group_by()` makes the date "grouped" so `summarize()` and other functions
+can make use of groups.
+
+```{r}
+# group_by(<data frame>, <1st grouping variable>, ...)
+by_cinema_score <- group_by(public_response, cinema_score)
+# summarize(<data frame>, <summarizing expressions>, ...)
+summarize(by_cinema_score, mean_rt_score = mean(rotten_tomatoes, na.rm = TRUE))
+```
+
+???
+`summarize()` is not terribly useful unless we pair it with `group_by()`.
+This changes the unit of analysis from the complete dataset to individual
+groups. Then, when you use the dplyr verbs on a grouped data frame they'll be
+automatically applied "by group". For example, if we applied exactly the same
+code to a data frame grouped by date, we get the average rotten tomatoes score per
+cinema score.
+
+---
+
+# Grouped summaries with `summarize()`
+
+* We don't care much for the last row though
+* let's get rid of it early using `filter()`
+
+```{r}
+public_response_no_na <- filter(public_response, !is.na(cinema_score))
+by_cinema_score <- group_by(public_response, cinema_score)
+summarize(by_cinema_score, mean_rt_score = mean(rotten_tomatoes, na.rm = TRUE))
+```
+
+???
+filtering early is better, this way no aggregation is performed on removed values,
+so the performance is better!
+
+Together `group_by()` and `summarize()` provide one of the tools that you'll
+use most commonly when working with dplyr: grouped summaries.
+
+This code is a little frustrating to write though because we have to give each 
+intermediate data frame a name, even though we don't care about it. Naming 
+things is hard, so this slows down our analysis. 
+
+To solve this we'll do a detour and introduce a powerful idea: the pipe.
+
+---
+
+# Introducing the pipe `%>%`
+
+* Above we created temp variables `public_response_no_na` and `by_cinema_score`
+* Too much typing ? cluttered environment ?
+* Does this look better ?
+
+```{r}
+summarize(
+  group_by(
+    filter(public_response, !is.na(cinema_score)),
+    cinema_score
+  ),
+  mean_rt_score = mean(rotten_tomatoes, na.rm = TRUE)
+)
+```
+
+Reading from inside out isn't very comfortable
+
+---
+
+# Introducing the pipe `%>%`
+
+Is this easier to read ?
+
+```{r}
+. <- public_response
+. <- filter(., !is.na(cinema_score))
+. <- group_by(., cinema_score)
+. <- summarize(., mean_rt_score = mean(rotten_tomatoes, na.rm = TRUE))
+.
+```
+
+---
+
+# Introducing the pipe `%>%`
+
+Can we do even better ?
+
+The pipe operator `%>%` is a solution (in RStudio : Ctrl + Shift + M)
+
+* No temp variable in environment!
+* `%>%` replaces the `.` by results of last step
+* Indentation is nice too!
+
+```{r}
+public_response %>% 
+  filter(., !is.na(cinema_score)) %>% 
+  group_by(., cinema_score) %>% 
+  summarize(., mean_rt_score = mean(rotten_tomatoes, na.rm = TRUE))
+```
+
+---
+
+# Introducing the pipe `%>%`
+
+* When the `.` comes first we can even omit it
+* `%>%` will place it for us if no naked `.` is found in args
+* Result of prev line is "pushed" to 1st arg of next line
+* Try to read it aloud, pronouncing `%>%` as "then"
+
+```{r}
+public_response %>% 
+  filter(!is.na(cinema_score)) %>% 
+  group_by(cinema_score) %>% 
+  summarize(mean_rt_score = mean(rotten_tomatoes, na.rm = TRUE))
+```
+
+???
+This focuses on the transformations, not what's being transformed, which
+makes the code easier to read. You can read it as a series of imperative
+statements: filter, then group, then summarize. As suggested by this reading,
+a good way to pronounce `%>%` when reading code is "then".
+
+Behind the scenes, `x %>% f(y)` turns into `f(x, y)`, and `x %>% f(y) %>%
+g(z)` turns into `g(f(x, y), z)` and so on. You can use the pipe to rewrite
+multiple operations in a way that you can read left-to-right, top-to-bottom.
+
+---
+
+# Introducing the pipe `%>%`
+
+* In {tidyverse} the data argument is always first
+* Convenient for pipes!
+* But we can use with base functions too, and not only on data frames
+
+```{r}
+1:10 %>% mean()
+public_response %>% head(1)
+public_response %>% lm(rotten_tomatoes ~ metacritic, .)
+```
+
+???
+One important tidyverse principle is that functions have their data argument
+first, this makes them work very well with the pipe, but you can use the pipe
+with functions from the base packages or other packages too!
+
+---
+
+# Grouped summaries with `summarize()`
+
+* We don't care much for the last row though
+* let's get rid of it early using `filter()`
+
+```{r}
+public_response_no_na <- filter(public_response, !is.na(cinema_score))
+by_cinema_score <- group_by(public_response, cinema_score)
+summarize(by_cinema_score, mean_rt_score = mean(rotten_tomatoes, na.rm = TRUE))
+```
+
+???
+filtering early is better, this way no aggregation is performed on removed values,
+so the performance is better!
+
+Together `group_by()` and `summarize()` provide one of the tools that you'll
+use most commonly when working with dplyr: grouped summaries.
+
+This code is a little frustrating to write though because we have to give each 
+intermediate data frame a name, even though we don't care about it. Naming 
+things is hard, so this slows down our analysis. 
+
+To solve this we'll do a detour and introduce a powerful idea: the pipe.
+
+---

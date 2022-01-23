@@ -1,0 +1,544 @@
+---
+title: "Tidyverse Intro I"
+author: ["Antoine & Nicolas", "cynkra GmbH"]
+date: "January 25, 2022"
+output:
+  cynkradown::cynkra_slides:
+    nature:
+      highlightStyle: github
+      highlightLines: true
+      countIncrementalSlides: false
+    seal: true
+fontsize: 10pt
+lang: english
+font: frutiger
+wide: false
+colorlinks: false
+logo: true
+header-includes:
+  - \usepackage{parskip}
+---
+
+<style type="text/css">
+.remark-code {
+    font-size: 12px;
+}
+.font17 {
+    font-size: 17px;
+}
+.font14 {
+    font-size: 14px;
+}
+</style>
+
+
+
+# Tidyverse Intro I-3
+
+* Arranging data
+
+---
+
+# Arrange rows with `arrange()`
+
+```{r, echo = FALSE}
+options(tidyverse.quiet = TRUE)
+```
+
+```{r}
+library(tidyverse)
+library(pixarfilms)
+# arrange(<data frame>, <main col to sort by>, <2nd col to break ties by>,...)
+arrange(pixar_films, run_time, release_date)
+```
+
+???
+`arrange()` works similarly to `filter()` except that instead of selecting
+rows, it changes their order. It takes a data frame and a set of column names
+(or more complicated expressions) to order by. If you provide more than one
+column name, each additional column will be used to break ties in the values
+of preceding columns:
+
+---
+
+# Arrange rows with `arrange()`
+
+Use desc to sort in descending order
+
+```{r}
+arrange(pixar_films, desc(film))
+```
+
+---
+
+# Arrange rows with `arrange()`
+
+Missing values are always sorted at the end
+
+```{r}
+df <- tibble(x = c(5, 2, NA))
+arrange(df, x)
+arrange(df, desc(x))
+```
+
+---
+
+# Arrange rows with `arrange()`
+
+* We can arrange using expressions too
+* sorting by logical -> **F**ALSE is before **T**RUE (like 0 is before 1)
+
+```{r}
+arrange(pixar_films, run_time < 110)
+```
+
+???
+We generally arrange by existing columns but we can also use expressions.
+Here we see that we didn't really sort by run time but all big run times are
+brought on top
+
+---
+
+# Exercises
+
+ 1.  Arrange `pixar_films` by name but starting with missing values (Hint: use `is.na()`).
+
+ 2.  Arrange `pixar_films` to find the shortest film with a "PG" rating
+
+ 3.  Arrange `pixar_films` to find longest film with a "PG" rating
+
+ 4.  Redo 2 and 3 and make sure to have the result on top (Hint: use `film_rating != "PG"`)
+   
+---
+
+# Select columns with `select()`
+
+`select()` is used to subset columns.
+Let's look at a new dataset.
+
+```{r}
+public_response
+```
+
+---
+
+# Select columns with `select()`
+
+What do you think these do ?
+
+```{r, eval = FALSE}
+select(public_response, rotten_tomatoes, cinema_score)
+select(public_response, rotten_tomatoes:cinema_score)
+select(public_response, -rotten_tomatoes)
+select(public_response, -(rotten_tomatoes:cinema_score))
+select(public_response, starts_with("c"))
+select(public_response, contains("critic"))
+select(public_response, where(is.numeric))
+select(public_response, movie = film, rotten_tomatoes)
+select(public_response, film, last_col())
+select(public_response, cinema_score, everything())
+```
+
+---
+
+# Select columns with `select()`
+
+```{r}
+select(public_response, rotten_tomatoes, cinema_score)
+```
+
+---
+
+# Select columns with `select()`
+
+```{r}
+select(public_response, rotten_tomatoes:cinema_score)
+```
+
+---
+
+# Select columns with `select()`
+
+```{r}
+select(public_response, -rotten_tomatoes)
+```
+
+---
+
+# Select columns with `select()`
+
+```{r}
+select(public_response, -(rotten_tomatoes:cinema_score))
+```
+
+---
+
+# Select columns with `select()`
+
+See also : `ends_with()`, `matches()`, `num_range()`
+
+```{r}
+select(public_response, starts_with("c"))
+select(public_response, contains("critic"))
+```
+
+---
+
+# Select columns with `select()`
+
+
+```{r}
+select(public_response, where(is.numeric))
+```
+
+---
+
+# Select columns with `select()`
+
+
+```{r}
+select(public_response, movie = film, rotten_tomatoes)
+```
+
+---
+
+# Rename columns with `rename()`
+
+* Want to rename without selecting ?
+* Use `rename()` and keep all columns !
+
+```{r}
+# rename(<data frame>, <new name> = <old name>)
+rename(public_response, movie = film)
+```
+
+---
+
+# Select columns with `select()`
+
+```{r}
+select(public_response, film, last_col())
+```
+
+---
+
+# Select columns with `select()`
+
+```{r}
+select(public_response, cinema_score, everything())
+```
+
+---
+
+# `all_of()` or `any_of()`
+
+What if I have column names in a vector ?
+
+* use `all_of()` or `any_of()`
+
+```{r}
+cols <- c("film", "metacritic")
+select(public_response, all_of(cols))
+```
+
+---
+
+# `all_of()` or `any_of()`
+
+They're almost the same!
+
+* `all_of()` fails if some columns don't exist
+* `any_of()` ignores columns that don't exist
+
+```{r, error = TRUE}
+cols <- c("film", "metacritic", "potatoe")
+select(public_response, all_of(cols))
+select(public_response, any_of(cols))
+```
+
+---
+
+# tidy selection
+
+{tidyselect} package works this magic in the background
+
+`?tidyselect::language` summarizes all features.
+
+---
+
+# Exercises
+
+ 1.  Find several ways to select the 3 first columns
+     
+ 2.  What happens if you include the name of a variable multiple times in
+     a `select()` call?
+     
+ 2.  Select all columns that contain underscores
+   
+ 3.  Use `all_of()` to select 2 columns of your choice
+ 
+ 4.  Does the result of running the following code surprise you?  How do the
+     select helpers deal with case by default? How can you change that default?
+ 
+    `select(public_response, contains("R")`
+    
+---
+
+# Modify a variable or add new variables with `mutate()`
+
+`dplyr::mutate()` = improved version of `base::transform()`
+
+Create a new variable
+
+```{r}
+mutate(pixar_films, run_time_h = run_time /60)
+```
+
+---
+
+# Modify a variable or add new variables with `mutate()`
+
+Modify a variable
+
+```{r}
+mutate(pixar_films, run_time_h = run_time /60)
+```
+
+---
+
+# Modify a variable or add new variables with `mutate()`
+
+* Most of the time columns are vectors
+* All the functions we use on vectors can be used here
+
+```{r}
+library(lubridate)
+mutate(pixar_films, label = paste0(film, " (", year(release_date), ")"))
+```
+
+???
+Sometimes these columns are list or data frames but that's an advanced topic
+There are many functions for creating new variables that you can use with
+`mutate()`. The key property is that the function must be vectorised: it must
+take a vector of values as input, return a vector with the same number of
+values as output. 
+
+---
+
+# Modify a variable or add new variables with `mutate()`
+
+* Don't forget that we are playing with vector columns!
+* What is happening here ?
+
+```{r}
+mutate(
+  public_response,
+  min_score = min(rotten_tomatoes, metacritic, critics_choice, na.rm = TRUE),
+  max_score = max(rotten_tomatoes, metacritic, critics_choice, na.rm = TRUE)
+)
+```
+
+---
+
+# Modify a variable or add new variables with `mutate()`
+
+* Luckily R has vectorized functions for most commmon tasks!
+
+```{r}
+mutate(
+  public_response,
+  min_score = pmin(rotten_tomatoes, metacritic, critics_choice, na.rm = TRUE),
+  max_score = pmax(rotten_tomatoes, metacritic, critics_choice, na.rm = TRUE)
+)
+```
+
+---
+
+# Modify a variable or add new variables with `mutate()`
+
+* We can reuse columns that we just created or modified
+
+```{r}
+mutate(
+  public_response,
+  min_score = pmin(rotten_tomatoes, metacritic, critics_choice, na.rm = TRUE),
+  max_score = pmax(rotten_tomatoes, metacritic, critics_choice, na.rm = TRUE),
+  delta = max_score - min_score
+)
+```
+
+---
+
+# Modify a variable or add new variables with `mutate()`
+
+* `transmute()` is a useful variant to avoid a redundant `select()` call: 
+
+```{r}
+transmute(
+  pixar_films,
+  film, # note: no `=` here, just a col name
+  release_year = year(release_date),
+  label = paste0(film, " (", release_year, ")")
+)
+```
+
+---
+
+# Modify a variable or add new variables with `mutate()`
+
+* Most of the time columns are vectors
+* All the functions we use on vectors can be used here
+
+```{r}
+pixar_films %>% 
+  mutate(label = paste0(film, " (", year(release_date), ")"))
+```
+
+---
+
+# Modify a variable or add new variables with `mutate()`
+
+* We can use both vectors and aggregated scalar values
+
+```{r}
+pixar_films %>% 
+  mutate(run_time_incr = run_time - median(run_time, na.rm = TRUE))
+```
+
+???
+the median run time is 100 (Finding Nemo), it's a scalar value
+We can subtract it from a vector
+
+---
+
+# Modify a variable or add new variables with `mutate()`
+
+Useful vectorised base operations in `mutate()` :
+
+*   Arithmetic operators: `+`, `-`, `*`, `/`, `^`
+*   Logical comparisons, `<`, `<=`, `>`, `>=`, `!=`
+*   Logs: `log()`, `log2()`, `log10()`
+*   Vectorized min and max : `pmin()`, `pmax()`
+*   Cumulated operations : `cummin()`, `cummax()`, `cumsum()`, `cumprod()`
+
+Useful aggregations : 
+
+* `mean()`, `median()`, `sum()`, `min()`, `max()`, `sd()`
+
+???
+*   Arithmetic operators: `+`, `-`, `*`, `/`, `^`. These are all vectorised,
+    using the so called "recycling rules". If one parameter is shorter than 
+    the other, it will be automatically extended to be the same length. This 
+    is most useful when one of the arguments is a single number: `air_time / 60`,
+    `hours * 60 + minute`, etc.
+    
+    Arithmetic operators are also useful in conjunction with aggregate
+    functions you'll learn about later. For example `y - mean(y)` 
+    computes the difference from the mean.
+*   Logical comparisons, `<`, `<=`, `>`, `>=`, `!=`, which you learned about
+    earlier. If you're doing a complex sequence of logical operations it's 
+    often a good idea to store the interim values in new variables so you can
+    check that each step is working as expected.
+*   Logs: `log()`, `log2()`, `log10()`. Logarithms are an incredibly useful
+    transformation for dealing with data that ranges across multiple orders of
+    magnitude. They also convert multiplicative relationships to additive.
+*   Offsets: `lead()` and `lag()` allow you to refer to leading or lagging 
+    values. This allows you to compute running differences (e.g. `x - lag(x)`) 
+    or find when values change (`x != lag(x))`. They are most useful in 
+    conjunction with `group_by()`, which you'll learn about shortly.
+*   Cumulative and rolling aggregates: R provides functions for running sums,
+    products, mins and maxes: `cumsum()`, `cumprod()`, `cummin()`, `cummax()`; 
+    and dplyr provides `cummean()` for cumulative means. If you need rolling
+    aggregates (i.e. a sum computed over a rolling window), try the RcppRoll
+    package.
+
+---
+
+# Modify a variable or add new variables with `mutate()`
+
+The tidyverse has nice additions :
+
+* date operations from {lubridate}
+* string interpolation from {glue}
+* string manipulation from {stringr} : `str_replace()`, `str_detect()`
+* factor manipulation from {forcats} : `fct_relevel()`
+* some more from {dplyr} : `cummean()`, `lag()`, `lead()`, `case_when()`, `if_else()`
+* etc (there's a lot!)
+
+???
+We'll showcase a few of those can't go through everything, remember that
+if you need to do something with dates, strings or factors, {lubridate},
+{stringr} or {forcats} probably got you covered. Just typing `str_` or `fct_`
+will trigger the autocomplete and you might find the function you need just by 
+its name!
+
+---
+
+# Modify a variable or add new variables with `mutate()`
+
+Build strings in a readable way with `glue::glue()`
+
+```{r}
+library(glue)
+# our previous example
+# pixar_films %>% 
+#   mutate(label = paste0(film, " (", year(release_date), ")"))
+pixar_films %>% 
+  mutate(label = glue("{film} ({year(release_date)})"))
+```
+
+---
+
+# Modify a variable or add new variables with `mutate()`
+
+Do all sorts or string detection, extraction, substitution... with {stringr}.
+
+```{r}
+pixar_films %>% 
+  mutate(franchise = str_replace(film, " \\d", ""))
+```
+
+???
+
+For some you might have to learn a bit of regular expressions!
+
+---
+
+# Modify a variable or add new variables with `mutate()`
+
+`if_else` is useful to create to apply a conditional transformation, or create
+a binary category.
+
+```{r}
+pixar_films %>% 
+  mutate(run_time2 = if_else(run_time < 100, "short", "long"))
+```
+
+---
+
+# Modify a variable or add new variables with `mutate()`
+
+`case_when()` is useful to avoid nested `if_else()` calls
+
+```{r}
+pixar_films %>%
+  mutate(run_time2 = case_when(
+    run_time < 95 ~ "short",
+    run_time < 105 ~ "regular",
+    TRUE ~ "long"
+  ))
+```
+
+### Exercises
+
+1.  Check that in `box_office`, `box_office_worldwide` is indeed the sum of
+  the 2 other columns.
+    
+2.  Flag movies in `box_office` that did better in the US and Canada than in the rest of the
+ world
+    
+3.  Use `if_else()` and `median()` to create a column `budget_type()` with
+ values `"low budget"` and `"high budget"`
+ 
+4.  Use `lag()` to create a column `days_since_previous_movie` in `pixar_films`
+(The films are already sorted)
