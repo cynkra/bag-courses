@@ -17,6 +17,8 @@ colorlinks: false
 logo: true
 header-includes:
   - \usepackage{parskip}
+editor_options: 
+  chunk_output_type: console
 ---
 
 <style type="text/css">
@@ -31,15 +33,237 @@ header-includes:
 }
 </style>
 
-<!-- TODO looks good! feels more polished than the first set of slides -->
-<!-- TODO maybe start out with `select()`? or do you want to do that after
-  `filter()`?, connect to base R `[()`?, also, `subset()` kind of combines
-  `select()` with `filter()`
--->
+# Introduction to {dplyr}
 
-# Tidyverse Intro I-2
+{dplyr} is the most important package of the tidyverse
 
-* Filtering data
+We'll review its main functions, in this lesson we'll rename, subset (rows or columns) and sort the data.
+
+* `rename()` to rename columns from a dataset
+* `select()` to subset columns from a dataset
+* `filter()` to subset rows of the data with a logical vector
+* `slice()` to subset rows of the data with a numeric index
+* `arrange()` to sort the data
+
+
+???
+
+{dplyr} contains many functions, they're all designed to do one simple action,
+with a sensible default behavior. In this course we'll see how to use the basic
+features of these functions.
+
+---
+
+# Dataset
+
+We'll use the dataset `public_response` from the package {pixarfilms}
+
+```{r, echo = FALSE}
+options(tidyverse.quiet = TRUE)
+```
+
+```{r}
+library(tidyverse)
+library(pixarfilms)
+public_response
+```
+
+---
+
+# Rename columns with `rename()`
+
+`rename()` keeps all columns and sets new names for specific columns
+
+```{r}
+# rename(<data frame>, <new name> = <old name>)
+rename(public_response, movie = film)
+```
+
+???
+`rename()` is one of the simplest {dplyr} verbs, the thing to remember is that
+the new name is on the left and the old one on the right. 
+
+---
+
+# Rename columns with `rename()`
+
+* Don't forget to assign the result!
+* tidyverse functions never modify the input in place
+
+```{r}
+public_response_renamed <- rename(public_response, movie = film)
+```
+
+---
+
+# Rename columns with `rename()`
+
+* Use `(x <- ...)` to print and assign at the same time  
+
+```{r}
+(public_response_renamed <- rename(public_response, movie = film))
+```
+
+???
+R either prints out the results, or saves them to a variable. If you want to do both, you can wrap the assignment in parentheses:
+
+---
+
+# Select columns with `select()`
+
+What do you think these do ?
+
+```{r, eval = FALSE}
+select(public_response, rotten_tomatoes, cinema_score)
+select(public_response, rotten_tomatoes:cinema_score)
+select(public_response, -rotten_tomatoes)
+select(public_response, -(rotten_tomatoes:cinema_score))
+select(public_response, starts_with("c"))
+select(public_response, contains("critic"))
+select(public_response, where(is.numeric))
+select(public_response, movie = film, rotten_tomatoes)
+select(public_response, film, last_col())
+select(public_response, cinema_score, everything())
+```
+
+???
+`select()` is a very flexible function, thanks to a selection mechanism named
+"tidy selection". Tidy selection can be used in several other functions, but
+`select()` is the main one.
+
+---
+
+# Select columns with `select()`
+
+```{r}
+select(public_response, rotten_tomatoes, cinema_score)
+```
+
+---
+
+# Select columns with `select()`
+
+```{r}
+select(public_response, rotten_tomatoes:cinema_score)
+```
+
+---
+
+# Select columns with `select()`
+
+```{r}
+select(public_response, -rotten_tomatoes)
+```
+
+---
+
+# Select columns with `select()`
+
+```{r}
+select(public_response, -(rotten_tomatoes:cinema_score))
+```
+
+---
+
+# Select columns with `select()`
+
+See also : `ends_with()`, `matches()`, `num_range()`
+
+```{r}
+select(public_response, starts_with("c"))
+```
+
+---
+
+# Select columns with `select()`
+
+See also : `ends_with()`, `matches()`, `num_range()`
+
+```{r}
+select(public_response, contains("critic"))
+```
+
+
+---
+
+# Select columns with `select()`
+
+
+```{r}
+select(public_response, where(is.numeric))
+```
+
+---
+
+# Select columns with `select()`
+
+
+```{r}
+select(public_response, movie = film, rotten_tomatoes)
+```
+
+---
+
+# Select columns with `select()`
+
+```{r}
+select(public_response, film, last_col())
+```
+
+---
+
+# Select columns with `select()`
+
+```{r}
+select(public_response, cinema_score, everything())
+```
+
+---
+
+# Select columns with `select()`
+
+What if I have column names stored in a vector ?
+
+* use `all_of()` or `any_of()`
+
+```{r}
+cols <- c("film", "metacritic")
+select(public_response, all_of(cols))
+```
+
+---
+
+# Select columns with `select()`
+
+They're almost the same!
+
+* `all_of()` fails if some columns don't exist
+* `any_of()` ignores columns that don't exist
+
+```{r, error = TRUE}
+cols <- c("film", "metacritic", "potatoe")
+select(public_response, all_of(cols))
+select(public_response, any_of(cols))
+```
+
+---
+
+# Exercises
+
+ *  Find several ways to select the 3 first columns
+     
+ *  What happens if you include the name of a variable multiple times in
+     a `select()` call?
+     
+ *  Select all columns that contain underscores
+   
+ *  Use `all_of()` to select 2 columns of your choice
+ 
+ *  Does the result of running the following code surprise you?  How do the
+     select helpers deal with case by default? How can you change that default?
+ 
+    `select(public_response, contains("R")`
+
 
 ---
 
@@ -89,37 +313,6 @@ library(dplyr)
 
 ---
 
-# Filter rows with `filter()`
-
-* Don't forget to assign the result!
-* tidyverse functions never modify the input in place
-
-```{r}
-film_subset <- filter(pixar_films, run_time == 100, film_rating == "G")
-```
-
-???
-When you run that line of code, dplyr executes the filtering operation and
-returns a new data frame. dplyr functions never modify their inputs, so if
-you want to save the result, you'll need to use the assignment operator,
-`<-`
-
----
-
-# Filter rows with `filter()`
-
-* Use `(x <- ...)` to print and assign at the same time  
-
-```{r}
-(film_subset <- filter(pixar_films, run_time == 100, film_rating == "G"))
-```
-
-???
-R either prints out the results, or saves them to a variable. If you want to
-do both, you can wrap the assignment in parentheses:
-
----
-
 # Comparison operators
 
 What is happening here ?
@@ -134,7 +327,7 @@ filter(pixar_films, run_time = 100)
 
 * `=` is used to set arguments
 * `==` is used to test equality
-* don't panic and read the error messages
+* Don't panic and read the error messages
 
 ```{r}
 filter(pixar_films, run_time <= 92)
@@ -193,11 +386,13 @@ What is happening here ?
 ```{r}
 sqrt(2) ^ 2 == 2
 1/49 * 49 == 1
+near(c(sqrt(2) ^ 2, 1/49 * 49), c(2, 1))
 ```
 
 ???
-There's another common problem you might encounter when using `==`: floating
-point numbers. These results might surprise you!
+There's another common problem you might encounter when using `==`: floating point numbers. These results might surprise you!
+We eason with a mathematical model in mind, the computer knows
+only decimal numbers and has to round them at some point. When this is an issue you can use `near()`
 
 # Floating point numbers
 
@@ -357,8 +552,6 @@ equal ? you don't know!
 
 # Missing values
 
-What do these return ?
-
 ```{r, eval = TRUE}
 NA > 5
 10 == NA
@@ -403,13 +596,12 @@ filter(pixar_films, is.na(film))
 # Missing values
 
 * `filter()` only includes rows where the condition is `TRUE`;
-* excludes both `FALSE` and `NA` values. 
-* preserve them explicitly
+* It excludes both `FALSE` and `NA` values. 
+* Preserve them explicitly if needed
 
 ```{r}
 filter(pixar_films, run_time < 95 | is.na(run_time))
 ```
-
 
 ---
 
@@ -423,6 +615,10 @@ NA | TRUE
 FALSE & NA
 NA * 0
 ```
+
+???
+
+Missing values are often "contagious", it's not a rule however!
 
 ---
 
@@ -467,10 +663,10 @@ filter(pixar_films, str_detect(film, "ory"))
 # Useful helpers
 
 * On date: `year()`, `month()`, `day()`
-* from {lubridate} package NOT loaded with tidyverse
+* From the {lubridate} package NOT loaded with tidyverse
 
 ```{r}
-library(lubridate)
+library(lubridate, warn.conflicts = FALSE)
 
 filter(pixar_films, year(release_date) == 1998)
 
@@ -483,9 +679,30 @@ filter(pixar_films, release_date >= "1998-01-01", release_date <= "1998-12-31")
 
 ---
 
+# `if_any()` and `if_all()`
+
+What is happening here ?
+
+```{r}
+filter(pixar_films, if_any(c(film, run_time), is.na))
+
+filter(pixar_films, if_all(c(film, run_time), is.na))
+```
+
+???
+`if_any()` and `if_all()` allow advanced filter applying the same condition
+on a set of variables, with `if_any()` we keep all the rows where the condition
+is satisfied in at least one column, with `if_all()` we keep all the rows
+where the condition is satisfied in all columns.
+
+The first argument uses tidy selection, it means that we can use there everything
+we've seen in `select()`
+
+---
+
 # Exercises
 
-1.  Find all films that
+Find all films that
 
     1. Are rated "PG"
     2. Had a run time below 95 
@@ -496,3 +713,113 @@ filter(pixar_films, release_date >= "1998-01-01", release_date <= "1998-12-31")
     7. Are a first sequel (the name ends with "2")
     8. Were released between "2018-06-12" and  "2020-04-27" using `>=` and `<=`
     9. The same, using `between()` and `lubridate::as_date()`
+    
+---
+
+# Subset rows by index with `slice()`
+
+* `filter()` subsets rows with a logical vector,
+* `slice()` subsets rows with a numeric vector
+* The special function `n()` returns the index of the last row
+
+```{r}
+slice(pixar_films, 2:3)
+slice(pixar_films, 25:(n()-1))
+```
+
+---
+
+# Subset rows by index with `slice()`
+
+Other functions of the `slice()` family :
+
+* `slice_head()` and `slice_tail()` select the first or last rows. subsets rows with a logical vector,
+* `slice_sample()` randomly selects rows.
+* `slice_min()` and `slice_max()` select rows with highest or lowest values of a variable.
+
+```{r}
+slice(pixar_films, 2:3)
+slice(pixar_films, 25:(n()-1))
+```
+
+---
+
+# Exercises
+
+Using the `pixar_films` dataset :
+
+ 1.  Return the 2 first rows using `slice()` then using `slice_head()`
+
+ 2.  Return the 2 last rows using `slice()` then using `slice_tail()`
+
+ 3.  Return the row of the shortest movie using `slice_min()`
+
+ 4.  Return the rows of the 15%  longest movie using `slice_max()` and the `prop` argument
+
+---
+
+# Arrange rows with `arrange()`
+
+```{r}
+
+arrange(pixar_films, run_time, release_date)
+```
+
+???
+`arrange()` works similarly to `filter()` except that instead of selecting
+rows, it changes their order. It takes a data frame and a set of column names
+(or more complicated expressions) to order by. If you provide more than one
+column name, each additional column will be used to break ties in the values
+of preceding columns:
+
+---
+
+# Arrange rows with `arrange()`
+
+Use desc to sort in descending order
+
+```{r}
+arrange(pixar_films, desc(film))
+```
+
+---
+
+# Arrange rows with `arrange()`
+
+Missing values are always sorted at the end
+
+```{r}
+df <- tibble(x = c(5, 2, NA))
+arrange(df, x)
+arrange(df, desc(x))
+```
+
+---
+
+# Arrange rows with `arrange()`
+
+* We can arrange using expressions too
+* sorting by logical -> **F**ALSE is before **T**RUE (like 0 is before 1)
+
+```{r}
+arrange(pixar_films, run_time < 110)
+```
+
+???
+We generally arrange by existing columns but we can also use expressions.
+Here we see that we didn't really sort by run time but all big run times are
+brought on top
+
+---
+
+# Exercises
+
+ 1.  Arrange `pixar_films` by name but starting with missing values (Hint: use `is.na()`)
+
+ 2.  Arrange `pixar_films` to find the shortest film with a "PG" rating
+
+ 3.  Arrange `pixar_films` to find longest film with a "PG" rating
+
+ 4.  Redo 2 and 3 and make sure to have the result on top (Hint: use `film_rating != "PG"`)
+   
+   

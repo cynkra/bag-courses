@@ -1,0 +1,187 @@
+---
+title: "Tidyverse Intro I"
+author: ["Antoine & Nicolas", "cynkra GmbH"]
+date: "January 25, 2022"
+output:
+  cynkradown::cynkra_slides:
+    nature:
+      highlightStyle: github
+      highlightLines: true
+      countIncrementalSlides: false
+    seal: true
+fontsize: 10pt
+lang: english
+font: frutiger
+wide: false
+colorlinks: false
+logo: true
+header-includes:
+  - \usepackage{parskip}
+---
+
+<style type="text/css">
+.remark-code {
+    font-size: 12px;
+}
+.font17 {
+    font-size: 17px;
+}
+.font14 {
+    font-size: 14px;
+}
+</style>
+
+# Tidyverse Intro I-0
+
+* Introducing the tidyverse
+* Packages of the tidyverse
+* Getting help
+* Exploring data
+* Read and write the data
+
+---
+
+# Introducing the tidyverse
+
+Collection of data science tools
+
+--
+
+* Import/export
+
+* Transform
+   * Clean up
+   * Reshape to tidy form
+   * Process
+   
+* Visualize
+
+
+
+???
+The goal of this course is to introduce the tidyverse, a collection of data
+science tools within R for transforming and visualizing data.
+
+---
+
+# Other tools
+
+* Base R
+* {data.table}
+* ...
+
+--
+
+Tidyverse strong points:
+
+* Readable code
+* Very wide range of features
+* Documentation convenient to navigate
+* Professional maintainers
+* RStudio integration
+
+
+???
+There are other data manipulation tools in R, and we cannot do everything with
+the tidyverse. {data.table} is a common and excellent alternative, that favors
+compact code, execution speed and low dependencies. We can also do a lot with
+base R. Nevertheless in our sense the tidyverse provides the most intuitive and
+versatile framework out there.
+
+These tools are maintained by RStudio, the company that designed the user
+interface of the same name, that you use to program in the R language, this means
+there is a solid team and budget behind it and that that they are very attentive
+to bug reports and new features that might help users.
+
+---
+
+# The {tidyverse} package
+
+Tidyverse is meta-package!
+
+* Does not contain much functionality
+* Loads a set of packages: the "core" tidyverse packages
+
+```{r, eval}
+# install.packages("tidyverse")
+library(tidyverse)
+```
+
+???
+
+tidyverse is a meta package, when you attach it, using `library(tidyverse)`,
+you attach several packages, these packages each have their specificity and are
+sometimes useful in isolation but they're designed to work together, using
+harmonized convention, so for the purpose of data analysis it's often very
+convenient to be able to type `library(tidyverse)` and have (almost) all the tools we need.
+
+---
+
+# Core tidyverse packages
+
+No need to memorize them! But it's good to recognize the names
+
+* **readr**: to read or write rectangular data
+* **dplyr**: to manipulate tidy data.
+* **tidyr**: to tidy the data
+* **tibble**: to improve the native data frame
+* **purrr**: to work with functions and vectors.
+* **stringr**: to work with strings
+* **forcats**: to work with factors
+* **ggplot2**: to create graphics
+
+???
+You don't need to remember which function comes from which package!
+You can always print the function if you need to know!
+
+---
+
+# Auxiliary tidyverse packages?
+
+There is (much) more! 
+
+Auxiliary (helper) packages:
+
+* not loaded by `library(tidverse)`
+* same group of maintainer, same philosophy, same conventions
+
+short list:
+
+* lubridate
+* readxl
+* glue
+
+
+???
+
+Technically, the above are the "core" tidyverse packages, there is more!
+Other RStudio packages form the extended tidyverse but are not attached by
+`library(tidyverse)`, some interesting ones are lubridate, readxl and glue.
+
+---
+
+# Getting help
+ 
+* Don't remember everything!
+* Practice forgetting and recovering information
+
+* Doc is usually good: `?some_function`
+* http:://www.tidyverse.org -> links to package sites
+  * Introduction to package's main functions
+  * Function reference shows help pages by category
+  * Vignettes illustrate use cases
+* Rstudio commmunity: https://community.rstudio.com
+* Twitter: #rstats
+* StackOverflow: http://www.stackoverflow.com
+
+???
+You're not supposed to remember everything! You really don't need to remember
+ much in fact, but you need to know the path to the information.
+ `?` works pretty well! running the examples help
+ tidyverse website, package websites with vignettes and reference
+ humans!
+ * Rstudio forum have volunteers and staff help you with any R question, and won't ever make you
+ feel bad about a "silly" question, especially if it's about their packages!
+ * Twitter: the R community is really positive and you might get a great answer really fast #rstats
+ * Stackoverflow: the ultimate Q&A site if you have a more complex question, look
+ if it has been asked, take the time to formulate it well and you'll be answered very fast
