@@ -117,8 +117,7 @@ What do you think those do ?
  * `readr::write_csv(x, file)`
  * `readr::write_tsv(x, file)`
  * `readr::write_delim(x, file, delim)`
- * `writexl::write_excel(x, path)`
- * `writexl::write_excel(x, path)`
+ * `writexl::write_xlsx(x, path)`
 
 --
 
@@ -243,9 +242,13 @@ rather than a date!
 pixar_films_from_csv <- readr::read_csv("pixar_films.csv")
 
 spec(pixar_films_from_csv)
+```
 
+---
+
+```{r}
 pixar_films_from_csv <- readr::read_csv("pixar_films.csv", col_types = cols(
-  number = col_character(), # we changed to keep it as character
+  number = col_character(), # we changed to keep it as character like in the original data
   film = col_character(),
   release_date = col_date(format = ""),
   run_time = col_double(),
@@ -272,6 +275,8 @@ What are the following arguments for and what could be a situation to use them?
 * `range`
 * `skip`
 * `na`
+
+Check the default for `na` in `read_excel` vs `read_csv`, what do you see ?
 
 ---
 layout: false
