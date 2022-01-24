@@ -508,59 +508,89 @@ summarize(public_response, mean_rt_score = mean(rotten_tomatoes, na.rm = TRUE))
 can make use of groups.
 
 ```{r}
-# group_by(<data frame>, <1st grouping variable>, ...)
-by_cinema_score <- group_by(public_response, cinema_score)
-# summarize(<data frame>, <summarizing expressions>, ...)
-summarize(by_cinema_score, mean_rt_score = mean(rotten_tomatoes, na.rm = TRUE))
+# group_by(<data frame>, <grouping variables>)
+# summarize(<data frame>, <summarizing expressions>)
+public_response %>%
+  group_by(cinema_score) %>%
+  summarize(
+    mean_rt_score = mean(rotten_tomatoes, na.rm = TRUE),
+    n = n(),
+    .groups = "drop"
+  )
 ```
 
 ???
-`summarize()` is not terribly useful unless we pair it with `group_by()`.
+`summarize()` is not mostly useful when we pair it with `group_by()`.
 This changes the unit of analysis from the complete dataset to individual
 groups. Then, when you use the dplyr verbs on a grouped data frame they'll be
 automatically applied "by group". For example, if we applied exactly the same
-code to a data frame grouped by date, we get the average rotten tomatoes score per
+code to a data frame grouped by cinema score, we get the average rotten tomatoes score per
 cinema score.
 
 ---
 
 # Aggregate with `group_by()` and `summarize()`
 
-* We don't care much for the last row though
-* let's get rid of it early using `filter()`
+`count()` is a helpful shortcut for `data %>% group_by(...) %>% summarize(n = n())`
 
 ```{r}
-public_response_no_na <- filter(public_response, !is.na(cinema_score))
-by_cinema_score <- group_by(public_response, cinema_score)
-summarize(by_cinema_score, mean_rt_score = mean(rotten_tomatoes, na.rm = TRUE))
+public_response %>% 
+  group_by(cinema_score) %>% 
+  summarize(n = n(), .groups = "drop")
+
+public_response %>% 
+  count(cinema_score)
 ```
-
-???
-filtering early is better, this way no aggregation is performed on removed values,
-so the performance is better!
-
-Together `group_by()` and `summarize()` provide one of the tools that you'll
-use most commonly when working with dplyr: grouped summaries.
 
 ---
 
 # Aggregate with `group_by()` and `summarize()`
 
-* We don't care much for the last row though
-* let's get rid of it early using `filter()`
+Exercises!
+
+Look at the `academy` dataset
+
+1. Count the nominations for every movie (Hint:you'll need `filter()`)
+2. A nomination is 1 point, winning an award is 2 points, compute every movie's
+ score and show the top 3 (Hint: create a `points` column using `mutate()` and `case_when()`)
+ 
+---
+
+# Using `group_by()` with other verbs
+
+Groups are most useful with `summarize()` but other verbs can use them too!
+
+Don't forget to `ungroup()` !
 
 ```{r}
-public_response_no_na <- filter(public_response, !is.na(cinema_score))
-by_cinema_score <- group_by(public_response, cinema_score)
-summarize(by_cinema_score, mean_rt_score = mean(rotten_tomatoes, na.rm = TRUE))
+public_response %>% 
+  group_by(cinema_score) %>% 
+  mutate(median_metacritic = median(metacritic, na.rm = TRUE)) %>% 
+  ungroup()
 ```
 
-???
-filtering early is better, this way no aggregation is performed on removed values,
-so the performance is better!
+---
 
-Together `group_by()` and `summarize()` provide one of the tools that you'll
-use most commonly when working with dplyr: grouped summaries.
+# Using `group_by()` with other verbs
 
+Groups are most useful with `summarize()` but other verbs can use them too!
+
+```{r}
+public_response %>% 
+  group_by(cinema_score) %>% 
+  filter(metacritic > median(metacritic, na.rm = TRUE)) %>% 
+  ungroup()
+```
 
 ---
+
+# Using `group_by()` with other verbs
+
+Groups are most useful with `summarize()` but other verbs can use them too!
+
+```{r}
+public_response %>% 
+  group_by(cinema_score) %>% 
+  filter(metacritic > median(metacritic, na.rm = TRUE)) %>% 
+  ungroup()
+```

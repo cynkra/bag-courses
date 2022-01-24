@@ -397,6 +397,8 @@ character strings often enough would gain from taking the time to learn them.
 
 # Tidy selection
 
+Exercise!
+
 How could you recreate these outputs without using `matches()` ?
 
 ```{r programming-with-dplyr-19}
@@ -492,7 +494,7 @@ are possible
 
 Exercise!
 
-Find 3 ways to select the columns 4 to 7 of the `starwars` dataset
+Review all our tidy selection helpers and find 3 ways to select the columns 4 to 7 of the `starwars` dataset
 
 ---
 
@@ -652,6 +654,11 @@ starwars %>%
  (in fact `group_by` works exactly like mutate, except that it sets groups)
 * It means for instance we can `group_by(data, col1 + col2)`
 * For this reason we cannot use tidy selection **directly** in `group_by()`
+
+---
+
+# Advanced grouping and summarizing
+
 * However, we can use `across()` with a single argument!
 
 ```{r programming-with-dplyr-34}
@@ -698,7 +705,7 @@ so can leverage tidy selection indirectly as we see in above example.
 
 Can you guess what these do ?
 
-```{r}
+```{r, eval = FALSE}
 filter(starwars[1:8], if_any(ends_with("color"), ~ .x == "unknown"))
 
 filter(starwars[1:8], if_all(ends_with("color"), ~ .x == "unknown"))
@@ -735,6 +742,30 @@ Hint :
 for missingness and using `|` or `&`. 
 * Which is more compact ?
 * Which is more readable ?
+
+---
+
+# <data-masking> vs <tidy-select>
+
+The description of the arguments in the documentation tells you if you can
+use tidy selection directly or across
+
+```{r}
+# arguments are described as "<tidy-select>", meaning variables refer to column positions
+# we can use tidy selection directly
+?select
+?relocate
+?across
+?if_any
+
+# arguments are described as "<data-masking>", meaning variables refer to values
+# we can use `across()`
+?mutate
+?summarize
+?group_by
+?count
+?filter
+```
 
 ---
 
@@ -788,34 +819,9 @@ to build functions that follow these principles
 
 # Tunnelling data-variables
 
-We could try to put into use what we have learnt about tidy selection, but we'd
-need to provide strings to the function :
+Tidyverse functions support a `{{` operator, called "curly curly" or
+the "embrace" operator, we talk about "tunneling" a variable
 
-```{r, error = TRUE}
-mean_by <- function(data, by, var) {
-  data %>%
-    group_by(across(all_of(by))) %>%
-    summarise(across(all_of(var), mean, na.rm = TRUE, .names = "avg"))
-}
-
-mean_by(starwars, "gender", "height")
-```
-
-???
-
-The naive approach above works but is not totally satisfying. The tidyverse
-design guide recommends that variables be specified unquoted, and it'd be nice
-to build functions that follow these principles
-
-
----
-
-# Tunnelling data-variables
-
-Tidyverse functions support a special `{{` operator, called "curly curly" or
-the "embrace" operator, the act of using it is called "tunneling" a variable.
-
-It's a lot of words, but in practice it's beautiful in simplicity.
 Using it guarantees that the tidyverse functions sees the variable as it was
 provided to the parent function
 
@@ -825,7 +831,6 @@ mean_by <- function(data, by, var) {
     group_by({{ by }}) %>%
     summarise(avg = mean({{ var }}))
 }
-
 mean_by(starwars, gender, height)
 ```
 
