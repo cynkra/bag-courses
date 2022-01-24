@@ -2,20 +2,38 @@
 # This file contains the exercises for the "Introduction to the tidyverse" course
 # feel free to write your code inline to solve the problems as we move through the course
 
-# first install all these packages
-# install.packages("tidyverse")
-# install.packages("pixarfilms")
-# install.packages("skimr")
-# install.packages("readxl")
-# install.packages("writexl")
-# install.packages("lubridate")
+### Setup ######################################################################
 
+# first install all these packages
+install.packages("tidyverse")
+install.packages("pixarfilms")
+install.packages("skimr")
+install.packages("readxl")
+install.packages("writexl")
+install.packages("lubridate")
+
+# attach relevant packages
 library(tidyverse)
+library(pixarfilms)
+library(readxl)
+library(writexl)
+library(lubridate)
+
+# display chosen presentation (it might take a few seconds to appear)
+slide_viewer <- function(path) {
+  tmp <- tempfile(fileext = ".html")
+  file.copy(path, tmp)
+  rstudioapi::viewer(tmp)
+}
+slide_viewer("1_intro_tidy-i/tidy_intro_day1_0_Introduction.html")
+slide_viewer("1_intro_tidy-i/tidy_intro_day1_1_Explore_read_write_create.html")
+slide_viewer("1_intro_tidy-i/tidy_intro_day1_2_rename_subset_and_sort_with_dplyr.html")
+slide_viewer("1_intro_tidy-i/tidy_intro_day1_3_transform_pipe_and_aggregate_with_dplyr.html")
 
 ### Explore, read, write, create data ##########################################
 
 # Explore data -----------------------------------------------------------------
-library(pixarfilms)
+
 
 # Look at the `pixar_films` dataset using `print()`, glimpse()`, `skim()` and `View()`
 # What is the advantage of each of those ?
@@ -147,6 +165,10 @@ public_response
 # 2. With a single piped call, remove `cinema_score` from `public_response` and
 # `filter` to keep only movies that did 90 or better on all other review websites
 
+# summarize + group_by() -------------------------------------------------------
 
+academy
 
-
+# 1. Count the nominations for every movie (Hint:you'll need `filter()`)
+# 2. A nomination is 1 point, winning an award is 2 points, compute every movie's
+# score and show the top 3 (Hint: create a `points` column using `mutate()` and `case_when()`)
