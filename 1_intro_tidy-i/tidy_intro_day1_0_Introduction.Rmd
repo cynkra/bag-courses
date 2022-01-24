@@ -31,7 +31,70 @@ header-includes:
 }
 </style>
 
-# Tidyverse Intro I-0
+# Introduction
+
+Organization of half-day R courses:
+
+- Intro courses:
+  * Tidyverse intro I (this course)
+  * Tidyverse intro II
+  * Data visualization I
+  * Data visualization II
+- Advanced courses:
+  * Advanced tidyverse (this afternoon)
+  * R package creation
+  * Working with database systems
+  * Parallelization & efficient R programming
+  * Advanced topics (tbd)
+
+???
+Antoine and I would like to welcome you on behalf of Cynkra. In the coming weeks we will be organizing two sets or R courses, split up as introductory and advanced. Each course will be half a day and the advanced courses are held twice in succession. Today we're starting with a first tidyverse intro course.
+
+---
+
+# Dates
+
+- Week 1, Jan 25: Tidyverse intro I + Adv. Tidyverse (Antoine)
+- Week 2, Feb 1: Tidyverse intro II + Adv. Tidyverse (Antoine)
+- Week 3, Feb 8: R-pkg creation (Tobias)
+- Week 4, Feb 15: R-pkg creation (Tobias)
+- Week 5, Feb 22: Parallelization (Patrick), Feb 24: Data vis. & ggplot2 I (Antoine)
+- Week 6, Mar 1: Data vis. & ggplot2 II (Antoine) + Parallelization (Patrick)
+- Week 7, Mar 8: Databases (Kirill)
+- Week 8, Mar 15: Databases (Kirill)
+- Week 9, Mar 22: TBD (?)
+- Week 9, Mar 22: TBD (?)
+
+???
+Courses are typically held on Tuesdays, with the exception of the first intro course on data visualization. Intro courses are in the mornings, while advanced courses take place on afternoons. We initially were hoping to be able to carry out these courses with physical presence, but at least for now, this is not possible. Hopefully, this will change over the course of the next weeks to months. For each course, two people representing Cynkra will be available, a topic-specific expert, as well as myself in a coordinating role.
+
+---
+
+# Course material
+
+Our course material currently is available from a Github repository at
+
+https://github.com/cynkra/bag-courses
+
+![how to download](cynkra-repo-dl.png)
+
+???
+If anyone has issues accessing this material, let us know, it's important to us that you have the code available to experiment with.
+
+---
+
+# General remarks
+
+- Even though we are starting out remotely, we hope for these courses to be interactive: go ahead and ask if something is unclear!
+- We were asked to provide recordings of the courses for those of you who cannot join, so recording is activated
+- Per course unit, we offer 4 hours of follow up time; approach us with questions (nicolas@cynkra.com)!
+
+???
+We're not only here to tell you some new and interesting things about R, but we'd also like to help you apply that knowledge to actual scenarios you're dealing with. So in this course follow up time, we're happy to help you with questions you might have regarding course material. But we would like to also offer our help with questions that come up when applying R to your day to day tasks. If you have a question you'd like to discuss, write us an email and we will schedule a meeting.
+
+---
+
+# Tidyverse intro I-0
 
 * Introducing the tidyverse
 * Packages of the tidyverse
