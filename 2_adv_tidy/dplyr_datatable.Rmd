@@ -1,0 +1,226 @@
+---
+title: "Avanced Tidyverse: dplyr vs. data.table"
+author: ["Antoine & Nicolas", "cynkra GmbH"]
+date: "January 25, 2022"
+output:
+  cynkradown::cynkra_slides:
+    nature:
+      highlightStyle: github
+      highlightLines: true
+      countIncrementalSlides: false
+    seal: true
+fontsize: 10pt
+lang: english
+font: frutiger
+wide: false
+colorlinks: false
+logo: true
+header-includes:
+  - \usepackage{parskip}
+---
+
+<style type="text/css">
+.remark-code {
+    font-size: 12px;
+}
+.font17 {
+    font-size: 17px;
+}
+.font14 {
+    font-size: 14px;
+}
+</style>
+
+# {data.table} intro
+
+```{r dt-intro}
+library(data.table)
+sw_dt <- as.data.table(dplyr::starwars[, 1:7])
+sw_df <- as.data.frame(dplyr::starwars[, 1:7])
+```
+
+- {data.table} predates {dplyr} by many years (initial releases to CRAN in 2006 vs. 2014)
+- {data.table} does not follow many of the tidyverse paradigms
+- both packages are among the most popular on CRAN, each (indirectly) being used in [10-12% of CRAN](https://win-vector.com/2019/04/04/what-are-the-popular-r-packages/)
+- both essentially deal with data transformation tasks that come before analysis/modelling
+
+???
+The section is intended to give a quick introduction to the data.table package and compare and contrast some key aspects with dplyr; as the focus of this course is on tidyverse packages, we'll keep this short
+
+---
+
+# {data.table} basics
+
+A `data.table` object is basically a (i.e. inherits from) `data.frame` of base R which comes with a more powerful "extraction" operator
+
+```
+dat[i, j, by]
+
+## data.table:          i |                         j |       by
+## SQL:   where, order by | select, update            | group by
+## dplyr: filter, arrange | select, mutate, summarize | group_by
+```
+
+- concise syntax using a single function `[()` instead of the many dyplr verbs
+- API has been very stable over the past decade
+- allows for internal optimizations as the data required for each operation is known precisely
+
+
+???
+One of the ways data.table and dplyr differ in design is the terseness of its API. Where dplyr offers many different functions for transformation operations, data.table attempts to do many things with `[`.
+
+---
+
+# Row subsetting
+
+```{r dt-row-subset}
+sw_dt[height > 200 & mass < 100] # filter(sw_df, height > 200, mass < 100)
+
+head(sw_df[sw_df$height > 200 & sw_df$mass < 100, ])
+table(sw_df$height > 200 & sw_df$mass < 100, useNA = "ifany")
+```
+
+???
+In this row-subsetting example, the behavior of data.table and dplyr is fairly similar. Coming from base R on the other hand, the semantics of the extraction operator are quite different when passing a data.frame as opposed to a data.table object. For data.frames, NSE is used to enable more compact queries, the `i` argument is always used for row-selection and `NA` matches are removed
+
+---
+
+# Row rearranging
+
+Sorting starwars characters first by column eye color in ascending order, and then by height in descending order
+
+```{r dt-row-rearrange}
+head(sw_dt[order(eye_color, -height)])
+(x <- sample(1:10))
+x[order(x)]
+```
+
+???
+This is very similar to how such a task would be performed using base R, up to NSE. As a side remark: order is a base R function and for R versions prior to 3.3.0 in 2016, a call to `order()` in a data.table subsetting operation would be replaced by a data.table-supplied function that implemented a more efficient sorting algorithm. The performance improvement was big enough to have this moved over to the base R `sort()` function
+
+---
+
+# Column selection
+
+```{r, include = FALSE}
+width <- options(width = 40)
+```
+
+Selecting a single column will return a vector (cf. base R `data.frame` and tidyverse `tibble` objects)
+
+.pull-left[
+```{r dt-col-select}
+head(sw_dt[, name])
+head(sw_dt[, list(name)])
+```
+]
+
+.pull-right[
+```{r df-col-select}
+head(sw_df[, "name"])
+head(sw_df[, "name", drop = FALSE])
+```
+]
+
+```{r, include = FALSE}
+options(width)
+```
+
+???
+Implicit loss of a dimension can lead to buggy code, which is why this behavior was removed in `tibble`s; with data.frames, this can be prevented by wrapping column selections in a `list()` call
+
+---
+
+# Column renaming
+
+Using the base R list constructor, we can also rename the selected columns directly.
+
+```{r dt-col-rename}
+head(
+  sw_dt[
+    hair_color == "blond",
+    list(blond_name = name, blond_height = height)
+  ]
+)
+```
+
+???
+There also is the data.table supplied short form for the list constructor `.()`
+
+---
+
+# Computation on columns
+
+The expression supplied as `j` argument can be used quite flexibly to carry out computations on columns.
+
+```{r dt-col-compute}
+sw_dt[, sum(mass / (height / 100) ^ 2 > 40, na.rm = TRUE)]
+sw_dt[
+  hair_color == "brown",
+  list(m_hgt = mean(height, na.rm = TRUE), m_wgt = mean(mass, na.rm = TRUE))
+]
+```
+
+???
+loss of a dimension can be convenient, when we just quickly want to calculate a single value (e.g. how many of the starwars characters are overweight) and if we want to return multiple values, we can wrap the expression in a list, which will always return a `data.table`
+
+---
+
+# Grouped aggregations
+
+Using one (or several columns) to provide a grouping, the `j` expression is evaluated per group.
+
+```{r dt-grp-compute}
+col_mean <- function(...) lapply(list(...), mean, na.rm = TRUE)
+
+head(
+  sw_dt[, col_mean(m_hgt = height, m_wgt = mass), by = hair_color],
+  n = 3
+)
+
+sw_dt[, col_mean(m_hgt = height, m_wgt = mass),
+      by = cut(birth_year, c(0, 100, 200))]
+```
+
+???
+instead of constructing calls to mean, as we did on the previous slide we can also pass a function that iterates over arguments and calls mean per column. the argument passed as `by` can also be an expression
+
+---
+
+# Special symbols I
+
+`.SD`, `.N`, `.I`, `.BY`, `.GRP`, and `.NGRP` are read-only symbols for use in j.
+
+```{r dt-sd-compute}
+head(
+  sw_dt[, lapply(.SD, mean, na.rm = TRUE), by = hair_color,
+        .SDcols = c("height", "mass", "birth_year")]
+)
+```
+
+`.SD` is a `data.table` containing the group-wise subset of x.
+
+???
+By default, `.SD` contains all columns except for those that are used in the `by` argument. This can be modified by passing an `.SDcols` argument.
+
+---
+
+# Special symbols II
+
+- `.N`: number of rows in the group
+- `.GRP` group counter, `.NGRP` number of groups total
+- `.I` holds for each item in the group, its row location in x
+- `.BY` each item in by
+
+
+```{r dt-symbols}
+head(
+  sw_dt[,
+    list(.N, .GRP, .NGRP, I = list(.I), .BY),
+    by = hair_color
+  ]
+)
+```
+
+???
+these symbols can be useful and can also help with performance in certain scenarios. for example when requiring the current group size, this could be calculated by the user, but data.table requires this information internally and simply exposes it to the user so that it does not have to be recomputed.
