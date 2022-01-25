@@ -31,31 +31,30 @@ header-includes:
 }
 </style>
 
-<!-- TODO looks good! feels more polished than the first set of slides -->
-<!-- TODO maybe start out with `select()`? or do you want to do that after
-  `filter()`?, connect to base R `[()`?, also, `subset()` kind of combines
-  `select()` with `filter()`
--->
 
 # Tidyverse Advanced
 
+* Scripts vs functions
+* Style
+* Design
+
 ---
 
-# scripts and functions
+# Scripts and functions
 
-* script : A sequence of operation, storing previous results in the global
-  environment, importing/exporting at different stages
-* function : A separate piece of code with its own local variables
-  (with few exceptions, and fewer desirable exceptions)
+* Script : A sequence of operation, storing previous results in the global
+  environment (generally), typically doing several things : importing, exporting, analysis...
+* Function : A separate piece of code with its own local variables
+  (with few exceptions, and fewer desirable exceptions), typically doing one precise thing
   
 Scripts are encapsulated in **files**
 
 Functions are encapsulated in **objects**
-(defined in scripts)
+(defined in scripts!)
 
 ---
 
-# scripts are great!
+# Scripts are great!
 
 * We can run them as we code
 * No need to worry about argument, function names... 
@@ -67,50 +66,59 @@ Functions are encapsulated in **objects**
 
 ---
 
-# scripts are great but...
+# Scripts are great but...
 
-* I copy and pasted this part, now I need to change it, need to copy changes in 3 places.
-* Oops, it was 4. Forgot to change that one.
-* This looks like a copy paste of the above, but is it ?
-* What do I have in my workspace ?
-* Didn't I define this variable (oh maybe I cut and pasted it further down)?
-* Oops I think I overwrote this `n` variable I needed
-* I'll comment out this part, because we don't always need it.
-* After which script am I supposed to run this one ?
-* Should I run script 5A AND 5B, or 5A OR 5B ? Can I skip script 3 ? Why is there
-no script 4 ?
+* "I copy and pasted this part, now I need to change it, need to copy changes in 3 places."
+* "Oops, it was 4. Forgot to change that one."
+* "This looks like a copy paste of the above, but is it ?"
+* "What do I have in my workspace ?"
+* "Didn't I define this variable ?"
+* "Oops I think I overwrote this `n` variable I needed"
+* "I'll comment out this part, because we don't always need it."
+* "After which script am I supposed to run this one ?"
+* "Should I run script 5A AND 5B, or 5A OR 5B ? Can I skip script 3 ? Why is there
+no script 4 ?"
 
 ---
 
-# scripts are limited
+# Scripts are limited
 
 * R is so great to program interactively, would be a shame not to enjoy this feature
 * But once you have a chunk of code that does something precise (even if called once),
-  it's time to clean up the abstraction :
-  * name it
-  * define the inputs
-  * store it
-  * document it
-  * test it
-  
-??? We won't talk about documenting and testing in depth here, you'll learn about it in the
+  we might clean up the abstraction :
+  * Name it
+  * Define the inputs
+  * Store it
+  * Document it
+  * Test it
+
+???
+
+We won't talk about documenting and testing in depth here, you'll learn about it in the
 workshop about package development
 
 ---
 
-# functions
+# Functions
 
-* reusability 
+* Reusability 
   * Need to be correct in only one place! 
-* abstraction
-  * has a clear goal, summarized in its name and developped in its doc
+* Abstraction
+  * Has a clear goal, summarized in its name and developed in its doc
   * Has clear inputs
   * Has a clear output (might be a list, that's still one output!)
-* Show reader only what they need to know, each action that deserves a label
-  has one
   
 Thanks to these qualities, you can build functions on functions, and no
 need to understand or remember the details of the functions you call.
+
+---
+
+# Thumb rules
+
+There is no clear cut answer, but we sometimes read:
+
+* If you copy and pasted it 2 times, write a function
+* Scripts tell the "what", functions contain the "how"
 
 ---
 
@@ -118,7 +126,7 @@ need to understand or remember the details of the functions you call.
 
 Set of rules or guidelines used when writing the source code for a computer program.
 
-Deals with naming, spaces, identation, when to go to the line...
+Deals with naming, spaces, identation...
 
 * Good style is partly subjective though some decisions are arguably just good, i.e. indenting code
 * Better than any style : consistent style
@@ -159,23 +167,29 @@ progressively directly in your code.
 
 ---
 
+# Style
+
+Exercise!
+
+* Create a script with "wrong style", use `=` assignment, wrong identation and spaces.
+* Use {styler} to fix it
+
+---
+
 # Naming conventions
 
-Part of style but {styler} cannot help.
+Naming is hard! It's part of style but {styler} cannot help.
 
-Naming is hard!
-
-* Use "snake_case" (lower case, underscore separated) for all names
-  * `_` confusion with S3 methods
-  * No capital : easier to write nad type (controversial)
+* Use "snake_case" for all names
+  * readable and no confusion with S3 methods
 * Name functions as verbs :
-  * good : `analyse_prod()`
-  * bad : `prod_analysis()`, `analysed_prod()`
-* better have longer name than obscure name
-  * bad : `anprod()`
+  * Good : `format_data_for_analysis()`
+  * Bad : `analysis_data()`
+* Better have longer name than obscure name
+  * Bad : `format_dat()`
 * Avoid overriding base functions
 * Consistency in names, families of functions should have similarly named members
-  * bad : `check_not_too_big`, `fail_if_is_too_small()`
+  * Bad : `check_not_too_big`, `fail_if_is_too_small()`
 
 ---
 
@@ -183,9 +197,9 @@ Naming is hard!
 
 Design covers:
 
-* inputs
-* outputs/side effects
-* errors
+* Inputs
+* Outputs/side effects
+* Errors
 * ...
 
 https://design.tidyverse.org
@@ -203,7 +217,7 @@ it out if you want to perfect your understanding about function design.
 
 All inputs to a function should be explicit arguments. Avoid functions that surprise the user by returning different results when the inputs look the same.
 
-```{r}
+```{r, eval = FALSE}
 # setup.R
 path <- "my_file.csv"
 
@@ -228,9 +242,9 @@ down into small self contained pieces.
 
 # Avoid hidden arguments
 
-good
+Good
 
-```{r}
+```{r, eval = FALSE}
 # setup.R
 path <- "my_file.csv"
 
@@ -260,7 +274,7 @@ to function, so setting global variables seems so much easier: Don't do it!
 
 # Data, descriptors, details
 
-arguments should always come in  same order: data, descriptors, details
+Arguments should always come in  same order: data, descriptors, details
 
 * Data args : core data. Required, often called `data`, `x`, or `y`.
 
@@ -285,7 +299,7 @@ still a useful distinction
 
 # Data, descriptors, details
 
-categorize arguments of these functions : 
+Categorize arguments of these functions : 
 
 ```{r, eval = FALSE}
 # good
@@ -317,11 +331,11 @@ are not mandatory. That's confusing! And bring us to our next point
 
 Optional arguments should have defaults
 
-* If the argument is not used if missing, set its default value to `NULL`
+* If the argument is optional, and not use if missing, set its default value to `NULL`
 * If it has a default value that is too complex to integrate to the function
 definition, set the default to `NULL` and sort it out in the code (but document it properly!)
 * Avoid using the `missing()` function, unless it's to trigger an early failure
-* Use getOption() to allow the user to set default values. Only use to control the side-effects of a function, not its computed value!
+* Use `getOption()` to allow the user to set default values. Only use to control the side-effects of a function, not its computed value!
 
 ???
 
@@ -333,21 +347,21 @@ on the user having carefully read the documentation.
 
 # Enumerate possible options
 
-If an argument as a limited set of possible string values : use `match.arg()` or 
-`rlang::arg_match``
+If an argument has a limited set of possible string values : use `match.arg()` or 
+`rlang::arg_match`
 
-```{r}
+```{r, eval = FALSE}
+# from Usage section of `?difftime`
 difftime(time1, time2, tz, units = c("auto", "secs", "mins", "hours", "days", "weeks")) 
 ```
 
 And then body of the function contains:
 
-```{r}
+```{r, eval = FALSE}
 units <- match.arg(units)
 ```
 
 Users know the choices directly from autocomplete.
-
 
 ---
 
@@ -356,7 +370,7 @@ Users know the choices directly from autocomplete.
 * `...` should be placed before the details arguments.
 * Don’t use `...` just to save the user from typing c() (unless the function is purely for data structure creation).
 * Carefully consider if all other arguments need a `.` prefix in order to reduce the chance of spurious matches.
-* check that all inputs in `...` are evaluated.
+* Check that all inputs in `...` are evaluated.
 
 ---
 
@@ -364,7 +378,7 @@ Users know the choices directly from autocomplete.
 
 * In case of multiple outputs use a list and name elements
   * If it returns vectors of the same length, return a tibble
-* functions called primarily for their side-effects should invisibly return a useful value.
+* Functions called primarily for their side-effects should invisibly return a useful value.
 
 ---
 
@@ -374,12 +388,12 @@ The less you need to know about a function’s inputs to predict the type of its
 
 A function should ideally either :
 
-* always return the same type of thing
-* return something that can be trivially computed from its inputs.
+* Always return the same type of thing
+* Return something that can be trivially computed from its inputs.
 
 With a type-stable function:
 
-* output type depends only on input types (not values).
+* Output type depends only on input types (not values).
 * Order of `...` args does not affect the output type.
 
 ---
@@ -391,8 +405,6 @@ Can you predict those outputs ?
 ```{r, eval = FALSE}
 typeof(median(1:3))
 typeof(median(1:4))
-median(factor(1:2))
-median(Sys.Date() + 0:1)
 median("foo")
 median(c("foo", "bar"))
 ```
@@ -402,13 +414,11 @@ median(c("foo", "bar"))
 # Type-stability
 
 * It doesn't always return the same type of thing
-* The output type doesnt depends only on input types
+* The output type does not only depend on input types
 
 ```{r, error = TRUE}
 typeof(median(1:3))
 typeof(median(1:4))
-median(factor(1:2))
-median(Sys.Date() + 0:1)
 median("foo")
 median(c("foo", "bar"))
 ```
@@ -416,13 +426,7 @@ median(c("foo", "bar"))
 ???
 
 Problems created by this behavior are rare for `median()`, that's why the function
-stayed tis way, but you'll avoid issues by paying attention to those principles
-
-# Errors
-
-* don’t display the call when generating an error message.
-
-* if the same error is generated by multiple functions, you should extract it out into its own function, an error constructor.
+stayed this way, but you'll avoid issues by paying attention to those principles
 
 ---
 
@@ -430,9 +434,9 @@ stayed tis way, but you'll avoid issues by paying attention to those principles
 
 2 types :
 
-* those that give feedback to the user.
+* Those that give feedback to the user.
   * `print()` `message()`, `warning()`, `stop()`, `plot()` ...
-* those that change some global state.
+* Those that change some global state.
   * `library()`, `setwd()`, `assign()`, `write.csv()`, `set.seed()`,
   `install.packages()`...
   

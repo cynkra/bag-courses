@@ -99,8 +99,6 @@ We're not only here to tell you some new and interesting things about R, but we'
 * Introducing the tidyverse
 * Packages of the tidyverse
 * Getting help
-* Exploring data
-* Read and write the data
 
 ---
 

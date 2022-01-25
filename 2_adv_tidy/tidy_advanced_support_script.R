@@ -6,18 +6,12 @@
 
 # first install all these packages
 install.packages("tidyverse")
-# install.packages("pixarfilms")
-# install.packages("skimr")
-# install.packages("readxl")
-# install.packages("writexl")
-# install.packages("lubridate")
+install.packages("repurrrsive")
+install.packages("styler")
 
 # attach relevant packages
 library(tidyverse)
-library(pixarfilms)
-library(readxl)
-library(writexl)
-library(lubridate)
+library(repurrrsive)
 
 # display chosen presentation (it might take a few seconds to appear)
 slide_viewer <- function(path) {
@@ -224,7 +218,7 @@ filter(starwars[1:8], if_all(ends_with("color"), ~ .x == "unknown"))
 mean_by <- function(data, by, var) {
   data %>%
     group_by(by) %>%
-    summarise(avg = mean(var, na.rm = TRUE))
+    summarise(avg = mean(var, na.rm = TRUE), .groups = "drop")
 }
 mean_by(starwars, gender, height)
 
@@ -232,7 +226,7 @@ mean_by(starwars, gender, height)
 mean_by <- function(data, by, var) {
   data %>%
     group_by(across(all_of(by))) %>%
-    summarise(across(all_of(var), mean, na.rm = TRUE, .names = "avg"))
+    summarise(across(all_of(var), mean, na.rm = TRUE, .names = "avg"), .groups = "drop")
 }
 mean_by(starwars, "gender", "height")
 
@@ -240,7 +234,7 @@ mean_by(starwars, "gender", "height")
 mean_by <- function(data, by, var) {
 data %>%
   group_by({{ by }}) %>%
-  summarise(avg = mean({{ var }}))
+  summarise(avg = mean({{ var }}), .groups = "drop")
 }
 mean_by(starwars, gender, height)
 
@@ -248,6 +242,174 @@ mean_by(starwars, gender, height)
 mean_by <- function(data, by, var, prefix = "avg") {
   data %>%
     group_by({{ by }}) %>%
-    summarise("{prefix}_{{ var }}" := mean({{ var }}, na.rm = TRUE))
+    summarise("{prefix}_{{ var }}" := mean({{ var }}, na.rm = TRUE), .groups = "drop")
 }
 mean_by(starwars, gender, height)
+
+
+## Higher order functions ######################################################
+
+# The `map()` family - vectorization -------------------------------------------
+
+# fails
+starwars %>%
+  select(where(is.numeric)) %>%
+  median(na.rm = TRUE)
+
+summarize(starwars, across(where(is.numeric), median, na.rm = TRUE))
+
+# fails
+median(list(3, 2:4, 1:5))
+
+map(list(3, 2:4, 1:5), median)
+
+# The `map()` family - type stability ------------------------------------------
+
+?map
+
+sapply(list(3, 2:4, 1:5), median)
+sapply(list(3, 2:4, 1:5), range)
+
+map_dbl(list(3, 2:4, 1:5), median)
+
+# The `map()` family - extract by index ----------------------------------------
+
+x <- list(list(name = "John", surname = "Smith"), list(name = "Sarah", kid_ages = list(8, 10, 12)))
+map_chr(x, "name")
+map_chr(x, "surname", .default = "Unknown")
+map_dbl(x, list("kid_ages", 1), .default = NA)
+
+# The `map()` family - map_if(), map_at()  -------------------------------------
+
+?map_if
+
+map_if(list(3, 2:4, 1:5), ~length(.x) <= 3, median)
+map_at(list(3, 2:4, 1:5), 3, median)
+
+# The `map()` family - parallel iterations -------------------------------------
+
+x <- list(1, 1:2, 1:3)
+y <- c(10, 20, 30)
+map2(x, y, ~ .x + .y)
+
+x <- list(1, 1:2, 1:3)
+y <- c(10, 20, 30)
+z <- 1:3
+pmap(list(x, y, z), function(x, y, z) z * (x + y))
+
+x <- list(a = 1, b = 1:2, c = 1:3)
+imap_chr(x, ~paste0(.y, .x, collapse = "-"))
+
+# The `map()` family - walk() --------------------------------------------------
+
+objects_to_write <- list(iris = iris, cars = cars)
+iwalk(objects_to_write, ~ writeRDS(.x, paste0(.y, ".rds")))
+
+# The `map()` family - practice ------------------------------------------------
+
+sw_people_short <- sw_people[1:14]
+names(sw_people_short[[1]])
+
+View(sw_people_short)
+
+character_names <- map_chr(sw_people_short, "name")
+sw_people_named <- set_names(sw_people_short, character_names)
+
+map_dbl(sw_people_named, ~ length(.x[["starships"]]))
+map_chr(sw_people_named, "hair_color")
+map_lgl(sw_people_named, ~ .x[["gender"]] == "male")
+
+# `keep()` and `discard()` -----------------------------------------------------
+
+?keep
+
+x <- list(23, NA, 14, 7, NA, NA, 24, 98)
+discard(x, is.na)
+
+map_dbl(sw_people_named, ~ length(.x[["starships"]]))
+
+sw_starship_people <- keep(sw_people_named, ~ length(.x[["starships"]]) > 1)
+names(sw_starship_people)
+
+# `reduce()` and `accumulate()` ------------------------------------------------
+
+?reduce
+
+accumulate(letters[1:4], paste, sep = ".")
+reduce(letters[1:4], paste, sep = ".")
+
+paste4 <- function(out, input, sep = ".") {
+  # as soon as we have a more than 4 characters we're done
+  if (nchar(out) > 4) {
+    return(done(out))
+  }
+  paste(out, input, sep = sep)
+}
+accumulate(letters, paste4)
+reduce(letters, paste4)
+
+# function operators -----------------------------------------------------------
+
+?safely
+?insistently
+
+safe_log <- safely(log10)
+safe_log(100)
+safe_log("a")
+
+safe_log2 <- safely(log10, otherwise = NA)
+safe_log2("a")
+
+res <- map(list(100, 1000, "a"), safe_log2)
+map_dbl(res, "result")
+
+possible_log <- possibly(log10, NA)
+possible_log(100)
+possible_log("a")
+
+quiet_log <- quietly(log10)
+quiet_log(100)
+quiet_log(-10)
+
+slow_log <- slowly(log10)
+system.time(map_dbl(c(10, 100), slow_log))
+
+# function operators - insistently ---------------------------------------------
+
+# no need to understand this function, just know that it fails 2 times then returns "success!
+fake_connect <- local({
+  i <- 0
+  function(x) if ((i <<- i + 1) <= 2) stop("failing (", i, ")") else "success!"
+})
+
+# fail 2 times
+fake_connect()
+fake_connect()
+
+# return "success!"
+fake_connect()
+
+# redefine
+fake_connect <- local({
+  i <- 0
+  function(x) if ((i <<- i + 1) <= 2) stop("failing (", i, ")") else "success!"
+})
+
+insistent_connect <- insistently(fake_connect, rate_backoff(
+  # wait twice more each time
+  pause_base = 2,
+  # wait maximum 30 sec
+  pause_cap = 30,
+  # max number of tries
+  max_times = 10))
+insistent_connect()
+
+
+## Style and design ############################################################
+
+# Type stability ---------------------------------------------------------------
+
+typeof(median(1:3))
+typeof(median(1:4))
+median("foo")
+median(c("foo", "bar"))

@@ -59,19 +59,7 @@ In base R we also have functionals, `lapply()`, `sapply()`, `Reduce()`, `Filter(
 
 ---
 
-# Function operators
-
-The {purrr} package contains many function operators :
-
-* `negate()`
-* `safely()`, `quietly()`, `possibly()`, `insistently()`, `slowly()`
-
-
-The {purrr} package contains both kinds.
-
----
-
-# The `map()` family
+# The `map()` family - vectorization
 
 Many functions in R apply a transformation on all elements of a vector or list, we
 say they are vectorized :
@@ -87,7 +75,7 @@ for vectorized use.
 
 ---
 
-# The `map()` family
+# The `map()` family - vectorization
 
 Vectorized functions often have a very efficient implementations but not all
 functions are vectorized or have vectorized counterparts.
@@ -101,7 +89,7 @@ starwars %>%
 
 ---
 
-# The `map()` family
+# The `map()` family - vectorization
 
 We've seen already in our course on programming with {dplyr} how to apply
 the same transformation
@@ -121,7 +109,7 @@ median(list(3, 2:4, 1:5))
 
 ---
 
-# The `map()` family
+# The `map()` family - vectorization
 
 `map()` offers a general option to apply the same transformation to all elements of a list or vector
 
@@ -134,7 +122,7 @@ map(list(3, 2:4, 1:5), median)
 
 ---
 
-# The `map()` family
+# The `map()` family - type stability
 
 An important property of tidyverse functions is type stability.
 
@@ -157,7 +145,7 @@ The base function `lapply()` which is very close to `map()`, is type stable.
 
 ---
 
-# The `map()` family
+# The `map()` family - type stability
 
 {purrr} offers variants of `map()` that are designed to be type stable, we can
 guess the type of their output from their suffix : 
@@ -171,7 +159,7 @@ guess the type of their output from their suffix :
 
 ---
 
-# The `map()` family
+# The `map()` family - type stability
 
 In our example it's likely that we'd want to return a double vector, easier to
 manipulate than a list, so we can improve on our `map()` call
@@ -182,12 +170,12 @@ map_dbl(list(3, 2:4, 1:5), median)
 
 ---
 
-# The `map()` family
+# The `map()` family - extract by index 
 
-* character, numeric, or list can be given instead of a function
+* Character, numeric, or list can be given instead of a function
 * Character vectors index by name
-* numeric vectors index by position
-* lists index by position and name at different levels
+* Numeric vectors index by position
+* Lists index by position and name at different levels
 * If a component is not present, `.default` is returned
 
 ```{r}
@@ -199,12 +187,10 @@ map_dbl(x, list("kid_ages", 1), .default = NA)
 
 ---
 
-# The `map()` family
+# The `map()` family - `map_if()`
 
 `map_if()` and `map_at()` are variants of `map()` that apply a transformation
 on a subset of the input.
-In our example it's likely that we'd want to return a double vector, easier to
-manipulate than a list, so we can improve on our `map()` call
 
 ```{r}
 map_if(list(3, 2:4, 1:5), ~length(.x) <= 3, median)
@@ -212,7 +198,19 @@ map_if(list(3, 2:4, 1:5), ~length(.x) <= 3, median)
 
 ---
 
-# The `map()` family
+# The `map()` family - `map_at()`
+
+`map_if()` and `map_at()` are variants of `map()` that apply a transformation
+on a subset of the input.
+
+```{r}
+map_at(list(3, 2:4, 1:5), 3, median)
+```
+
+
+---
+
+# The `map()` family  - `map2()`
 
 `map2()` is a variant of `map()` that we can use to apply a transformation
 on pairs of elements coming from 2 parallel vectors or lists, given as the
@@ -228,7 +226,7 @@ map2(x, y, ~ .x + .y)
 
 ---
 
-# The `map()` family
+# The `map()` family  - `pmap()`
 
 `pmap()` is a variant of `map()` that we can use to apply a transformation
 on n-tuples of elements coming from n **p**arallel vectors or lists stored
@@ -243,15 +241,9 @@ z <- 1:3
 pmap(list(x, y, z), function(x, y, z) z * (x + y))
 ```
 
-???
-
-..1 and .x are equivalent
-
-..2 and .y are equivalent
-
 ---
 
-# The `map()` family
+# The `map()` family - parallel iterations
 
 `imap()` is a variant of `map2()` that takes its main input's names as the
 parallel vector
@@ -265,7 +257,7 @@ imap_chr(x, ~paste0(.y, .x, collapse = "-"))
 
 ---
 
-# The `map()` family
+# The `map()` family - `walk()`
 
 `walk()` is a variant of `map()` that returns its input invisibly
 
@@ -274,13 +266,13 @@ It should be called only for side effects
 It also comes with a family : `walk2()`, `iwalk()`, `pwalk()`
 
 ```{r, eval = FALSE}
-objects_to_write <- list(a = iris, b = cars)
+objects_to_write <- list(iris = iris, cars = cars)
 iwalk(objects_to_write, ~ writeRDS(.x, paste0(.y, ".rds")))
 ```
 
 ---
 
-# The `map()` family
+# The `map()` family - other variants
 
 Other variants include :
 
@@ -288,10 +280,11 @@ Other variants include :
 of a given depth.
 * `modify()` which works like `map()` but returns an object of the same
 type as its input (useful to use on data frames)
+* The `lmap()` family to apply on length 1 sublists rather than applying on elements
 
 ---
 
-# The `map()` family
+# The `map()` family - practice
 
 let's practice on a more complex list.
 
@@ -306,7 +299,7 @@ names(sw_people_short[[1]])
 
 ---
 
-# The `map()` family
+# The `map()` family - practice
 
 Using `View()` is useful to explore the structure
 
@@ -318,7 +311,7 @@ View(sw_people_short)
 
 ---
 
-# The `map()` family
+# The `map()` family - practice
 
 Extract the names of the characters and set them as the list's names :
 
@@ -329,7 +322,7 @@ sw_people_named <- set_names(sw_people_short, character_names)
 
 ---
 
-# The `map()` family
+# The `map()` family - practice
 
 How many starships has each character been in?
 
@@ -339,7 +332,7 @@ map_dbl(sw_people_named, ~ length(.x[["starships"]]))
 
 ---
 
-# The `map()` family
+# The `map()` family - practice
 
 What color is each characters hair?
 
@@ -349,7 +342,7 @@ map_chr(sw_people_named, "hair_color")
 
 ---
 
-# The `map()` family
+# The `map()` family - practice
 
 Is the character male?
 
@@ -507,11 +500,9 @@ but not displayed when the function is executed
 ```{r}
 quiet_log <- quietly(log10)
 quiet_log(100)
-quiet_log(-10)
 ```
 
 ---
-
 
 # Function operators
 
@@ -545,15 +536,42 @@ system.time(map_dbl(c(10, 100), slow_log))
 We can set a delay and many options such as the max amount of tries, the
 time between tries, and whether to make this time exponential with a chosen base.
 
-Say we have a function `connect_to_server()`
+---
 
-```{r, eval = FALSE}
-insistent_connect <- insistently(connect_to_server, rate_backoff(
+# Function operators
+
+Say we have a function that tries to connect to an unstable server
+
+```{r, error = TRUE}
+# no need to understand this function, just know that it fails 2 times then returns "success!
+fake_connect <- local({
+  i <- 0
+  function() if ((i <<- i + 1) <= 2) stop("failing (", i, ")") else "success!"
+})
+fake_connect()
+fake_connect()
+fake_connect()
+```
+
+---
+
+# Function operators
+
+Say we have a function that tries to connect to an unstable server
+
+```{r}
+# no need to understand this function, just know that it fails 2 times then returns "success!
+fake_connect <- local({
+  i <- 0
+  function() if ((i <<- i + 1) <= 2) stop("failing (", i, ")") else "success!"
+})
+
+insistent_connect <- insistently(fake_connect, rate_backoff(
   # wait twice more each time
   pause_base = 2,
   # wait maximum 30 sec
   pause_cap = 30,
   # max number of tries
   max_times = 10))
-connection <- insistent_connect()
+insistent_connect()
 ```
