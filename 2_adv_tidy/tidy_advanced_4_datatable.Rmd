@@ -73,7 +73,7 @@ bench::press(nrow = c(1e5, 1e7), grp = c(1e3, 1e6), {
 An extensive benchmark suite is available from [data.table maintainers](https://h2oai.github.io/db-benchmark/) comparing several such frameworks.
 
 ???
-looking at median runtimes, for small data, dplyr takes around 2-3 as much time, going up to almost 20x and even up to 40x for the case where we have more groups than rows; having a 10x speedups becomes very relevant as soon as the operation in question takes on the order of minutes
+looking at median runtimes, for small data, dplyr takes around 2-3 as much time, going up to around 10x and even up to 50x for the case where we have more groups than rows; having a 10x speedups becomes very relevant as soon as the operation in question takes on the order of minutes; don't put too much emphasis on exact speedup numbers, this is just a small example
 
 ---
 
@@ -316,3 +316,6 @@ visit %>%
   summarise(V1 = mean(measurement), .groups = "drop")
 ```
 ]
+
+???
+the reason for finishing with this example is that it nicely illustrates that some things might not be efficiently possible with either framework; if one comes across a scenario as such, it might very well become important to leverage data.table functionality, even though most of the remaining analysis code is dplyr-centric
