@@ -15,6 +15,7 @@ install.packages("lubridate")
 # attach relevant packages
 library(tidyverse)
 library(pixarfilms)
+library(skimr)
 library(readxl)
 library(writexl)
 library(lubridate)
@@ -33,7 +34,6 @@ slide_viewer("1_intro_tidy-i/tidy_intro_day1_3_transform_pipe_and_aggregate_with
 ### Explore, read, write, create data ##########################################
 
 # Explore data -----------------------------------------------------------------
-
 
 # Look at the `pixar_films` dataset using `print()`, glimpse()`, `skim()` and `View()`
 # What is the advantage of each of those ?
@@ -132,17 +132,16 @@ pixar_films
 
 # 1.  Return the 2 first rows using `slice()` then using `slice_head()`
 # 2.  Return the 2 last rows using `slice()` then using `slice_tail()`
-# 3.  Return the row of the shortest movie using `slice_min()`
-# 4.  Return the rows of the 15%  longest movie using `slice_max()` and the `prop` argument
+# 3.  Return the rows of the 2 shortest movies using `slice_min()`
+# 4.  Return the rows of the 15%  longest movies using `slice_max()` and the `prop` argument
 
 # `arrange()` ------------------------------------------------------------------
 
 pixar_films
 
-# 1.  Arrange `pixar_films` by name but starting with missing values (Hint: use `is.na()`).
-# 2.  Arrange `pixar_films` to find the shortest film with a "PG" rating
-# 3.  Arrange `pixar_films` to find longest film with a "PG" rating
-# 4.  Redo 2 and 3 and make sure to have the result on top (Hint: use `film_rating != "PG"`)
+# 1.  Arrange `pixar_films` by name but starting with missing values (Hint: sort using `!is.na()` and break the ties with `film`)
+# 2.  Arrange `pixar_films` to have the shortest film with a "PG" rating on top (Hint: use `film_rating != "PG"`)
+# 3.  Arrange `pixar_films` by name but starting with missing values (Hint: sort using `!is.na()` and break the ties with `film`)
 
 # `mutate()` -------------------------------------------------------------------
 
