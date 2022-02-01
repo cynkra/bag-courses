@@ -27,8 +27,8 @@ slide_viewer <- function(path) {
   file.copy(path, tmp)
   rstudioapi::viewer(tmp)
 }
-slide_viewer("1_intro_tidy-i/tidy_intro_day1_0_Introduction.html")
-slide_viewer("1_intro_tidy-i/tidy_intro_day1_1_Explore_read_write_create.html")
+slide_viewer("1-1_intro_tidy-i/tidy_intro_day1_0_Introduction.html")
+slide_viewer("1-1_intro_tidy-i/tidy_intro_day1_1_Explore_read_write_create.html")
 
 ### Explore, read, write, create data ##########################################
 

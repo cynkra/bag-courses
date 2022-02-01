@@ -19,8 +19,8 @@ slide_viewer <- function(path) {
   file.copy(path, tmp)
   rstudioapi::viewer(tmp)
 }
-slide_viewer("1_intro_tidy-i/tidy_intro_day2_1_rename_subset_and_sort_with_dplyr.html")
-slide_viewer("1_intro_tidy-i/tidy_intro_day2_2_transform_pipe_and_aggregate_with_dplyr.html")
+slide_viewer("1-2_intro_tidy-ii/tidy_intro_day2_1_rename_subset_and_sort_with_dplyr.html")
+slide_viewer("1-2_intro_tidy-ii/tidy_intro_day2_2_transform_pipe_and_aggregate_with_dplyr.html")
 
 ### Introduction to {dplyr} ####################################################
 
