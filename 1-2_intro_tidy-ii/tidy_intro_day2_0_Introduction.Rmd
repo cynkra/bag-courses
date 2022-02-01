@@ -421,13 +421,15 @@ x != y
 
 .pull-left[
 ```{r}
-(a <- x >= 2)
+a <- x >= 2
+a
 ```
 ]
 
 .pull-right[
 ```{r}
-(b <- x < 4)
+b <- x < 4
+b
 ```
 ]
 
@@ -447,7 +449,7 @@ a | b
 ```
 ]
 
-We also have `&&` and `||` (discussed later)
+We also have `&&` and `||` (not discussed here)
 
 ---
 
