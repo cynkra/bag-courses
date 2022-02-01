@@ -1,7 +1,7 @@
 ---
-title: "Tidyverse Intro I"
+title: "Tidyverse Intro II"
 author: ["Antoine & Nicolas", "cynkra GmbH"]
-date: "January 25, 2022"
+date: "February 1st, 2022"
 output:
   cynkradown::cynkra_slides:
     nature:
