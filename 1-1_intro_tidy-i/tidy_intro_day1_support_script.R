@@ -51,7 +51,7 @@ browseURL("file.xlsx")
 
 # Read data --------------------------------------------------------------------
 
-# * Read back csv and xlsx datasets we saved
+# * Read back pixar_films from the csv and xlsx datasets we saved
 # * `pixar_films_from_csv`
 # * `pixar_films_from_xlsx`
 # * Look at the output displayed by `readr::read_csv()`
