@@ -558,6 +558,48 @@ bigger than 2.
 
 ---
 
+# Solutions I
+
+1. Create a vector called `v1` containing the numbers 2, 5, 8, 12 and 16.
+
+```{r}
+v1 <- c(2, 5, 8, 12, 16)
+```
+
+1. Extract the values at positions 2 and 5 from `v1`.
+
+```{r}
+v1[c(2, 5)]
+```
+
+1. Use `x:y` notation to make a second vector called `v2` containing the
+numbers 5 to 9.
+
+```{r}
+v2 <- 5:9
+```
+
+---
+
+# Solutions II
+
+1. Subtract `v2` from `v1` and look at the result.
+
+```{r}
+v1 - v2
+```
+
+1. Generate a vector with 1000 standard-normally distributed random numbers
+(use `rnorm()`). Store the result as `v3`. Extract the numbers that are
+bigger than 2.
+
+```{r}
+v3 <- rnorm(1000)
+v3[v3 > 2]
+```
+
+---
+
 # Matrices
 
 Internally represented by a column-major vector, with dimensions.
@@ -601,6 +643,57 @@ notation).
 1. Extract the 5. and the 6. row of the matrix.
 1. Compare the classes of the results to the previous two subsetting operations.
 1. Modify 3., so that it returns the same class as 4.
+
+---
+
+# Solutions I
+
+1. Create a 10 x 10 matrix that contains a sequence of numbers (use the `:`
+notation).
+
+```{r}
+mat <- matrix(1:100, ncol = 10)
+```
+
+1. Extract the 2. column of the matrix.
+
+```{r}
+mat[, 2]
+```
+
+1. Extract the 5. row of the matrix.
+
+```{r}
+v1 <- mat[5, ]
+```
+
+---
+
+# Solutions II
+
+1. Extract the 5. and the 6. row of the matrix.
+
+```{r}
+v2 <- mat[c(5, 6), ]
+```
+
+1. Compare the classes of the results to the previous two subsetting operations.
+
+```{r}
+class(v1)
+class(v2)
+```
+
+---
+
+# Solutions III
+
+1. Modify 3., so that it returns the same class as 4.
+
+```{r}
+(v3 <- mat[5, , drop = FALSE])
+class(v3)
+```
 
 ---
 
@@ -719,8 +812,7 @@ dim(d)
 
 # Exercises (Homework)
 
-1. Generate two random vectors of length 10, `a`, and `b`. Combine them in a
-list, call it `l1`.
+1. Generate two random vectors of length 10 (for example using `runif()`), `a`, and `b`. Combine them in a list, call it `l1`.
 1. Compare the classes of `l1[2]` and `l1[[2]]`. Can you explain the
 difference?
 1. How many rows does the data frame `mtcars` contain? The dataset is available by default. Just try typing `mtcars`.
@@ -729,261 +821,51 @@ difference?
 
 ---
 
-# Control flow
+# Solutions I
+
+1. Generate two random vectors of length 10 (for example using `runif()`), `a`, and `b`. Combine them in a list, call it `l1`.
+
+```{r}
+a <- runif(10)
+b <- runif(10)
+l1 <- list(a, b)
+```
+
+1. Compare the classes of `l1[2]` and `l1[[2]]`. Can you explain the
+difference?
 
 .pull-left[
-```{r }
-for (i in 1:8) {
-  print(i)
-}
-
-i <- 1
-while(i < 5) {
-  print(i)
-  i <- i + 1
-}
+```{r}
+class(l1[2])
 ```
 ]
 
 .pull-right[
 ```{r}
-for (i in 1:8) {
-  if (i < 5) print(-i) else print(i)
-}
-
-for (i in 1:8) {
-  if (i == 5)
-    break
-  print(i)
-}
-
+class(l1[[2]])
 ```
 ]
+
+Subsetting a list using `[`, will return a list, whereas using `[[`, the object contained in the list at the given position is returned.
 
 ---
 
-# Functions
+# Solutions II
 
-We can define and invoke (or call) a function as
-
-.pull-left[
-```{r }
-half <- function(x) {
-  x / 2
-}
-```
-]
-
-.pull-right[
-```{r }
-y <- c(3, 2, 1)
-half(y)
-```
-]
-
-The following definitions are equivalent
-
-.pull-left[
-```{r}
-half <- function(x) {
-  z <- x / 2
-  z
-}
-```
-]
-
-.pull-right[
-```{r}
-half <- function(x) {
-  z <- x / 2
-  return(z)
-}
-```
-]
-
-.pull-left[
-```{r}
-half <- function(x) x / 2
-```
-]
-
-.pull-right[
-```{r}
-half <- \(x) x / 2
-```
-]
-
----
-
-# Default arguments
+1. How many rows does the data frame `mtcars` contain? The dataset is available by default. Just try typing `mtcars`.
 
 ```{r}
-fraction <- function(x, denominator = 2) {
-  x / denominator
-}
-y <- seq(2, 8, by = 2)
+nrow(mtcars)
 ```
 
-.pull-left[
-```{r}
-fraction(y)
-fraction(y, 2)
-fraction(y, denominator = 2)
-```
-]
-
-.pull-right[
-```{r}
-fraction(y, 4)
-fraction(denominator = 4, y)
-fraction(denominator = 4, x = y)
-```
-]
-
----
-
-# Variable scope I
-
-.pull-left[
-```{r}
-frac_1 <- function(x, denominator = 2) {
-  result <- x / denominator
-  result
-}
-```
-]
-
-.pull-right[
-```{r}
-frac_2 <- function(x) {
-  denominator <- denominator + 1
-  x / denominator
-}
-```
-]
-
-.pull-left[
-```{r}
-result <- "hello"
-frac_1(seq(2, 8, by = 2))
-result
-```
-]
-
-.pull-right[
-```{r}
-denominator <- 1
-frac_2(seq(2, 8, by = 2))
-denominator
-```
-]
-
----
-
-# Variable scope II
-
-```{r, eval = FALSE}
-x <- 1
-
-fun_a <- function() x
-
-fun_b <- function() {
-  x <- 2
-  fun_a()
-}
-
-fun_b()
-```
-
-.pull-left[
-lexical scoping: look at where function is defined
-```
-## [1] 1
-```
-]
-
-.pull-right[
-dynamic scoping: look at where function is called
-```
-## [1] 2
-```
-]
-
-R is a lexically scoped language.
-
----
-
-# Higher-order functions
-
-In R, a function can take a function as an argument or return a function.
-
-.pull-left[
-```{r}
-frac_fun_gen <- function(denominator) {
-  function(x) x / denominator
-}
-
-half <- frac_fun_gen(2)
-class(half)
-
-x <- 1:4
-half(x)
-```
-]
-
-.pull-right[
-```{r}
-op_fun <- function(x, y, op_fun) {
-  op_fun(x, y)
-}
-
-x <- 1:4
-
-x / 2
-`/`(x, 2)
-
-op_fun(x, 2, `/`)
-```
-]
-
----
-
-# Base R higher order functions
+1. Of what type is the column `vs` of `mtcars`.
 
 ```{r}
-x <- list(a = 1:20, b = 21:40, c = 41:60)
+class(mtcars$v2)
 ```
 
-.pull-left[
+1. Try printing the column names of `mtcars`.
+
 ```{r}
-lapply(x, sum)
+colnames(mtcars)
 ```
-]
-
-.pull-right[
-```{r}
-res <- list()
-
-for (i in names(x)) {
-  res[[i]] <- sum(x[[i]])
-}
-
-res
-```
-]
-
-(It would be better to pre-allocate a list of the correct length, for example as `res <- vector("list", length(x)`.)
-
----
-
-# Exercises (Homework)
-
-1. Write a function `add_constant` that adds a constant to a vector, and set
-the default value of the constant to 10.
-1. Apply `add_constant` to all columns of `mtcars`.
-1. Use `lapply` to calculate the mean of each variable in the `mtcars`
-dataset. Convert the resulting list to a vector.
-1. Using `lapply`, generate a list containing 10 random vectors of random
-length between 1 and 10.
-1. Use the help to see what the `colSums()` function does. Using `apply`, try
-writing your own version, `colSums2()`.
