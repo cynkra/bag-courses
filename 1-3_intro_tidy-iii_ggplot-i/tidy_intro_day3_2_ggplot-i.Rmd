@@ -225,7 +225,7 @@ ggplot(mpg, aes(x = displ, y = hwy, color = drv)) +
 
 # `geom_*` functions
 
-"geom" =geometric object
+"geom" = geometric object
 
 We have a lot of those! Documented at : https://ggplot2.tidyverse.org/reference/#section-layer-geoms
 
@@ -241,34 +241,23 @@ The most popular ones are
 
 - `geom_point()`
 - `geom_line()`
-- `geom_histogram()`
-- `geom_boxplot()`
 - `geom_bar()`
 - `geom_col()`
+- `geom_histogram()`
+- `geom_boxplot()`
 
 ---
 
 # `geom_point()`
 
-We know a bit about it, but let's check `?geom_point` to check which aesthetics
-are available we see: 
-
-- `x`
-- `y`
-- `alpha`
-- `colour` (or `color`)
-- `fill`
-- `group`
-- `shape`
-- `size`
-- `stroke`
+We know a bit about it now, we'll use it to show case some features that can
+be generalized to other features.
 
 ---
 
 # `geom_point()`
 
-We know a bit about it, but let's check `?geom_point` to check which aesthetics
-are available we see: 
+In `?geom_point` we find which aesthetics are available : 
 
 - `x`
 - `y`
@@ -404,36 +393,148 @@ ggplot(mpg, aes(x = displ, y = hwy, color = drv)) +
 
 # `geom_point()`
 
-`aes()` is used to map variables to components.
-
-**HOW** values are translated to a specific aesthetic
-value (color, shape, coordinate) can be tweaked by `scale_*` functions, that
-we'll see later. 
-
-Teaser :
+`geom_*()` functions have a `position` argument to adjust the position.
+A common use for `geom_point()` is `position = "jitter"`, also good to handle
+overplotting!
 
 ```{r}
 ggplot(mpg, aes(x = displ, y = hwy, color = drv)) +
-  geom_point() +
-  scale_color_manual(values = c("4" = "red", f = "blue", r = "green"))
+  geom_point(position = "jitter")
 ```
 
 ---
 
+# `geom_point()`
+
+`position = "jitter"` and `position = position_jitter()` are equivalent,
+but `position_jitter()` offers more control through arguments
+
+```{r}
+ggplot(mpg, aes(x = displ, y = hwy, color = drv)) +
+  geom_point(position = position_jitter(width = .5, height = .5))
+```
+
+---
+
+# `geom_point()`
+
+`geom_*()` functions have a `position` argument to adjust the position.
+A common use for `geom_point()` is
+
+```{r}
+ggplot(mpg, aes(x = displ, y = hwy, color = drv)) +
+  geom_point(position = "jitter")
+```
+
+---
+
+# `geom_point()`
+
+Exercise :
+
+Using the iris dataset and the knowledge from the previous slides, draw
+a series of scatterplot using different aesthetics mapped to variables or constant.
+
+---
+
+# `geom_line()`
+
+`?geom_line`
+
+aesthetics :
+
+* x
+* y
+* alpha
+* colour
+* group
+* linetype
+* size
+
+---
+
+# `geom_line()`
+
+```{r}
+ggplot(mpg, aes(x = displ, y = hwy, linetype = drv)) +
+  geom_line()
+```
+
+---
+
+# `geom_bar()`
+
+* x
+* y
+* alpha
+* colour
+* fill
+* group
+* linetype
+* size
+
+---
+
+# `geom_bar()`
+
+```{r}
+ggplot(mpg, aes(x = drv, fill = drv)) +
+  geom_bar()
+```
+
+---
+
+# `geom_bar()`
+
+```{r}
+ggplot(mpg, aes(x = drv, fill = class)) +
+  geom_bar()
+```
+
+---
+
+# `geom_bar()`
+
+`geom_bar()` is often used with `position = "dodge"` (equivalent to `position = position_dodge()`)
+
+```{r}
+ggplot(mpg, aes(x = drv, fill = class)) +
+  geom_bar(position = "dodge")
+```
+
+---
+
+# `geom_bar()`
+
+`position = "fill"` is useful too!
+
+```{r}
+ggplot(mpg, aes(x = drv, fill = class)) +
+  geom_bar(position = "fill")
+```
+
+---
+
+<!-- 
+
+Current work stop here, below that is just copy pasted from the vistransrep course
+
+I think from there one example per geom is enough
+since we've seen all common aesthetics
+
+I talked about position already because I don't think we want a general approach
+for a beginner course so we can skip it for the rest
+
+I don't think we should talk about stat_* nor computed variables in this course
+
+-->
 
 
-
-
-
-
-The most popular ones are
-
-- `geom_point()`
-- `geom_line()`
+- `geom_col()`
 - `geom_histogram()`
 - `geom_boxplot()`
-- `geom_bar()`
-- `geom_col()`
+
+--------------------------------------------------------------------------------
 
 The `geom_*` family can be divided into three parts:
 
@@ -441,7 +542,6 @@ The `geom_*` family can be divided into three parts:
 
 - `geom_hist()`
 - `geom_bar()`
-- `geom_density()`
 
 **Two variable plots**
 
