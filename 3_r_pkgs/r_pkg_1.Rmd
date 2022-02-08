@@ -1,0 +1,177 @@
+---
+title: "R package creation"
+author: ["Tobias & Nicolas", "cynkra GmbH"]
+date: "February 08, 2022"
+output:
+  cynkradown::cynkra_slides:
+    nature:
+      highlightStyle: github
+      highlightLines: true
+      countIncrementalSlides: false
+    seal: true
+fontsize: 10pt
+lang: english
+font: frutiger
+wide: false
+colorlinks: false
+logo: true
+header-includes:
+  - \usepackage{parskip}
+---
+
+<style type="text/css">
+.remark-code {
+    font-size: 12px;
+}
+.font17 {
+    font-size: 17px;
+}
+.font14 {
+    font-size: 14px;
+}
+</style>
+
+# Introduction
+
+Organization of half-day R courses:
+
+- Intro courses:
+  * Tidyverse intro I
+  * Tidyverse intro II
+  * Data visualization I
+  * Data visualization II
+- Advanced courses:
+  * Advanced tidyverse
+  * R package creation (this course)
+  * Working with database systems
+  * Parallelization & efficient R programming
+  * Advanced topics (tbd)
+
+???
+
+<!-- Antoine and I would like to welcome you on behalf of Cynkra. In the coming weeks we will be organizing two sets or R courses, split up as introductory and advanced. Each course will be half a day and the advanced courses are held twice in succession. Today we're starting with a first tidyverse intro course. -->
+
+---
+
+# Dates
+
+- Week 1, Jan 25: Tidyverse intro I + Adv. Tidyverse (Antoine)
+- Week 2, Feb 1: Tidyverse intro II + Adv. Tidyverse (Antoine)
+- Week 3, Feb 8: R-pkg creation (Tobias)
+- Week 4, Feb 15: R-pkg creation (Tobias)
+- Week 5, Feb 22: Parallelization (Patrick), Feb 24: Data vis. & ggplot2 I (Antoine)
+- Week 6, Mar 1: Data vis. & ggplot2 II (Antoine) + Parallelization (Patrick)
+- Week 7, Mar 8: Databases (Kirill)
+- Week 8, Mar 15: Databases (Kirill)
+- Week 9, Mar 22: TBD (?)
+- Week 9, Mar 22: TBD (?)
+
+???
+<!-- Courses are typically held on Tuesdays, with the exception of the first intro course on data visualization. Intro courses are in the mornings, while advanced courses take place on afternoons. We initially were hoping to be able to carry out these courses with physical presence, but at least for now, this is not possible. Hopefully, this will change over the course of the next weeks to months. For each course, two people representing Cynkra will be available, a topic-specific expert, as well as myself in a coordinating role. -->
+
+---
+
+# Course material
+
+Our course material currently is available from a Github repository at
+
+https://github.com/cynkra/bag-courses
+
+![how to download](cynkra-repo-dl.png)
+
+???
+<!-- If anyone has issues accessing this material, let us know, it's important to us that you have the code available to experiment with. -->
+
+---
+
+# General remarks
+
+<!-- - Even though we are starting out remotely, we hope for these courses to be interactive: go ahead and ask if something is unclear! -->
+<!-- - We were asked to provide recordings of the courses for those of you who cannot join, so recording is activated -->
+- Per course unit, we offer 4 hours of follow up time; approach us with questions (nicolas@cynkra.com)!
+
+???
+<!-- We're not only here to tell you some new and interesting things about R, but we'd also like to help you apply that knowledge to actual scenarios you're dealing with. So in this course follow up time, we're happy to help you with questions you might have regarding course material. But we would like to also offer our help with questions that come up when applying R to your day to day tasks. If you have a question you'd like to discuss, write us an email and we will schedule a meeting. -->
+
+---
+
+# R package creation
+
+Overview:
+
+1. Advantages of R packages over R scripts
+1. Advantages of R scripts over R packages
+1. How to start? Minimum requirements for an R package
+1. Useful little helpers: `{usethis}`
+1. `{devtools}` (maybe in best practices?)
+1. Bring it to github (CRAN not covered here)
+1. Documentation
+1. Classes
+1. Methods vs. functions
+1. Errors and warnings
+1. Best practices
+1. Further reading
+
+---
+
+**Advantages of R packages over R scripts**
+
+- function as single source of truth (optimized implementation, higher chance of being bug-free)
+- sometimes related tasks can be solved by one function byintroducing an argument
+- arguments, behavior and result can be well documented (cf. later)
+- functions can be tested (cf. later)
+- can be shared easily
+- 
+
+---
+
+**Advantages of R scripts over R packages**
+
+- Package is less flexible (but can be extended)
+- Tasks for which script is preferrable: 
+    1. "Quickly checking something, but should be reproducible"
+    1. Data exploration
+    1. Report creation (function to create report could also be part of a package though)
+
+---
+
+**How to start? Minimum requirements for an R package**
+
+In order for RStudio to recognize a project as a package, it needs:
+
+File `DESCRIPTION`, which contains:
+- package name
+- authors, etc.
+- dependencies on other packages
+- etc.
+
+If this file is there:
+- a `Build`-pane is available in RStudio
+- the package can be installed to the library
+
+---
+
+**How to start? Minimum requirements for an R package**
+
+Further requirements:
+- File `NAMESPACE` containing information about imported and exported functions
+- Directory `R/`, containing the files with the function definitions
+
+--- 
+
+
+Best practices:
+
+- Unit testing with `{testthat}`
+- GitHub Actions (e.g. `{testthat}`)
+
+---
+
+**Further reading**
+
+- https://r-pkgs.org/index.html
+- https://www.pipinghotdata.com/posts/2020-10-25-your-first-r-package-in-1-hour/
+- https://cran.r-project.org/doc/manuals/R-exts.html#Creating-R-packages
+
+
+---
