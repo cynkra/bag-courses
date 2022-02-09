@@ -286,6 +286,8 @@ We can run `vignette("ggplot2-specs")` to know more about them, but to summarize
 
 # `geom_point()`
 
+`color`
+
 We can use a constant value for these aesthetics if we provide it in the geom
 function.
 
@@ -306,20 +308,6 @@ To map a variable to an aesthetics we use `aes()` and the mapping argument of
 ```{r}
 ggplot(mpg, aes(x = displ, y = hwy, color = drv)) +
   geom_point()
-```
-
----
-
-# `geom_point()`
-
-`color`
-
-We can use a constant value for these aesthetics if we provide it in the geom
-function.
-
-```{r}
-ggplot(mpg, aes(x = displ, y = hwy)) +
-  geom_point(color = "red")
 ```
 
 ---
