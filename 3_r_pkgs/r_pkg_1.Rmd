@@ -1,7 +1,7 @@
 ---
 title: "R package creation"
 author: ["Tobias & Nicolas", "cynkra GmbH"]
-date: "February 08, 2022"
+date: "February 15, 2022"
 output:
   cynkradown::cynkra_slides:
     nature:
@@ -55,15 +55,15 @@ Organization of half-day R courses:
 
 # Dates
 
-- Week 1, Jan 25: Tidyverse intro I + Adv. Tidyverse (Antoine)
+- Week 1, Jan 25: Tidyverse intro I (Antoine)
 - Week 2, Feb 1: Tidyverse intro II + Adv. Tidyverse (Antoine)
-- Week 3, Feb 8: R-pkg creation (Tobias)
+- Week 3, Feb 8: Adv. Tidyverse (Antoine)
 - Week 4, Feb 15: R-pkg creation (Tobias)
-- Week 5, Feb 22: Parallelization (Patrick), Feb 24: Data vis. & ggplot2 I (Antoine)
+- Week 5, Feb 22: R-pkg creation (Tobias), Feb 24: Data vis. & ggplot2 I (Antoine)
 - Week 6, Mar 1: Data vis. & ggplot2 II (Antoine) + Parallelization (Patrick)
-- Week 7, Mar 8: Databases (Kirill)
+- Week 7, Mar 8: Parallelization (Patrick)
 - Week 8, Mar 15: Databases (Kirill)
-- Week 9, Mar 22: TBD (?)
+- Week 9, Mar 22: Databases (Kirill)
 - Week 9, Mar 22: TBD (?)
 
 ???
