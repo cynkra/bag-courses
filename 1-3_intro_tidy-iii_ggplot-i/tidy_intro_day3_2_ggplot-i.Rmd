@@ -336,7 +336,7 @@ ggplot(mpg, aes(x = displ, y = hwy, color = drv, shape = drv)) +
 
 # `geom_point()`
 
-`shape`
+but `shape` can also be defined with the same symbol for all points in the plot
 
 ```{r}
 ggplot(mpg, aes(x = displ, y = hwy, color = drv)) +
@@ -358,7 +358,7 @@ ggplot(mpg, aes(x = displ, y = hwy, color = drv, size = cty)) +
 
 # `geom_point()`
 
-`size` should be mapped to a continuous variable
+but it can also be defined with an specific `size` for all points in the plot
 
 ```{r}
 ggplot(mpg, aes(x = displ, y = hwy, color = drv)) +
