@@ -358,10 +358,10 @@ Overview:
 1. Advantages of R packages over R scripts
 1. Advantages of R scripts over R packages
 1. How to start?
+1. Documentation
 1. Useful little helpers: `{usethis}`
 1. `{devtools}` (maybe in best practices?)
 1. Bring it to github (CRAN not covered here)
-1. Documentation
 1. Classes
 1. Methods vs. functions
 1. Errors and warnings
@@ -561,16 +561,151 @@ The documentation of a function consists of:
 &lt;/tbody&gt;
 &lt;/table&gt;
 ]
+
 ---
 
+# Documentation
+
+Important: In order to make a function available to users loading the package, there needs to be a tag `@export`.
+
+Usually only exported functions are documented in that detailed manner.
+
+It helps to add commentary to internal functions, too though.
+
+All non-exported (so-called internal) functions are available for all other internal or exported functions of the package.
+They are available in the console as well after calling `devtools::load_all()` while working on the package.
+
+---
+
+# Exercise (~10min)
+
+- Make up a function (does not have to be particularly useful) with at least one argument and save its implementation in a file in the directory `R/` of your new package.
+- Add documentation to the function (tip: `Code` -&gt; `Insert Roxygen Skeleton` while cursor in the function definition block; or `Ctrl+Alt+Shift+R`, if you manage)
+- Make sure the function will be exported
+- Make sure the associated `Rd`-file exists and is filled according to your documentation
+- &quot;Build&quot; your package using the `Build` pane or `devtools::build()` and use the function
+
+One more tip: in general it can be helpful to &quot;cheat&quot; by checking out how the documentation is done in packages on GitHub that have a documentation feature you would like for your own package.
+
+---
+
+# Useful little helpers: `{usethis}`
+
+We have already encountered a few functions from the package {devtools} (`document()`, `load_all()`, `build()`) that help with package development.
+
+Another package that has this goal is {usethis}.
+It is full of helper functions that facilitate package creation. We already encountered `usethis::create_package(&quot;&quot;)`.
+
+---
+
+
+# Classes
+
+The only type of classes covered here are S3 classes (by far the most prevalent ones).
+
+.font17[
+Resources for learning about S4, e.g.:
+- https://stat.ethz.ch/R-manual/R-devel/library/methods/html/Introduction.html
+- https://adv-r.hadley.nz/s4.html
+
+Resources for learning about Reference Classes (R5), e.g.:
+- https://stat.ethz.ch/R-manual/R-devel/library/methods/html/refClass.html
+- https://www.datamentor.io/r-programming/reference-class/
+- (http://adv-r.had.co.nz/R5.html)
+
+Resources for learning about R6, e.g.:
+- https://r6.r-lib.org/articles/Introduction.html
+- https://adv-r.hadley.nz/r6.html
+]
+
+---
+
+# S3 Classes
+
+.font17[
+Resources for learning (more) about S3, e.g.:
+- https://stat.ethz.ch/R-manual/R-devel/library/methods/html/Introduction.html
+- https://adv-r.hadley.nz/s3.html
+]
+
+The S3 class is one of the 4 (if you include R6) object oriented classes in R.
+If the object `x` is NOT of a base type, the S3 class is the answer to the call `class(x)`.
+
+---
+
+# S3 Classes
+
+.font17[
+These are examples of base types (do NOT possess an attribute `class` &amp; `is.object(x)` is `FALSE`):
+
+`NULL`, `logical`, `integer`, `double`, `complex`, `character`, `list`, `raw`
+]
+
+How to define a new S3 class in a package?
+
+You do not have to explicitly define/export a class.
+You set an attribute `class` with the name of the new class, that&#39;s all, e.g.:
+
+```r
+create_new_class &lt;- function(x) {structure(x, class = c(&quot;new_class&quot;, class(x)))}
+class(create_new_class(1))
+```
+
+```
+## [1] &quot;new_class&quot; &quot;numeric&quot;
+```
+
+```r
+class(create_new_class(&quot;1&quot;))
+```
+
+```
+## [1] &quot;new_class&quot; &quot;character&quot;
+```
+
+
+---
+
+S3 Classes
+
+Now we know how to invent a new class.
+Why would we want that though?
+
+For example:
+- We want to deal with objects which are a certain subset of another class or base type.
+- We are dealing with data for which certain rules apply and we want to exploit the associated possibilities.
+
+R example:
+
+```r
+create_digit &lt;- function(x) {
+  if (!is.integer(x) | x &lt; 0 | x &gt; 9) stop(&quot;This is not a digit&quot;)
+  structure(x, class = c(&quot;digit&quot;, class(x)))
+}
+```
+
+
+
+---
+
+# Methods vs. functions
+
+
+
+---
+
+# Errors and warnings
+
+---
 
 # Best practices
 
 - &quot;Functions should do one thing only, but do it well&quot;
 &lt;!-- you&#39;ll see if your function is too much &quot;all over the place&quot; while documenting its behavior. --&gt;
 - But: wrapper functions can of course also be useful
-- Create errors with descriptive message
 - Comments in the code for others/your future self
+- Errors with descriptive messages
+- Consider writing a vignette once the pkg takes on shape
 - Unit testing with `{testthat}`
 - GitHub Actions (e.g. `R CMD check`)
 
@@ -584,10 +719,13 @@ The documentation of a function consists of:
 - https://cran.r-project.org/doc/manuals/R-exts.html#Creating-R-packages
 - Create a website for your package (e.g. on GitHub Pages): https://pkgdown.r-lib.org/index.html
 
+Release to CRAN:
+
+- e.g. https://r-pkgs.org/release.html
+
 ---
 
 **Additional material**
-
 
 
 ---
