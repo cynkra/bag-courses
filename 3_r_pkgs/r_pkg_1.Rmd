@@ -264,6 +264,7 @@ An exhaustive intro to documentation can be found here:
 # Documentation
 
 The documentation of a function consists of:
+.font17[
 ```{r echo=FALSE,out.width=='70%'}
 tibble::tribble(
   ~Field, ~Tag, ~Info,
@@ -275,9 +276,9 @@ tibble::tribble(
   "Value", "@return", "What is the output of the function?",
   "...", "...", "Others: see references"
 ) %>% 
-  knitr::kable() %>% 
-  kable_styling(font_size = 15)
+  knitr::kable()
 ```
+]
 
 ---
 
@@ -285,8 +286,9 @@ tibble::tribble(
 # Best practices
 
 - "Functions should do one thing only, but do it well"
-<!-- 1. you'll see if your function is too much "all over the place" when you're documenting its behavior. -->
+<!-- you'll see if your function is too much "all over the place" while documenting its behavior. -->
 - But: wrapper functions can of course also be useful
+- Create errors with descriptive message
 - Comments in the code for others/your future self
 - Unit testing with `{testthat}`
 - GitHub Actions (e.g. `R CMD check`)
