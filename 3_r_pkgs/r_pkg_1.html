@@ -90,6 +90,230 @@ left: 0 !important;
 }
 }
 </style>
+    <script>$(document).ready(function(){
+    if (typeof $('[data-toggle="tooltip"]').tooltip === 'function') {
+        $('[data-toggle="tooltip"]').tooltip();
+    }
+    if ($('[data-toggle="popover"]').popover === 'function') {
+        $('[data-toggle="popover"]').popover();
+    }
+});
+</script>
+    <style type="text/css">
+.lightable-minimal {
+border-collapse: separate;
+border-spacing: 16px 1px;
+width: 100%;
+margin-bottom: 10px;
+}
+.lightable-minimal td {
+margin-left: 5px;
+margin-right: 5px;
+}
+.lightable-minimal th {
+margin-left: 5px;
+margin-right: 5px;
+}
+.lightable-minimal thead tr:last-child th {
+border-bottom: 2px solid #00000050;
+empty-cells: hide;
+}
+.lightable-minimal tbody tr:first-child td {
+padding-top: 0.5em;
+}
+.lightable-minimal.lightable-hover tbody tr:hover {
+background-color: #f5f5f5;
+}
+.lightable-minimal.lightable-striped tbody tr:nth-child(even) {
+background-color: #f5f5f5;
+}
+.lightable-classic {
+border-top: 0.16em solid #111111;
+border-bottom: 0.16em solid #111111;
+width: 100%;
+margin-bottom: 10px;
+margin: 10px 5px;
+}
+.lightable-classic tfoot tr td {
+border: 0;
+}
+.lightable-classic tfoot tr:first-child td {
+border-top: 0.14em solid #111111;
+}
+.lightable-classic caption {
+color: #222222;
+}
+.lightable-classic td {
+padding-left: 5px;
+padding-right: 5px;
+color: #222222;
+}
+.lightable-classic th {
+padding-left: 5px;
+padding-right: 5px;
+font-weight: normal;
+color: #222222;
+}
+.lightable-classic thead tr:last-child th {
+border-bottom: 0.10em solid #111111;
+}
+.lightable-classic.lightable-hover tbody tr:hover {
+background-color: #F9EEC1;
+}
+.lightable-classic.lightable-striped tbody tr:nth-child(even) {
+background-color: #f5f5f5;
+}
+.lightable-classic-2 {
+border-top: 3px double #111111;
+border-bottom: 3px double #111111;
+width: 100%;
+margin-bottom: 10px;
+}
+.lightable-classic-2 tfoot tr td {
+border: 0;
+}
+.lightable-classic-2 tfoot tr:first-child td {
+border-top: 3px double #111111;
+}
+.lightable-classic-2 caption {
+color: #222222;
+}
+.lightable-classic-2 td {
+padding-left: 5px;
+padding-right: 5px;
+color: #222222;
+}
+.lightable-classic-2 th {
+padding-left: 5px;
+padding-right: 5px;
+font-weight: normal;
+color: #222222;
+}
+.lightable-classic-2 tbody tr:last-child td {
+border-bottom: 3px double #111111;
+}
+.lightable-classic-2 thead tr:last-child th {
+border-bottom: 1px solid #111111;
+}
+.lightable-classic-2.lightable-hover tbody tr:hover {
+background-color: #F9EEC1;
+}
+.lightable-classic-2.lightable-striped tbody tr:nth-child(even) {
+background-color: #f5f5f5;
+}
+.lightable-material {
+min-width: 100%;
+white-space: nowrap;
+table-layout: fixed;
+font-family: Roboto, sans-serif;
+border: 1px solid #EEE;
+border-collapse: collapse;
+margin-bottom: 10px;
+}
+.lightable-material tfoot tr td {
+border: 0;
+}
+.lightable-material tfoot tr:first-child td {
+border-top: 1px solid #EEE;
+}
+.lightable-material th {
+height: 56px;
+padding-left: 16px;
+padding-right: 16px;
+}
+.lightable-material td {
+height: 52px;
+padding-left: 16px;
+padding-right: 16px;
+border-top: 1px solid #eeeeee;
+}
+.lightable-material.lightable-hover tbody tr:hover {
+background-color: #f5f5f5;
+}
+.lightable-material.lightable-striped tbody tr:nth-child(even) {
+background-color: #f5f5f5;
+}
+.lightable-material.lightable-striped tbody td {
+border: 0;
+}
+.lightable-material.lightable-striped thead tr:last-child th {
+border-bottom: 1px solid #ddd;
+}
+.lightable-material-dark {
+min-width: 100%;
+white-space: nowrap;
+table-layout: fixed;
+font-family: Roboto, sans-serif;
+border: 1px solid #FFFFFF12;
+border-collapse: collapse;
+margin-bottom: 10px;
+background-color: #363640;
+}
+.lightable-material-dark tfoot tr td {
+border: 0;
+}
+.lightable-material-dark tfoot tr:first-child td {
+border-top: 1px solid #FFFFFF12;
+}
+.lightable-material-dark th {
+height: 56px;
+padding-left: 16px;
+padding-right: 16px;
+color: #FFFFFF60;
+}
+.lightable-material-dark td {
+height: 52px;
+padding-left: 16px;
+padding-right: 16px;
+color: #FFFFFF;
+border-top: 1px solid #FFFFFF12;
+}
+.lightable-material-dark.lightable-hover tbody tr:hover {
+background-color: #FFFFFF12;
+}
+.lightable-material-dark.lightable-striped tbody tr:nth-child(even) {
+background-color: #FFFFFF12;
+}
+.lightable-material-dark.lightable-striped tbody td {
+border: 0;
+}
+.lightable-material-dark.lightable-striped thead tr:last-child th {
+border-bottom: 1px solid #FFFFFF12;
+}
+.lightable-paper {
+width: 100%;
+margin-bottom: 10px;
+color: #444;
+}
+.lightable-paper tfoot tr td {
+border: 0;
+}
+.lightable-paper tfoot tr:first-child td {
+border-top: 1px solid #00000020;
+}
+.lightable-paper thead tr:last-child th {
+color: #666;
+vertical-align: bottom;
+border-bottom: 1px solid #00000020;
+line-height: 1.15em;
+padding: 10px 5px;
+}
+.lightable-paper td {
+vertical-align: middle;
+border-bottom: 1px solid #00000010;
+line-height: 1.15em;
+padding: 7px 5px;
+}
+.lightable-paper.lightable-hover tbody tr:hover {
+background-color: #F9EEC1;
+}
+.lightable-paper.lightable-striped tbody tr:nth-child(even) {
+background-color: #00000008;
+}
+.lightable-paper.lightable-striped tbody td {
+border: 0;
+}
+</style>
     <style type="text/css">
 
 @font-face {
@@ -283,6 +507,10 @@ class: center, middle, inverse, title-slide
 }
 &lt;/style&gt;
 
+
+
+
+
 # Introduction
 
 Organization of half-day R courses:
@@ -390,7 +618,7 @@ Overview:
 # R scripts vs. R packages
 
 Summary:
-- R package stores functions (and/or data)
+- R package provides functionality; contains functions (and/or data)
 - R script tries solving a certain, rather specific task at hand &lt;-&gt; R packages provide the tools
 
 &lt;!-- # FIXME: some more content? --&gt;
@@ -439,6 +667,13 @@ There are 2 obvious and easy ways of creating a new valid package in R/RStudio i
 
 ---
 
+# Exercise
+
+- Create an R package (or 2) in one of the shown ways.
+- Examine the files/directories that were created.
+
+---
+
 # Documentation
 
 Can be found in the `Rd`-files in directory `man/`.
@@ -469,9 +704,7 @@ hello()
 
 # Documentation
 
-Use `{roxygen2}` for automating documentation process as much as possible.
-
-General info and vignettes on: https://roxygen2.r-lib.org/index.html
+Use `{roxygen2}` for automating the documentation process as much as possible.
 
 Example:
 
@@ -495,14 +728,74 @@ hello &lt;- function() {
 
 These specially formatted comments will be translated and written to respective `Rd`-file when calling `devtools::document()` or keyboard shortcut `Ctrl+Shift+D`.
 
-An exhaustive 
+An exhaustive intro to documentation can be found here:
+- General info and vignettes on: https://roxygen2.r-lib.org/index.html
+- Workflow/general best practices: https://r-pkgs.org/man.html
 
 ---
 
+# Documentation
+
+The documentation of a function consists of:
+&lt;table class=&quot;table&quot; style=&quot;font-size: 15px; margin-left: auto; margin-right: auto;&quot;&gt;
+ &lt;thead&gt;
+  &lt;tr&gt;
+   &lt;th style=&quot;text-align:left;&quot;&gt; Field &lt;/th&gt;
+   &lt;th style=&quot;text-align:left;&quot;&gt; Tag &lt;/th&gt;
+   &lt;th style=&quot;text-align:left;&quot;&gt; Info &lt;/th&gt;
+  &lt;/tr&gt;
+ &lt;/thead&gt;
+&lt;tbody&gt;
+  &lt;tr&gt;
+   &lt;td style=&quot;text-align:left;&quot;&gt; Header &lt;/td&gt;
+   &lt;td style=&quot;text-align:left;&quot;&gt;  &lt;/td&gt;
+   &lt;td style=&quot;text-align:left;&quot;&gt; Description in a few words &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style=&quot;text-align:left;&quot;&gt; Description &lt;/td&gt;
+   &lt;td style=&quot;text-align:left;&quot;&gt; @description &lt;/td&gt;
+   &lt;td style=&quot;text-align:left;&quot;&gt; Description in one or two short sentences &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style=&quot;text-align:left;&quot;&gt; Usage &lt;/td&gt;
+   &lt;td style=&quot;text-align:left;&quot;&gt;  &lt;/td&gt;
+   &lt;td style=&quot;text-align:left;&quot;&gt; Is added automatically by {roxygen2}/&#39;devtools::document()&#39; &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style=&quot;text-align:left;&quot;&gt; Arguments &lt;/td&gt;
+   &lt;td style=&quot;text-align:left;&quot;&gt; @param/@inheritParams &lt;/td&gt;
+   &lt;td style=&quot;text-align:left;&quot;&gt; Requirements for the arguments &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style=&quot;text-align:left;&quot;&gt; Details &lt;/td&gt;
+   &lt;td style=&quot;text-align:left;&quot;&gt; @details &lt;/td&gt;
+   &lt;td style=&quot;text-align:left;&quot;&gt; Additional useful info for the user &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style=&quot;text-align:left;&quot;&gt; Value &lt;/td&gt;
+   &lt;td style=&quot;text-align:left;&quot;&gt; @return &lt;/td&gt;
+   &lt;td style=&quot;text-align:left;&quot;&gt; What is the output of the function? &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style=&quot;text-align:left;&quot;&gt; ... &lt;/td&gt;
+   &lt;td style=&quot;text-align:left;&quot;&gt; ... &lt;/td&gt;
+   &lt;td style=&quot;text-align:left;&quot;&gt; Others: see references &lt;/td&gt;
+  &lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+
+---
+
+
 # Best practices
 
+- &quot;Functions should do one thing only, but do it well&quot;
+&lt;!-- 1. you&#39;ll see if your function is too much &quot;all over the place&quot; when you&#39;re documenting its behavior. --&gt;
+- But: wrapper functions can of course also be useful
+- Comments in the code for others/your future self
 - Unit testing with `{testthat}`
-- GitHub Actions (e.g. `{testthat}`)
+- GitHub Actions (e.g. `R CMD check`)
+
 
 ---
 

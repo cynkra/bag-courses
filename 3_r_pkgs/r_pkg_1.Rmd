@@ -31,6 +31,15 @@ header-includes:
 }
 </style>
 
+
+```{r echo=FALSE,include=FALSE}
+library(tidyverse)
+library(kableExtra)
+library(knitr)
+library(rmarkdown)
+```
+
+
 # Introduction
 
 Organization of half-day R courses:
@@ -138,7 +147,7 @@ Overview:
 # R scripts vs. R packages
 
 Summary:
-- R package stores functions (and/or data)
+- R package provides functionality; contains functions (and/or data)
 - R script tries solving a certain, rather specific task at hand <-> R packages provide the tools
 
 <!-- # FIXME: some more content? -->
@@ -190,7 +199,7 @@ There are 2 obvious and easy ways of creating a new valid package in R/RStudio i
 # Exercise
 
 - Create an R package (or 2) in one of the shown ways.
-- Have a look at which files/directories were created.
+- Examine the files/directories that were created.
 
 ---
 
@@ -223,12 +232,10 @@ hello()
 
 # Documentation
 
-Use `{roxygen2}` for automating documentation process as much as possible.
-
-General info and vignettes on: https://roxygen2.r-lib.org/index.html
+Use `{roxygen2}` for automating the documentation process as much as possible.
 
 Example:
-```{r}
+```{r eval=FALSE}
 #' Title
 #'
 #' @return Prints "Hello, World!" in green.
@@ -248,14 +255,42 @@ hello <- function() {
 
 These specially formatted comments will be translated and written to respective `Rd`-file when calling `devtools::document()` or keyboard shortcut `Ctrl+Shift+D`.
 
-An exhaustive 
+An exhaustive intro to documentation can be found here:
+- General info and vignettes on: https://roxygen2.r-lib.org/index.html
+- Workflow/general best practices: https://r-pkgs.org/man.html
 
 ---
 
+# Documentation
+
+The documentation of a function consists of:
+```{r echo=FALSE,out.width=='70%'}
+tibble::tribble(
+  ~Field, ~Tag, ~Info,
+  "Header", "", "Description in a few words",
+  "Description", "@description", "Description in one or two short sentences",
+  "Usage", "", "Is added automatically by {roxygen2}/'devtools::document()'",
+  "Arguments", "@param/@inheritParams", "Requirements for the arguments",
+  "Details", "@details", "Additional useful info for the user",
+  "Value", "@return", "What is the output of the function?",
+  "...", "...", "Others: see references"
+) %>% 
+  knitr::kable() %>% 
+  kable_styling(font_size = 15)
+```
+
+---
+
+
 # Best practices
 
+- "Functions should do one thing only, but do it well"
+<!-- 1. you'll see if your function is too much "all over the place" when you're documenting its behavior. -->
+- But: wrapper functions can of course also be useful
+- Comments in the code for others/your future self
 - Unit testing with `{testthat}`
-- GitHub Actions (e.g. `{testthat}`)
+- GitHub Actions (e.g. `R CMD check`)
+
 
 ---
 
