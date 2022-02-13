@@ -113,11 +113,11 @@ Overview:
 1. How to start?
 1. Documentation
 1. Useful little helpers: `{usethis}`
-1. `{devtools}` (maybe in best practices?)
-1. Bring it to github (CRAN not covered here)
+1. Dependencies
 1. Classes
 1. Methods vs. functions
 1. Errors and warnings
+1. Tests
 1. Best practices
 1. Further reading
 
@@ -256,7 +256,7 @@ hello <- function() {
 These specially formatted comments will be translated and written to respective `Rd`-file when calling `devtools::document()` or keyboard shortcut `Ctrl+Shift+D`.
 
 An exhaustive intro to documentation can be found here:
-- General info and vignettes on: https://roxygen2.r-lib.org/index.html
+- General info and vignettes on subtopics: https://roxygen2.r-lib.org/index.html
 - Workflow/general best practices: https://r-pkgs.org/man.html
 
 ---
@@ -288,7 +288,7 @@ Important: In order to make a function available to users loading the package, t
 
 Usually only exported functions are documented in that detailed manner.
 
-It helps to add commentary to internal functions, too though.
+It helps to add commentary to internal functions too though.
 
 All non-exported (so-called internal) functions are available for all other internal or exported functions of the package.
 They are available in the console as well after calling `devtools::load_all()` while working on the package.
@@ -303,7 +303,9 @@ They are available in the console as well after calling `devtools::load_all()` w
 - Make sure the associated `Rd`-file exists and is filled according to your documentation
 - "Build" your package using the `Build` pane or `devtools::build()` and use the function
 
+.font17[
 One more tip: in general it can be helpful to "cheat" by checking out how the documentation is done in packages on GitHub that have a documentation feature you would like for your own package.
+]
 
 ---
 
@@ -311,11 +313,26 @@ One more tip: in general it can be helpful to "cheat" by checking out how the do
 
 We have already encountered a few functions from the package {devtools} (`document()`, `load_all()`, `build()`) that help with package development.
 
-Another package that has this goal is {usethis}.
-It is full of helper functions that facilitate package creation. We already encountered `usethis::create_package("")`.
+Another package that has the same goal is [{usethis}](https://usethis.r-lib.org/).
+It is full of helper functions that facilitate package creation. We already encountered `usethis::create_package()`.
 
 ---
 
+# `{usethis}`
+
+.font17[
+Here a small subset of the services it provides:
+- `use_git()` -> initialises a git repository
+- `use_mit_license()` -> adds MIT (permissive) license to your package
+- `use_github()` -> takes a local project to GitHub ("private"/"public" optional)
+- `use_test()` -> creates a associated test file for the currently open R-file for unit testing
+- `use_github_action_check_standard()` & friends -> adds infrastructure for GitHub Actions to perform R CMD check on various platforms on push/PR to default branch
+- `use_vignette()` -> creates a new Rmd-vignette file
+- `use_pkgdown_github_pages()` -> Sets up automatic deployment of customizable `{pkgdown}`-page via GitHub Actions
+- ...
+]
+
+---
 
 # Classes
 
@@ -377,24 +394,70 @@ S3 Classes
 Now we know how to invent a new class.
 Why would we want that though?
 
+.font17[
 For example:
 - We want to deal with objects which are a certain subset of another class or base type.
 - We are dealing with data for which certain rules apply and we want to exploit the associated possibilities.
+]
 
 R example:
 ```{r}
 create_digit <- function(x) {
-  if (!is.integer(x) | x < 0 | x > 9) stop("This is not a digit")
+  if (length(x) > 1 || !is.integer(x) || x < 0 || x > 9) stop("This is not a digit")
   structure(x, class = c("digit", class(x)))
 }
+digit <- create_digit(4L)
+digit
 ```
-
-
 
 ---
 
 # Methods vs. functions
 
+Print method:
+```{r}
+print.digit <- function(x, ...) {
+  cat(paste0("Digit: ", as.character(x)))
+  invisible(x)
+}
+digit
+```
+
+Summing up digits(?) -> might return another digit:
+```{r}
+sum.digit <- function(..., na.rm = FALSE) {
+    x <- purrr::map_int(list(...), as.integer)
+    sum_x <- sum(x, na.rm = na.rm)
+    create_digit(sum_x %% 10L)
+}
+sum(digit, digit, digit)
+```
+
+etc.
+
+---
+
+# Methods vs. functions
+
+.font17[
+Alternatively, you can also use your own functions to create the same behavior.
+The caveat is that you will need to test for the object class yourself and throw an error if a "wrong" object is passed to the function.
+
+It's good practice to choose a descriptive function name.
+
+In our case, possibly:
+]
+```{r}
+sum_digit_modulo_10 <- function(..., na.rm = FALSE) {
+  if (any(map_lgl(list(...), ~ class(.x)[[1]] != "digit"))) {
+    stop("not all elements of `...` are of class `digit`.")
+  }
+  x <- purrr::map_int(list(...), as.integer)
+  sum_x <- sum(x, na.rm = na.rm)
+  create_digit(sum_x %% 10L)
+}
+sum_digit_modulo_10(digit, digit, digit)
+```
 
 
 ---
