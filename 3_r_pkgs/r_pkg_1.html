@@ -363,8 +363,8 @@ Overview:
 1. Dependencies
 1. Classes
 1. Methods vs. functions
-1. Errors and warnings
 1. Tests
+1. Errors and warnings
 1. Best practices
 1. Further reading
 
@@ -752,22 +752,21 @@ etc.
 
 .font17[
 Alternatively, you can also use your own functions to create the same behavior.
-The caveat is, that you will need to test for the object class yourself and throw an error if a &quot;wrong&quot; object is passed to the function.
+The caveat is that you will need to test for the object class yourself and throw an error if a &quot;wrong&quot; object is passed to the function.
 
 It&#39;s good practice to choose a descriptive function name.
-
 
 In our case, possibly:
 ]
 
 ```r
 sum_digit_modulo_10 &lt;- function(..., na.rm = FALSE) {
-    if (any(map_lgl(list(...), ~ class(.x)[[1]] != &quot;digit&quot;))) {
-      stop(&quot;not all elements of `...` are of class `digit`.&quot;)
-    }
-    x &lt;- purrr::map_int(list(...), as.integer)
-    sum_x &lt;- sum(x, na.rm = na.rm)
-    create_digit(sum_x %% 10L)
+  if (any(map_lgl(list(...), ~ class(.x)[[1]] != &quot;digit&quot;))) {
+    stop(&quot;not all elements in `...` are of class `digit`.&quot;)
+  }
+  x &lt;- purrr::map_int(list(...), as.integer)
+  sum_x &lt;- sum(x, na.rm = na.rm)
+  create_digit(sum_x %% 10L)
 }
 sum_digit_modulo_10(digit, digit, digit)
 ```
@@ -775,6 +774,48 @@ sum_digit_modulo_10(digit, digit, digit)
 ```
 ## Digit: 2
 ```
+
+
+---
+
+# Unit testing
+
+.font14[Wikipedia: &quot;In computer programming, unit testing is a software testing method by which individual units of source code — sets of one or more computer program modules together with associated control data, usage procedures, and operating procedures — are tested to determine whether they are fit for use&quot;]
+
+Unit tests ensure that the functions work in the way that they&#39;re supposed to:
+- given input -&gt; given output
+- no warnings or errors under &quot;normal&quot; circumstances
+- all function arguments are touched in the tests
+- warns consistently
+- errors consistently
+
+---
+
+# Unit testing
+
+Package {testthat}
+
+Example tests in the case of `create_digit()` and `sum_digit_modulo_10()`:
+
+```r
+testthat::expect_identical(
+  create_digit(6L),
+  structure(6L, class = c(&quot;digit&quot;, &quot;integer&quot;))
+)
+testthat::expect_error(
+  create_digit(6),
+  &quot;This is not a digit&quot;
+)
+testthat::expect_identical(
+  sum_digit_modulo_10(create_digit(6L), create_digit(9L)),
+  create_digit(5L)
+)
+testthat::expect_error(
+  sum_digit_modulo_10(6L, 9L),
+  &quot;are of class `digit`&quot;
+)
+```
+
 
 
 ---

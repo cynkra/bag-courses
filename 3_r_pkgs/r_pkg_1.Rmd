@@ -116,8 +116,8 @@ Overview:
 1. Dependencies
 1. Classes
 1. Methods vs. functions
-1. Errors and warnings
 1. Tests
+1. Errors and warnings
 1. Best practices
 1. Further reading
 
@@ -450,7 +450,7 @@ In our case, possibly:
 ```{r}
 sum_digit_modulo_10 <- function(..., na.rm = FALSE) {
   if (any(map_lgl(list(...), ~ class(.x)[[1]] != "digit"))) {
-    stop("not all elements of `...` are of class `digit`.")
+    stop("not all elements in `...` are of class `digit`.")
   }
   x <- purrr::map_int(list(...), as.integer)
   sum_x <- sum(x, na.rm = na.rm)
@@ -458,6 +458,46 @@ sum_digit_modulo_10 <- function(..., na.rm = FALSE) {
 }
 sum_digit_modulo_10(digit, digit, digit)
 ```
+
+---
+
+# Unit testing
+
+.font14[Wikipedia: "In computer programming, unit testing is a software testing method by which individual units of source code — sets of one or more computer program modules together with associated control data, usage procedures, and operating procedures — are tested to determine whether they are fit for use"]
+
+Unit tests ensure that the functions work in the way that they're supposed to:
+- given input -> given output
+- no warnings or errors under "normal" circumstances
+- all function arguments are touched in the tests
+- warns consistently
+- errors consistently
+
+---
+
+# Unit testing
+
+Package {testthat}
+
+Example tests in the case of `create_digit()` and `sum_digit_modulo_10()`:
+```{r}
+testthat::expect_identical(
+  create_digit(6L),
+  structure(6L, class = c("digit", "integer"))
+)
+testthat::expect_error(
+  create_digit(6),
+  "This is not a digit"
+)
+testthat::expect_identical(
+  sum_digit_modulo_10(create_digit(6L), create_digit(9L)),
+  create_digit(5L)
+)
+testthat::expect_error(
+  sum_digit_modulo_10(6L, 9L),
+  "are of class `digit`"
+)
+```
+
 
 
 ---
