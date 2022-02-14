@@ -375,7 +375,7 @@ Overview:
 - Best case: Package provides function(s) for working on re-occurring tasks
 - function as single source of truth (optimized implementation, higher chance of being bug-free)
 - sometimes related tasks can be solved by one function by introducing an argument
-- arguments, behavior and result can be well documented (cf. later)
+- arguments, behaviour and result can be well documented (cf. later)
 - functions can be tested (cf. later)
 - can be shared easily
 
@@ -751,7 +751,7 @@ etc.
 # Methods vs. functions
 
 .font17[
-Alternatively, you can also use your own functions to create the same behavior.
+Alternatively, you can also use your own functions to create the same behaviour.
 The caveat is that you will need to test for the object class yourself and throw an error if a &quot;wrong&quot; object is passed to the function.
 
 It&#39;s good practice to choose a descriptive function name.
@@ -775,7 +775,6 @@ sum_digit_modulo_10(digit, digit, digit)
 ## Digit: 2
 ```
 
-
 ---
 
 # Unit testing
@@ -793,9 +792,9 @@ Unit tests ensure that the functions work in the way that they&#39;re supposed t
 
 # Unit testing
 
-Package {testthat}
+Package {testthat} (https://testthat.r-lib.org/index.html)
 
-Example tests in the case of `create_digit()` and `sum_digit_modulo_10()`:
+Examples for tests in the case of `create_digit()` and `sum_digit_modulo_10()` (these tests are actually executed in the knitting process):
 
 ```r
 testthat::expect_identical(
@@ -816,6 +815,74 @@ testthat::expect_error(
 )
 ```
 
+---
+
+# Unit testing
+
+One could think now, that these tests are very trivial, which is true.
+A few words on why they are useful nevertheless:
+- when updating the implementation of a function, it&#39;s surprisingly easy to change the behaviour in subtle - or sometimes even obvious - ways
+- these tests can be run via CI (e.g. GitHub Actions) on various platforms. Once they work on all of them, you got yourself a robust implementation
+
+---
+
+# Unit testing
+
+.font17[
+In some situations the test approaches above are not up to the task, e.g.:
+- Text output that includes many characters like quotes and newlines that require special handling in a string.
+- Output that is large, making it painful to define the reference output, and bloating the size of the test file and making it hard to navigate.
+- Binary formats like plots or images, which are very difficult to describe in code: i.e. the plot looks right, the error message is useful to a human, the print method uses colour effectively.
+
+In these cases it&#39;s recommended to employ snapshot tests (cf. https://testthat.r-lib.org/articles/snapshotting.html).
+Here, all of a test&#39;s/function&#39;s output is stored in a separate file which is used to compare against the current test result.
+
+The respective function is `testthat::expect_snapshot()`.
+]
+
+---
+
+# Unit testing
+
+In general the unit tests of an R package are located in a subfolder &quot;tests/&quot;.
+When using {testthat}, the actual tests are in the folder &quot;tests/testthat&quot; and there is a file &quot;testthat.R&quot; in &quot;tests/&quot; which is of the form
+
+```r
+library(testthat)
+
+testthat::test_check(&quot;{your.package}&quot;)
+```
+This call executes all the files in the &quot;testthat&quot; subfolder.
+
+---
+
+# Unit testing
+
+A test-file should always have a corresponding R-file and has the following structure (execution here would lead to failure):
+
+```r
+testthat(&quot;create_digit() is working&quot;, {
+  expect_identical(
+    create_digit(6L),
+    structure(6L, class = c(&quot;digit&quot;, &quot;integer&quot;))
+  )
+  expect_error(
+    create_digit(6),
+    &quot;This is not a digit&quot;
+  )
+})
+
+testthat(&quot;create_digit() is working&quot;, {
+  expect_identical(
+    sum_digit_modulo_10(create_digit(6L), create_digit(9L)),
+    create_digit(5L)
+  )
+  expect_error(
+    sum_digit_modulo_10(6L, 9L),
+    &quot;are of class `digit`&quot;
+  )
+})
+```
 
 
 ---
@@ -827,7 +894,7 @@ testthat::expect_error(
 # Best practices
 
 - &quot;Functions should do one thing only, but do it well&quot;
-&lt;!-- you&#39;ll see if your function is too much &quot;all over the place&quot; while documenting its behavior. --&gt;
+&lt;!-- you&#39;ll see if your function is too much &quot;all over the place&quot; while documenting its behaviour. --&gt;
 - But: wrapper functions can of course also be useful
 - Comments in the code for others/your future self
 - Errors with descriptive messages
