@@ -615,7 +615,8 @@ If you use `Imports:` you will have to use the `::()` notation inside your packa
 
 If you rely on the other package&#39;s function(s) heavily, there is the option of creating a file &quot;R/import.R&quot; (name is just convention), in which you can further influence your &quot;NAMESPACE&quot; file.
 This file will have entries that look roughly like this:
-```
+
+```r
 #&#39; @import cli
 #&#39; @importFrom glue glue
 #&#39; @importFrom vctrs vec_names vec_as_names vec_cbind vec_rbind vec_recycle
