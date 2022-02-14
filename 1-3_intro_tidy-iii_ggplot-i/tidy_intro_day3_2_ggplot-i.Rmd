@@ -300,7 +300,7 @@ ggplot(mpg, aes(x = displ, y = hwy)) +
 
 `color`
 
-To map a variable to an aesthetics we use `aes()` and the mapping argument of
+To map a variable to an aesthetics we use `aes()` in the `mapping` argument of
 `ggplot()`
 
 ```{r}
