@@ -474,7 +474,7 @@ you should use only one coordinate `x` or `y`
 
 # `geom_bar()`
 
-`fill` should be mapped to a discrete variable. When the coordinate (`x`or `y`) and `fill` are using the *same* variable each category has its own color.
+`fill` should be mapped to a discrete variable. When the coordinate (`x` or `y`) and `fill` are using the *same* variable each category has its own color.
 
 ```{r}
 ggplot(mpg, aes(x = drv, fill = drv)) +
