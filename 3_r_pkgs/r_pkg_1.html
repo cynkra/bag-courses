@@ -673,7 +673,7 @@ What actually happens when calling `library(&quot;&lt;your.package&gt;&quot;)`?
 
 `library()` is a rather complex function, but 2 important steps are:
 1. Loading the namespace into an internal database (`loadNamespace()`; usually only useful in internal R-Code)
-1. Attaching the namespace to the search path (`attachNamespace()`; it&#39;s being inserted in the beginning right after `.GlobalEnv`): 
+1. Attaching the namespace to the search path (`attachNamespace()`; it&#39;s being inserted in the beginning right after `.GlobalEnv`):
 
 Now, when calling a function without `::()`, first the `.GlobalEnv` is being searched for a function with that name, and in case it isn&#39;t found, the search path is checked for such a function. The first hit is being used (-&gt; can lead to conflicts).
 
@@ -986,7 +986,7 @@ This call executes all the files in the &quot;testthat&quot; subfolder.
 A test-file should always have a corresponding R-file and has the following structure (execution here would lead to failure):
 
 ```r
-testthat(&quot;create_digit() is working&quot;, {
+test_that(&quot;create_digit() is working&quot;, {
   expect_identical(
     create_digit(6L),
     structure(6L, class = c(&quot;digit&quot;, &quot;integer&quot;))
@@ -997,7 +997,7 @@ testthat(&quot;create_digit() is working&quot;, {
   )
 })
 
-testthat(&quot;create_digit() is working&quot;, {
+test_that(&quot;create_digit() is working&quot;, {
   expect_identical(
     sum_digit_modulo_10(create_digit(6L), create_digit(9L)),
     create_digit(5L)

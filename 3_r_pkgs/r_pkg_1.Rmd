@@ -663,7 +663,7 @@ This call executes all the files in the "testthat" subfolder.
 
 A test-file should always have a corresponding R-file and has the following structure (execution here would lead to failure):
 ```{r eval=FALSE}
-testthat("create_digit() is working", {
+test_that("create_digit() is working", {
   expect_identical(
     create_digit(6L),
     structure(6L, class = c("digit", "integer"))
@@ -674,7 +674,7 @@ testthat("create_digit() is working", {
   )
 })
 
-testthat("create_digit() is working", {
+test_that("create_digit() is working", {
   expect_identical(
     sum_digit_modulo_10(create_digit(6L), create_digit(9L)),
     create_digit(5L)
