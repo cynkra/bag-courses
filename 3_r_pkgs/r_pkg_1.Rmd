@@ -73,7 +73,8 @@ Organization of half-day R courses:
 - Week 7, Mar 8: Parallelization (Patrick)
 - Week 8, Mar 15: Databases (Kirill)
 - Week 9, Mar 22: Databases (Kirill)
-- Week 9, Mar 22: TBD (?)
+- Week 10, Mar 29: TBD (Antoine)
+- Week 11, April 5: TBD (Antoine)
 
 ???
 <!-- Courses are typically held on Tuesdays, with the exception of the first intro course on data visualization. Intro courses are in the mornings, while advanced courses take place on afternoons. We initially were hoping to be able to carry out these courses with physical presence, but at least for now, this is not possible. Hopefully, this will change over the course of the next weeks to months. For each course, two people representing Cynkra will be available, a topic-specific expert, as well as myself in a coordinating role. -->
@@ -108,22 +109,22 @@ https://github.com/cynkra/bag-courses
 
 Overview:
 
-1. Advantages of R packages over R scripts
-1. Advantages of R scripts over R packages
+1. Intro
 1. How to start?
 1. Documentation
+1. Dependencies (DESCRIPTION) & NAMESPACE
 1. Useful little helpers: `{usethis}`
-1. Dependencies
-1. Classes
+1. S3 Class
 1. Methods vs. functions
-1. Tests
+1. Unit testing
 1. Errors and warnings
+1. Versioning
 1. Best practices
 1. Further reading
 
 ---
 
-# Advantages of R packages over R scripts
+# Intro: Advantages of R packages over R scripts
 
 - Best case: Package provides function(s) for working on re-occurring tasks
 - function as single source of truth (optimized implementation, higher chance of being bug-free)
@@ -134,7 +135,7 @@ Overview:
 
 ---
 
-# Advantages of R scripts over R packages
+# Intro: Advantages of R scripts over R packages
 
 - Package is less flexible (but can be extended)
 - Tasks for which script is preferrable: 
@@ -144,7 +145,7 @@ Overview:
 
 ---
 
-# R scripts vs. R packages
+# Intro: R scripts vs. R packages
 
 Summary:
 - R package provides functionality; contains functions (and/or data)
@@ -297,13 +298,13 @@ They are available in the console as well after calling `devtools::load_all()` w
 
 # Exercise (~10min)
 
+.font17[
 - Make up a function (does not have to be particularly useful) with at least one argument and save its implementation in a file in the directory `R/` of your new package.
 - Add documentation to the function (tip: `Code` -> `Insert Roxygen Skeleton` while cursor in the function definition block; or `Ctrl+Alt+Shift+R`, if you manage)
 - Make sure the function will be exported
 - Make sure the associated `Rd`-file exists and is filled according to your documentation
 - "Build" your package using the `Build` pane, `devtools::build()` or `Ctrl+Shift+B` and use the function
 
-.font17[
 One more tip: in general it can be helpful to "cheat" by checking out how the documentation is done in packages on GitHub that have a documentation feature you would like for your own package.
 ]
 
@@ -510,7 +511,7 @@ class(create_new_class("1"))
 
 ---
 
-S3 Classes
+# S3 Classes
 
 Now we know how to invent a new class.
 Why would we want that though?
@@ -735,6 +736,53 @@ Even if using a database in a Docker container specifically created for the dura
 ]
 
 ---
+# Errors and warnings
+
+Descriptive error messages and warnings are enormously helpful for the user.
+Consider the following:
+- create a specific file with error- and warning-functions: this ensures consistency, if the same type of error occurs in different functions spread across the package
+- create (snapshot) tests for these functions
+
+In general it's useful to conduct a few checks on arguments in user-facing (exported) functions. E.g. inside a sequence of pipes a lot of unforeseen things can happen and this helps with debugging.
+
+---
+
+# Versioning
+
+.font17[
+For your users and also for yourself properly versioning your package is very helpful.
+The version number is part of "DESCRIPTION".
+
+Most often semantic versioning is used which for its releases uses a three-part version number: "Major.Minor.Patch".
+
+Usually there is also a fourth part, which is the development version, which usually is at least 9000 (e.g. "1.0.0.9000").
+
+The decision, how to bump the version number is based on the new features/bug fixes etc. that happened since the last release:
+- A few bug fixes: Release a new patch version
+- Some new functionality but nothing major: bump to the next minor version
+- API overhaul, important new additions: new major version
+]
+
+---
+
+# Versioning
+
+.font17[
+New developments should be tracked in a file "NEWS.md".
+
+The package {fledge} (https://cynkra.github.io/fledge/index.html) can be of assistance in version tracking:
+1. `fledge::bump_version()`: 
+    - bumps the version according to your choice ("dev", "patch", "minor", "major")
+    - it scrapes the commit messages for entries starting with a hyphen (can be best done in a merge commit of a PR as a second line in the commit message)
+    - it automatically adds these messages to NEWS.md
+    - it commits to GitHub
+1. `fledge::unbump_version()`:
+    - can still be called at this point to undo the bump
+2. `fledge::finalize_version()`:
+    - creates a tag "v&lt;major&gt;.&lt;minor&gt;.&lt;patch&gt;" and pushes it to GitHub
+]
+
+---
 
 # Best practices
 
@@ -743,10 +791,9 @@ Even if using a database in a Docker container specifically created for the dura
 - But: wrapper functions can of course also be useful
 - Comments in the code for others/your future self
 - Errors with descriptive messages
-- Consider writing a vignette once the pkg takes on shape
+- Consider writing a vignette once the package takes on shape
 - Unit testing with `{testthat}`
 - GitHub Actions (e.g. `R CMD check`)
-
 
 ---
 
