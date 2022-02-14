@@ -415,43 +415,72 @@ a series of scatterplot using different aesthetics mapped to variables or consta
 
 # `geom_line()`
 
-`?geom_line`
+using `?geom_line` we find which aesthetics are available, but to summarize the main ones are:
 
 aesthetics :
 
-* x
-* y
-* alpha
-* colour
-* group
-* linetype
-* size
+- `x` (required) : horizontal coordinate
+- `y` (required) : vertical coordinate
+- `alpha` : opacity (low = more transparent)
+- `colour` (or `color`) : color of the line
+- `linetype` : type of the line
+- `size` : size of the line
 
 ---
 
 # `geom_line()`
+
+`color` and `linetype`
+
+We can use a constant value for these aesthetics if we provide it in the geom function.
+
+```{r}
+ggplot(mpg, aes(x = displ, y = hwy)) +
+  geom_line(color = "red", linetype = "dotdash")
+```
+
+---
+
+# `geom_line()`
+
+`linetype` should be mapped to a discrete variable
 
 ```{r}
 ggplot(mpg, aes(x = displ, y = hwy, linetype = drv)) +
   geom_line()
 ```
 
+
+---
+# `geom_line()`
+
+using `size` you can change how thick are the lines
+
+```{r}
+ggplot(mpg, aes(x = displ, y = hwy, linetype = drv)) +
+  geom_line(size=2)
+```
+
 ---
 
 # `geom_bar()`
 
-* x
-* y
-* alpha
-* colour
-* fill
-* group
-* linetype
-* size
+using `?geom_bar` we find which aesthetics are available, but to summarize the main ones are:
+
+aesthetics :
+
+you should use only one coordinate `x` or `y`
+
+- `x` : use it to create vertical bars
+- `y` : use it to create horizontal bars
+- `fill` : define bar colors
+- `alpha` : opacity (low = more transparent)
 
 ---
 
 # `geom_bar()`
+
+`fill` should be mapped to a discrete variable. When the coordinate (`x`or `y`) and `fill` are using the *same* variable each category has its own color.
 
 ```{r}
 ggplot(mpg, aes(x = drv, fill = drv)) +
@@ -462,6 +491,8 @@ ggplot(mpg, aes(x = drv, fill = drv)) +
 
 # `geom_bar()`
 
+When the coordinate (`x`or `y`) and `fill` are using a *different* variable, each bar represents the distribution of the variable used in `fill` for each category of the coordinate (`x`or `y`), creating stacked bars.
+
 ```{r}
 ggplot(mpg, aes(x = drv, fill = class)) +
   geom_bar()
@@ -471,7 +502,7 @@ ggplot(mpg, aes(x = drv, fill = class)) +
 
 # `geom_bar()`
 
-`geom_bar()` is often used with `position = "dodge"` (equivalent to `position = position_dodge()`)
+`geom_bar()` is often used with `position = "dodge"` (equivalent to `position = position_dodge()`), and this parameter changes the plot from stacked bars to clustered bars.
 
 ```{r}
 ggplot(mpg, aes(x = drv, fill = class)) +
@@ -491,6 +522,154 @@ ggplot(mpg, aes(x = drv, fill = class)) +
 
 ---
 
+<!-- Probably it needs more explanation to understand the difference between geom_bar and geom_col -->
+
+# `geom_col()`
+
+```{r}
+df <- data.frame(category = c("a", "b", "c"), value = c(2.3, 1.9, 3.2))
+ggplot(df, aes(x = category, y = value)) +
+  geom_col(fill = "darkblue")
+```
+
+---
+
+# `geom_histogram()`
+
+.pull-left[
+
+```{r}
+ggplot(mpg, aes(x = displ)) +
+  geom_histogram(fill = "darkblue", bins = 10)
+```
+
+]
+
+--
+  
+  .pull-right[
+
+```{r}
+ggplot(mpg, aes(x = displ, fill = drv)) +
+  geom_histogram(bins = 10)
+```
+
+  ]
+
+---
+
+# `geom_boxplot()`
+
+`geom_boxplot()` needs one variable to be of class `character` or `factor` (better) to initiate the grouping.
+
+```{r}
+ggplot(mpg, aes(x = class, y = displ)) +
+  geom_boxplot()
+```
+
+---
+
+# Legend, and labels
+
+Using `labs` you can set the title/subtitle and also add a caption and a tag.
+
+.pull-left[
+
+```{r, eval=FALSE}
+ggplot(
+  data = mpg,
+  mapping = aes(x = displ, y = hwy, color = class)
+) +
+  geom_point() +
+  labs(
+    x = "Displacement",
+    y = "Highway mileage\n[miles per gallon]",
+    color = "Car class",
+    title = "Highway mileages depending on displacement",
+    subtitle = "By car class"
+  )
+```
+]
+
+--
+
+  .pull-right[
+```{r, echo=FALSE}
+ggplot(
+  data = mpg,
+  mapping = aes(x = displ, y = hwy, color = class)
+) +
+  geom_point() +
+  labs(
+    x = "Displacement",
+    y = "Highway mileage\n[miles per gallon]",
+    color = "Car class",
+    title = "Highway mileages depending on displacement",
+    subtitle = "By car class"
+  )
+```
+  ]
+
+---
+
+# Axis
+
+There is a plethora of `scale_...()` functions available, which influence the axes. For example there is a function to change the scale of an axis to a logarithmic scale.
+
+.pull-left[
+
+```{r, eval=FALSE}
+ggplot(
+  data = mpg,
+  mapping = aes(x = displ, y = hwy, color = class)
+) +
+  geom_point() +
+  scale_x_log10()
+```
+]
+
+--
+
+  .pull-right[
+  
+```{r,echo=FALSE}
+ggplot(
+  data = mpg,
+  mapping = aes(x = displ, y = hwy, color = class)
+) +
+  geom_point() +
+  scale_x_log10()
+```
+  ]
+  
+---
+
+# Export & saving
+
+The default way to export plots is by using `ggsave()`.
+
+It differs slightly from other “exporting” functions in R because it comes with some smart defaults (see `?ggsave()`)
+
+  .pull-left[
+```{r}
+ggplot(mtcars, aes(mpg, wt)) +
+  geom_point()
+```
+]
+
+--
+
+  .pull-right[
+```{r}
+ggsave("mtcars.pdf")
+```
+
+```{r}
+ggsave("mtcars.png")
+```
+]
+
+---
 <!-- 
 
 Current work stop here, below that is just copy pasted from the vistransrep course
@@ -505,10 +684,6 @@ I don't think we should talk about stat_* nor computed variables in this course
 
 -->
 
-
-- `geom_col()`
-- `geom_histogram()`
-- `geom_boxplot()`
 
 --------------------------------------------------------------------------------
 
@@ -577,40 +752,6 @@ geom_boxplot(mapping = NULL, data = NULL, stat = "boxplot",
 ```
 ---
 
-`geom_boxplot()` needs one variable to be of class `character` or `factor` (better) to initiate the grouping.
-
-
-```{r include = FALSE}
-# geom_boxplot needs a factor var
-```
-```{r 12-geom-boxplot-needs-a-factor-var}
-class(mpg$class)
-```
-
-
-```{r include = FALSE}
-# show geom_boxplot
-```
-```{r 12-show-geom-boxplot}
-ggplot(mpg, aes(x = class, y = displ)) +
-  geom_boxplot()
-```
-
-### Combining geoms
-
-Multiple `geom_*` functions can be used in one plot.
-A combination that is often used together is `geom_point()` and `geom_smooth()`
-
-```{r include = FALSE}
-# combining multiple geoms
-```
-```{r 12-combining-multiple-geoms}
-ggplot(mpg, aes(x = displ, y = hwy)) +
-  geom_point() +
-  geom_smooth(method = "lm")
-```
-
-Unless specified differently in the `geom_*()` call, all geoms will use the same variables.
 
 ### Summary
 
