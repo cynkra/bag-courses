@@ -1,0 +1,652 @@
+---
+title: "Introduction to ggplot2"
+author: ["Antoine & Nicolas", "cynkra GmbH"]
+date: "February 1st, 2022"
+output:
+  cynkradown::cynkra_slides:
+    nature:
+      highlightStyle: github
+      highlightLines: true
+      countIncrementalSlides: false
+    seal: true
+fontsize: 10pt
+lang: english
+font: frutiger
+wide: false
+colorlinks: false
+logo: true
+header-includes:
+  - \usepackage{parskip}
+editor_options: 
+  chunk_output_type: console
+---
+
+<style type="text/css">
+.remark-code {
+    font-size: 12px;
+}
+.font17 {
+    font-size: 17px;
+}
+.font14 {
+    font-size: 14px;
+}
+</style>
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(fig.height = 4)
+```
+
+# Basics for visualisation in R using {ggplot2}
+
+* {ggplot2} is the most used R visualization package
+* "gg" stands for the "grammar of graphics"
+* It is shipped with {tidyverse}
+
+```{r}
+library(tidyverse)
+```
+
+???
+
+In the {tidyverse} the standard package for visualization is {ggplot2}.
+The functions of this package follow a quite unique logic (the "grammar of graphics") and therefore require a special syntax.
+In this section we want to give a short introduction, how to get started with {ggplot2}.
+
+---
+
+# Grammar of graphics
+
+* Grammar: A set of structural rules which help define and establish the component of a language
+* Grammar of graphics : framework to describe the components of any graphics
+
+With ggplot we don't create a plot just by calling a `scatter_plot()` or a `histogram()`
+function that would have different arguments.
+
+A more general approach means there's a learning curve, but it pays off!
+
+---
+
+# Our dataset
+
+
+```{r}
+mpg
+```
+
+* displ : engine displacement, in litres
+* cyl : number of cylinders
+* hwy : highway miles per gallon
+
+<!-- * trans: type of transmission -->
+<!-- * drv: type of drive train, f = front-wheel drive, r = rear wheel drive, 4 = 4wd -->
+<!-- * cty : city miles per gallon -->
+<!-- * fl : fuel type -->
+<!-- * class : "type" of car -->
+
+---
+
+# Creating the plot skeleton
+
+`ggplot()` is used to set up the chart, but can't be used alone
+to create a useful visualization
+
+1. Choose dataset (argument `data`)
+2. Map variables to visual properties (argument `mapping`)
+3. Create a "ggplot" object that can be enhanced to display a useful chart when it's
+printed
+
+```{r, eval = FALSE}
+ggplot(data = mpg, mapping = aes(x = displ, y = hwy))
+```
+
+---
+
+# Creating the plot skeleton
+
+We map `displ` to the `x` coordinate, and `hwy` to the `y` coordinate,
+but we haven't mentioned what we want to see yet!
+
+```{r}
+ggplot(mpg, aes(x = displ, y = hwy))
+```
+
+???
+
+This created only an empty plot, because we did not tell {ggplot2} which geometry we want to use to display the variables we set in the `ggplot()` call.
+We do this by adding (with the help of the `+` operator after the `ggplot()`-call) a different function starting with `geom_` to provide this information.
+
+---
+
+# Adding a layer
+
+To create a useful chart we need to add layers
+
+* There are different types of layers
+* Layers are added using the `+` operator
+* `geom_point()` creates a scatter plot layer
+
+```{r, eval = FALSE}
+ggplot(mpg, aes(x = displ, y = hwy)) +
+  geom_point()
+```
+
+???
+
+This is maybe the most basic plot you can create.
+To map a different variable than `disp` to the x-axis, change the respective variable name in the `aes()` argument.
+
+---
+
+# Adding a layer
+
+```{r}
+ggplot(mpg, aes(x = displ, y = hwy)) +
+  geom_point()
+```
+
+???
+
+This is maybe the most basic plot you can create.
+To map a different variable than `disp` to the x-axis, change the respective variable name in the `aes()` argument.
+
+---
+
+# Teaser #1
+
+We have more aesthetics!
+
+```{r}
+ggplot(mpg, aes(x = displ, y = hwy, color = drv)) +
+  geom_point()
+```
+
+---
+
+# Teaser #2
+
+We can combine "geom" layers
+
+```{r, message=FALSE}
+ggplot(mpg, aes(x = displ, y = hwy, color = drv)) +
+  geom_point() +
+  geom_smooth()
+```
+
+---
+
+# Teaser #3
+
+And we can do much more!
+
+```{r, message=FALSE}
+ggplot(mpg, aes(x = displ, y = hwy, color = drv)) +
+  geom_point() +
+  geom_smooth(se = FALSE) +
+  facet_wrap(vars(drv)) +
+  theme_bw() +
+  ggtitle("Highway miles per gallon vs engine displacement",  "for different drive train types")
+```
+
+???
+
+Always good to have: The *ggplot2* cheatsheet (https://github.com/rstudio/cheatsheets/blob/master/data-visualization-2.1.pdf).
+
+---
+
+# Exercise
+
+Using the `iris` dataset available in R by default, create a scatter plot using 2 numeric columns, and use `Species` as a color. You can use the pattern we used above.
+
+```{r}
+ggplot(mpg, aes(x = displ, y = hwy, color = drv)) +
+  geom_point()
+```
+
+<!-- --- -->
+
+<!-- # Terminology -->
+
+<!-- - **Data:** The data to visualize -- consists of variables and observations. -->
+
+<!-- - **Geoms:** Geometric objects which represent the data (points, lines, polygons, etc.). -->
+
+<!-- - **Mappings:** Match variables with aesthetic attributes of the (geometric) objects. -->
+
+<!-- - **Scales:** Mapping of the "data units" to "physical units" of the geometric objects (e.g. length, diameter or color); defines the _legend_. -->
+
+<!-- - **Coord:** System of coordinates, mapping of the data to a two dimensional plain of the graphic; defines the _axes_ and _grid_. -->
+
+<!-- - **Stats:** Statistical transformation of the data (5 point summary, classification, etc.). -->
+
+<!-- - **Facetting:** Division and illustration of data subsets, also known as "Trellis" images. -->
+
+---
+
+# `geom_*` functions
+
+"geom" = geometric object
+
+We have a lot of those! Documented at : https://ggplot2.tidyverse.org/reference/#section-layer-geoms
+
+```{r}
+ls("package:ggplot2", pattern = "^geom_")
+```
+
+---
+
+# `geom_*` functions
+
+The most popular ones are
+
+- `geom_point()`
+- `geom_line()`
+- `geom_bar()`
+- `geom_col()`
+- `geom_histogram()`
+- `geom_boxplot()`
+
+---
+
+# `geom_point()`
+
+We know a bit about it now, we'll use it to show case some features that can
+be generalized to other features.
+
+---
+
+# `geom_point()`
+
+In `?geom_point` we find which aesthetics are available : 
+
+- `x`
+- `y`
+- `alpha`
+- `colour` (or `color`)
+- `fill`
+- `group`
+- `shape`
+- `size`
+- `stroke`
+
+---
+
+# `geom_point()`
+
+We can run `vignette("ggplot2-specs")` to know more about them, but to summarize the main ones:
+
+- `x` (required) : horizontal coordinate
+- `y` (required) : vertical coordinate
+- `colour` (or `color`) : color of contour or point
+- `shape` : shape of the point
+- `size` : size of the point
+- `alpha` : opacity (low = more transparent)
+
+---
+
+# `geom_point()`
+
+We can use a constant value for these aesthetics if we provide it in the geom
+function.
+
+```{r}
+ggplot(mpg, aes(x = displ, y = hwy)) +
+  geom_point(color = "red")
+```
+
+---
+
+# `geom_point()`
+
+`color`
+
+To map a variable to an aesthetics we use `aes()` and the mapping argument of
+`ggplot()`
+
+```{r}
+ggplot(mpg, aes(x = displ, y = hwy, color = drv)) +
+  geom_point()
+```
+
+---
+
+# `geom_point()`
+
+`color`
+
+We can use a constant value for these aesthetics if we provide it in the geom
+function.
+
+```{r}
+ggplot(mpg, aes(x = displ, y = hwy)) +
+  geom_point(color = "red")
+```
+
+---
+
+# `geom_point()`
+
+`color` can also take a continuous value
+
+```{r}
+ggplot(mpg, aes(x = displ, y = hwy, color = cty)) +
+  geom_point()
+```
+
+---
+
+# `geom_point()`
+
+`shape` should be mapped to a discrete variable
+
+```{r}
+ggplot(mpg, aes(x = displ, y = hwy, color = drv, shape = drv)) +
+  geom_point()
+```
+
+---
+
+# `geom_point()`
+
+`shape`
+
+```{r}
+ggplot(mpg, aes(x = displ, y = hwy, color = drv)) +
+  geom_point(shape = "triangle") # we can also provide an integer value
+```
+
+---
+
+# `geom_point()`
+
+`size` should be mapped to a continuous variable
+
+```{r}
+ggplot(mpg, aes(x = displ, y = hwy, color = drv, size = cty)) +
+  geom_point()
+```
+
+---
+
+# `geom_point()`
+
+`size` should be mapped to a continuous variable
+
+```{r}
+ggplot(mpg, aes(x = displ, y = hwy, color = drv)) +
+  geom_point(size = 8)
+```
+
+---
+
+# `geom_point()`
+
+`alpha` is most useful when set as a constant, to improve visualizations
+when overplotting
+
+```{r}
+ggplot(mpg, aes(x = displ, y = hwy, color = drv)) +
+  geom_point(size = 8, alpha = 0.3)
+```
+
+---
+
+# `geom_point()`
+
+`geom_*()` functions have a `position` argument to adjust the position.
+A common use for `geom_point()` is `position = "jitter"`, also good to handle
+overplotting!
+
+```{r}
+ggplot(mpg, aes(x = displ, y = hwy, color = drv)) +
+  geom_point(position = "jitter")
+```
+
+---
+
+# `geom_point()`
+
+`position = "jitter"` and `position = position_jitter()` are equivalent,
+but `position_jitter()` offers more control through arguments
+
+```{r}
+ggplot(mpg, aes(x = displ, y = hwy, color = drv)) +
+  geom_point(position = position_jitter(width = .5, height = .5))
+```
+
+---
+
+# `geom_point()`
+
+`geom_*()` functions have a `position` argument to adjust the position.
+A common use for `geom_point()` is
+
+```{r}
+ggplot(mpg, aes(x = displ, y = hwy, color = drv)) +
+  geom_point(position = "jitter")
+```
+
+---
+
+# `geom_point()`
+
+Exercise :
+
+Using the iris dataset and the knowledge from the previous slides, draw
+a series of scatterplot using different aesthetics mapped to variables or constant.
+
+---
+
+# `geom_line()`
+
+`?geom_line`
+
+aesthetics :
+
+* x
+* y
+* alpha
+* colour
+* group
+* linetype
+* size
+
+---
+
+# `geom_line()`
+
+```{r}
+ggplot(mpg, aes(x = displ, y = hwy, linetype = drv)) +
+  geom_line()
+```
+
+---
+
+# `geom_bar()`
+
+* x
+* y
+* alpha
+* colour
+* fill
+* group
+* linetype
+* size
+
+---
+
+# `geom_bar()`
+
+```{r}
+ggplot(mpg, aes(x = drv, fill = drv)) +
+  geom_bar()
+```
+
+---
+
+# `geom_bar()`
+
+```{r}
+ggplot(mpg, aes(x = drv, fill = class)) +
+  geom_bar()
+```
+
+---
+
+# `geom_bar()`
+
+`geom_bar()` is often used with `position = "dodge"` (equivalent to `position = position_dodge()`)
+
+```{r}
+ggplot(mpg, aes(x = drv, fill = class)) +
+  geom_bar(position = "dodge")
+```
+
+---
+
+# `geom_bar()`
+
+`position = "fill"` is useful too!
+
+```{r}
+ggplot(mpg, aes(x = drv, fill = class)) +
+  geom_bar(position = "fill")
+```
+
+---
+
+<!-- 
+
+Current work stop here, below that is just copy pasted from the vistransrep course
+
+I think from there one example per geom is enough
+since we've seen all common aesthetics
+
+I talked about position already because I don't think we want a general approach
+for a beginner course so we can skip it for the rest
+
+I don't think we should talk about stat_* nor computed variables in this course
+
+-->
+
+
+- `geom_col()`
+- `geom_histogram()`
+- `geom_boxplot()`
+
+--------------------------------------------------------------------------------
+
+The `geom_*` family can be divided into three parts:
+
+**One variable plots**
+
+- `geom_hist()`
+- `geom_bar()`
+
+**Two variable plots**
+
+- `geom_point()`
+- `geom_line()`
+- `geom_boxplot()`
+- etc.
+
+**Three variables plots**
+
+- `geom_raster()`
+- `geom_sf()`
+- `geom_tile()`
+- etc.
+
+### Arguments
+
+```{r, eval=FALSE}
+ggplot(data, mapping = aes(), ...) +
+  geom_XXX(mapping = NULL, data = NULL, stat, ...)
+```
+```{r 12-ggplot-data-mapping-aes}
+
+```
+
+`geom_*` functions have the same basic arguments as `ggplot()`.
+In addition, they come with more arguments specific to the respective "geom".
+
+**stat**
+
+The `stat` parameter defines a statistical transformation: 
+
+- if set to `"identity"`: No transformation
+
+- if set to `boxplot`: Boxplot transformation
+
+- etc.
+
+**position**
+
+The same applies to the `position` argument. 
+In the example below, points are not adjusted and just visualized where they appear in the data.
+
+In the case of boxplots, a special position arrangement function is used to arrange everything nicely: `position_dodge2()` (here denoted by `position = "dodge2"`).
+
+```{r eval = FALSE}
+geom_point(mapping = NULL, data = NULL, stat = "identity",
+  position = "identity", ..., na.rm = FALSE, show.legend = NA,
+  inherit.aes = TRUE)
+
+geom_boxplot(mapping = NULL, data = NULL, stat = "boxplot",
+  position = "dodge2", ..., outlier.colour = NULL,
+  outlier.color = NULL, outlier.fill = NULL, outlier.shape = 19,
+  outlier.size = 1.5, outlier.stroke = 0.5, outlier.alpha = NULL,
+  notch = FALSE, notchwidth = 0.5, varwidth = FALSE, na.rm = FALSE,
+  show.legend = NA, inherit.aes = TRUE)
+```
+---
+
+`geom_boxplot()` needs one variable to be of class `character` or `factor` (better) to initiate the grouping.
+
+
+```{r include = FALSE}
+# geom_boxplot needs a factor var
+```
+```{r 12-geom-boxplot-needs-a-factor-var}
+class(mpg$class)
+```
+
+
+```{r include = FALSE}
+# show geom_boxplot
+```
+```{r 12-show-geom-boxplot}
+ggplot(mpg, aes(x = class, y = displ)) +
+  geom_boxplot()
+```
+
+### Combining geoms
+
+Multiple `geom_*` functions can be used in one plot.
+A combination that is often used together is `geom_point()` and `geom_smooth()`
+
+```{r include = FALSE}
+# combining multiple geoms
+```
+```{r 12-combining-multiple-geoms}
+ggplot(mpg, aes(x = displ, y = hwy)) +
+  geom_point() +
+  geom_smooth(method = "lm")
+```
+
+Unless specified differently in the `geom_*()` call, all geoms will use the same variables.
+
+### Summary
+
+The modular principle of `ggplot2` enables:
+
+- the combination of any geometric objects (geoms).
+- a high flexibility and customizability
+
+An extensive description of all geometric objects can be found on the `ggplot2` website https://ggplot2.tidyverse.org/reference/.
+
+**Exercises**
+
+https://krlmlr.github.io/vistransrep/2019-11-zhr/geoms.html
+
+
