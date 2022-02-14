@@ -172,9 +172,9 @@ If this file is there:
 # How to start?
 
 Further components:
-- File `NAMESPACE` containing information about imported and exported functions
-- Directory `R/`, containing the files with the function definitions
-- Directory `man/`, containing the `Rd`-files with the documentation of the package's functions
+- File "NAMESPACE" containing information about imported and exported functions (more see below)
+- Directory "R/", containing the files with the function definitions
+- Directory "man/", containing the Rd-files with the documentation of the package's functions
 
 ---
 
@@ -301,11 +301,132 @@ They are available in the console as well after calling `devtools::load_all()` w
 - Add documentation to the function (tip: `Code` -> `Insert Roxygen Skeleton` while cursor in the function definition block; or `Ctrl+Alt+Shift+R`, if you manage)
 - Make sure the function will be exported
 - Make sure the associated `Rd`-file exists and is filled according to your documentation
-- "Build" your package using the `Build` pane or `devtools::build()` and use the function
+- "Build" your package using the `Build` pane, `devtools::build()` or `Ctrl+Shift+B` and use the function
 
 .font17[
 One more tip: in general it can be helpful to "cheat" by checking out how the documentation is done in packages on GitHub that have a documentation feature you would like for your own package.
 ]
+
+---
+
+# Dependencies (DESCRIPTION) & NAMESPACE
+
+.font17[
+If you need another package's function(s), you should ask yourself, if these functions are needed for base functionality of your package, or if it's just e.g. for testing, building vignettes etc., that this package is necessary.
+
+In the former case, the package will be listed under "`Imports:`" in "DESCRIPTION", in the latter case under "`Suggests:`".
+The consequence is, that when installing your package, packages under "`Imports:`" are installed as well, whereas the other packages are not.
+
+There is an even stronger statement available for defining dependencies in "DESCRIPTION": "`Depends:`".
+If a package is listed here, this package's namespace is always attached to the search path whenever your package is, i.e. you can use its functions without the need of `::()` after calling `library("<your.package>")`.
+
+Using "`Depends:`" is generally not recommended, since this can potentially lead to namespace conflicts.
+In some cases (e.g. one package building on another one and only making sense in context with it) it should be used though.
+]
+
+---
+
+# Dependencies (DESCRIPTION) & NAMESPACE
+
+.font17[
+If you use `Imports:` you will have to use the `::()` notation inside your package's code.
+
+If you rely on the other package's function(s) heavily, there is the option of creating a file "R/import.R" (name is just convention), in which you can further influence your "NAMESPACE" file.
+This file will have entries that look roughly like this:
+```{txt}
+#' @import cli
+#' @importFrom glue glue
+#' @importFrom vctrs vec_names vec_as_names vec_cbind vec_rbind vec_recycle
+#' @import dplyr
+#' @rawNamespace import(tidyr, except = c(extract))
+NULL
+```
+
+When calling `devtools::document()`, these lines affect "NAMESPACE".
+The functions imported like this can be used internally without the need for `::()`.
+They can NOT be used by the end user calling `library("<your.package>")` though.
+]
+
+---
+
+# Dependencies (DESCRIPTION) & NAMESPACE
+
+.font17[
+A way to make such functions available after `library("<your.package>")` is to reexport them.
+For this, create a file "R/reexport.R" (name is just convention) and add entries like e.g.:
+```{R eval=FALSE}
+#' @export
+magrittr::`%>%`
+
+#' @export
+dplyr::filter
+```
+After `devtools::document()` they will make an appearance in "NAMESPACE".
+]
+
+---
+
+# Dependencies (DESCRIPTION) & NAMESPACE
+
+When using `devtools::document()` together with {roxygen2}-style documentation, the file "NAMESPACE" mentioned above is written automatically based solely on the content in "R/" (not affected by DESCRIPTION).
+
+It contains entries of the sort:
+```{txt}
+S3method(print,new_class)
+export(hello)
+import(crayon)
+```
+
+It's basically a list of all objects (functions/methods or packages) that are imported, registered or exported by your package.
+
+---
+
+# Dependencies (DESCRIPTION) & NAMESPACE
+
+.font17[
+What actually happens when calling `library("<your.package>")`?
+
+`library()` is a rather complex function, but 2 important steps are:
+1. Loading the namespace into an internal database (`loadNamespace()`; usually only useful in internal R-Code)
+1. Attaching the namespace to the search path (`attachNamespace()`; it's being inserted in the beginning right after `.GlobalEnv`):
+
+Now, when calling a function without `::()`, first the `.GlobalEnv` is being searched for a function with that name, and in case it isn't found, the search path is checked for such a function. The first hit is being used (-> can lead to conflicts).
+
+The current search path can be checked with `search()`.
+
+For checking if a package is available it's recommended to use `requireNamespace("x", quietly = TRUE)`. This function will return `FALSE` if the package "x" is not available and won't throw an error.
+]
+
+---
+
+# Dependencies (DESCRIPTION) & NAMESPACE
+
+.font17[
+In some cases it can be useful/necessary to call a function upon loading or attaching your package.
+This can be done with the - non-exported - functions `.onLoad(libname, pkgname)` or `.onAttach(libname, pkgname)`.
+
+By convention these functions would live in "R/zzz.R".
+
+**.onAttach(libname, pkgname)**
+
+If you want to inform the user of the package about something, use `.onAttach()` and write a message using `packageStartupMessage()`: that way the message can be suppressed selectively using `suppressPackageStartupMessages()`.
+```{r eval=FALSE}
+.onAttach <- function(libname, pkgname) {
+  packageStartupMessage("Welcome to my package")
+}
+```
+
+**.onLoad(libname, pkgname)**
+
+For pretty much all other purposes use `.onLoad()`, e.g. for setting customs options for your package (e.g. based on system conditions).
+]
+
+---
+
+# Exercise (5-10min)
+
+- Make all {dplyr}-functions available without `::()` after "loading" (i.e. here: "attaching") your package.
+- Make only `dplyr::select()` available after "loading" your package.
 
 ---
 
