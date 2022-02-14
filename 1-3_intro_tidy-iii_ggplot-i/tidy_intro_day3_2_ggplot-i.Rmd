@@ -415,8 +415,6 @@ a series of scatterplot using different aesthetics mapped to variables or consta
 
 using `?geom_line` we find which aesthetics are available, but to summarize the main ones are:
 
-aesthetics :
-
 - `x` (required) : horizontal coordinate
 - `y` (required) : vertical coordinate
 - `alpha` : opacity (low = more transparent)
@@ -464,8 +462,6 @@ ggplot(mpg, aes(x = displ, y = hwy, linetype = drv)) +
 # `geom_bar()`
 
 using `?geom_bar` we find which aesthetics are available, but to summarize the main ones are:
-
-aesthetics :
 
 you should use only one coordinate `x` or `y`
 
