@@ -225,9 +225,7 @@ ggplot(mpg, aes(x = displ, y = hwy, color = drv)) +
 
 # `geom_*` functions
 
-"geom" = geometric object
-
-We have a lot of those! Documented at : https://ggplot2.tidyverse.org/reference/#section-layer-geoms
+"geom" = geometric object, see documentation : https://ggplot2.tidyverse.org/reference/#section-layer-geoms
 
 ```{r}
 ls("package:ggplot2", pattern = "^geom_")
