@@ -655,7 +655,9 @@ library(testthat)
 
 testthat::test_check("{your.package}")
 ```
-This call executes all the files in the "testthat" subfolder.
+This call executes all the files in the "testthat" subfolder. This is done when calling `devtools::test()`.
+
+Tip: For saving time when you have a lot of tests in a lot of R-files: use `devtools::test_active_file()` for only testing the currently open file (can be the file in "tests/testthat" or in the corresponding file in "R/").
 
 ---
 
@@ -674,7 +676,7 @@ test_that("create_digit() is working", {
   )
 })
 
-test_that("create_digit() is working", {
+test_that("sum_digit_modulo_10() is working", {
   expect_identical(
     sum_digit_modulo_10(create_digit(6L), create_digit(9L)),
     create_digit(5L)
@@ -686,10 +688,51 @@ test_that("create_digit() is working", {
 })
 ```
 
+---
+
+# Unit testing
+
+.font14[
+If your package is working with external resources (e.g. Web APIs), that might or might not be available during tests or may be really slow, but the thing you want to test is actually just the step after getting data from the API, you could consider using {mockr} (https://krlmlr.github.io/mockr/; README/vignette might be not up to date, better stick with example for `with_mock()`).
+
+This package allows you to locally overwrite functions and use these "mock-functions" for your tests, e.g.:
+```{r}
+library(mockr)
+access_resource <- function() stop("oops")
+work_with_data_from_resource <- function() access_resource()
+tester_func <- function() {
+  with_mock(
+    access_resource = function() 42,
+    work_with_data_from_resource()
+  )
+}
+try(work_with_data_from_resource())
+tester_func()
+```
+In (other) words: you can write a small wrapper function exclusively for testing for which an internally used function is substituted.
+]
 
 ---
 
-# Errors and warnings
+# Unit testing
+
+.font17[
+If you want to do something in a test that has a persistent side-effect, which you would like to avoid, a helpful package is {withr} (https://withr.r-lib.org/).
+
+It has many useful functions, one of which is `defer()`. Using this function you can "plan" an exit strategy for your tests.
+If, for example, you created a schema and tables for testing inside this schema within a `test_that()`-call, you can add:
+```{r eval=FALSE}
+  withr::defer({
+    walk(
+      remote_tbl_names,
+      ~ try(dbExecute(con_db, paste0("DROP TABLE ", .x)))
+    )
+    try(dbExecute(con_db, paste0("DROP SCHEMA ", schema_name_q)))
+  })
+```
+This ensures that upon completing the test, the test-tables and the schema will be dropped again.
+Even if using a database in a Docker container specifically created for the duration of testing the package (e.g. using GitHub Actions), it's useful to leave a clean state after each test in order to avoid interference with other tests.
+]
 
 ---
 
