@@ -1,0 +1,216 @@
+---
+title: "BAG R-Courses"
+author: ["Patrick & Nicolas", "cynkra GmbH"]
+date: "December 21, 2021"
+output:
+  cynkradown::cynkra_slides:
+  # xaringan::moon_reader:
+    nature:
+      highlightStyle: github
+      highlightLines: true
+      countIncrementalSlides: false
+    seal: true
+fontsize: 10pt
+lang: english
+font: frutiger
+wide: false
+colorlinks: false
+logo: true
+header-includes:
+  - \usepackage{parskip}
+---
+
+
+# Efficient iteration
+
+Two different approaches exist:
+
+- for-loops
+- apply-functions
+
+**If done right**, both approaches are equally fast.
+The myth that for-loops are slow is not true.
+
+"for-loops" are a generic concept language-agnostic concept.
+"apply functions" are mainly popular in R and not available in every language.
+
+---
+
+## The apply family
+
+Package: {base}
+
+**single list/vector**
+- `tapply()`: Apply a function on a group of values
+- `sapply()`: Apply a function over a list or vector (not typesafe!)
+- `vapply()`: Apply a function over a list or vector
+
+**multiple lists/vectors**
+- `mapply()`: Apply a function to multiple list or arguments
+- `lapply()`: Apply a function over a list and get a list in return
+- `rapply()`: Recursive apply a fuction over a list of list
+
+---
+
+## {purrr} - tidyverse pkg for iteration
+
+Pros:
+- Typesafe: you always get a predefined type returned
+  `map_chr()`, `map_int()`, `map_dbl()`, etc.
+- Possibly simplified syntax
+- Cat power (?)
+
+Cons:
+- Imports {rlang}
+- Requires another pkg just for iteration
+
+---
+
+## purrr vs base apply
+
+Create a matrix with 5 rows and 6 columns:
+
+```{r }
+mat <- matrix(rnorm(30), nrow = 5, ncol = 6)
+mat <- tibble::as_tibble(mat) # tibble is an optimized dataframe
+```
+
+---
+
+Now let´s sum the values of each column with `apply()`:
+
+```{r}
+apply(X = mtcars, MARGIN = 2, FUN = sum)
+```
+
+and with {purrr}:
+
+```{r}
+purrr::map_dbl(mtcars, sum)
+```
+
+---
+
+## `vapply()` / `purrr:map_int()`
+
+Count the number of characters of each name.
+
+```{r}
+names <- list("Antoine", "Mary", "Duncan", "Obalaya")
+```
+
+```{r}
+vapply(names, nchar, FUN.VALUE = integer(1))
+```
+
+```{r}
+purrr::map_int(names, nchar)
+```
+
+---
+
+Exercise: Execute the same task but store the result in a list instead of a numeric vector
+
+---
+
+### Flexible argument placement
+
+If the input is not the first argument of the applied function, one needs to be more explicit during the call specification.
+Often, `function(x)` is used.
+The "x" is an arbitray choice and could also be any other character (sequence).
+
+```{r}
+vapply(names, function(y) nchar(y), FUN.VALUE = integer(1))
+```
+
+```{r}
+purrr::map_int(names, ~ nchar(.x))
+```
+
+{purrr} uses the `~` and `.x` syntax to "simplify" the iteration syntax.
+
+---
+
+## `tapply()`
+
+`tapply()` is the 'group by and apply function' member of the 'apply-family'.
+
+Return the mean of `Sepal.Length`, grouped by `Species`:
+
+```{r}
+tapply(iris$Sepal.Length, iris$Species, mean)
+```
+
+---
+
+
+This can also be done **for all variables at once** combining `apply()` and `tapply()`.
+However, the code line below is a bit advanced.
+Let's break it down:
+
+```{r}
+apply(iris[, -5], MARGIN = 2, function(x) {
+  tapply(x, iris$Species, mean)
+})
+```
+
+1. In the `apply()` call, deselect the factor column which defines the grouping (`iris[, -5]`).
+1. Apply `tapply()` to all columns (specified via ` MARGIN = 2`).
+
+---
+
+## `mapply()` / `purrr::map2*()`
+
+Iterate over multiple vectors or lists at the same time.
+
+Combine first and last names of the following vector and list:
+
+```{r}
+names_first <- c("Antoinette", "Mary", "Duncan")
+names_last <- list("Miller", "Blidge", "Murdoc")
+```
+
+```{r}
+mapply(paste, names_first, names_last, USE.NAMES = FALSE)
+```
+
+```{r}
+purrr::map2_chr(names_first, names_last, ~ paste(.x, .y))
+```
+
+---
+
+## rapply()
+
+Recurisve apply on list of lists.
+One use case would be an if/else replacement across all items of the nested lists.
+To do so, we first define our own little function:
+
+```{r}
+myFun <- function(x) {
+  return(paste(x, "!", sep = ""))
+}
+```
+
+This function adds an "!" to each item.
+
+```{r}
+rl <- list(
+  a = list(a1 = "Boo", b1 = "Eeek"),
+  b = list(a2 = "Foo", b2 = list(a3 = "Hey"))
+)
+```
+
+---
+
+```{r}
+rapply(l, function(x) myFun(x))
+```
+
+The result is an array.
+To preserve the list structure you put in, use argument `how = "replace"`.
+
+```{r}
+rapply(l, function(x) myFun(x), how = "replace")
+```
+
