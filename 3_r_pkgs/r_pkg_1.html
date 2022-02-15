@@ -354,6 +354,7 @@ https://github.com/cynkra/bag-courses
 
 # R package creation
 
+.font17[
 Overview:
 
 1. Intro
@@ -361,13 +362,15 @@ Overview:
 1. Documentation
 1. Dependencies (DESCRIPTION) &amp; NAMESPACE
 1. Useful little helpers: `{usethis}`
-1. S3 Class
+1. Classes
 1. Methods vs. functions
 1. Unit testing
 1. Errors and warnings
 1. Versioning
+1. GitHub Actions (CI)
 1. Best practices
 1. Further reading
+]
 
 ---
 
@@ -742,47 +745,147 @@ Here a small subset of the services it provides:
 
 # Classes
 
-The only type of classes covered here are S3 classes (by far the most prevalent ones).
+The following slides are largely following: https://adv-r.hadley.nz/oo.html
 
-.font17[
-Resources for learning about S4, e.g.:
-- https://stat.ethz.ch/R-manual/R-devel/library/methods/html/Introduction.html
-- https://adv-r.hadley.nz/s4.html
+When developing R packages it might be useful to create a new OOP class in order to tackle certain problems.
 
-Resources for learning about Reference Classes (R5), e.g.:
-- https://stat.ethz.ch/R-manual/R-devel/library/methods/html/refClass.html
-- https://www.datamentor.io/r-programming/reference-class/
-- (http://adv-r.had.co.nz/R5.html)
-
-Resources for learning about R6, e.g.:
-- https://r6.r-lib.org/articles/Introduction.html
-- https://adv-r.hadley.nz/r6.html
-]
+In general it could make sense to introduce a new class if:
+- We want to deal with objects which are a certain subset of another class or base type.
+- We are dealing with data for which certain rules apply and we want to exploit the associated possibilities.
 
 ---
 
-# S3 Classes
+# Classes
 
-.font17[
-Resources for learning (more) about S3, e.g.:
-- https://stat.ethz.ch/R-manual/R-devel/library/methods/html/Introduction.html
-- https://adv-r.hadley.nz/s3.html
-]
+The most important OOP systems in R - since most widely used - are: S3, S4 and R6.
 
-The S3 class is one of the 4 (if you include R6) object oriented classes in R.
-If the object `x` is NOT of a base type, the S3 class is the answer to the call `class(x)`.
+S3 and S4 come with base R and are **functional** OOP systems: generic functions with methods for different classes. Method calls look like normal functions: `generic(object, arg2, arg3)`.
+
+R6 come with the package {R6} and is an **encapsulated** OOP system: methods are part of the object, with method calls often looking like `object.method(arg1, arg2)`.
 
 ---
 
-# S3 Classes
+# Classes
 
-.font17[
+- S3: informal implementation of functional OOP and relies on common conventions more than guarantees
+- S4: is a formal and rigorous rewrite of S3; provides more guarantees and greater encapsulation
+- R6: implements the encapsulated system, widely used in other programming languages; in contrast to other R objects, R6-objects are modified in place.
+
+---
+
+# Classes: Base types
+
+All classes are in the end based on the base types that come with R.
+
 These are examples of base types (do NOT possess an attribute `class` &amp; `is.object(x)` is `FALSE`):
 
 `NULL`, `logical`, `integer`, `double`, `complex`, `character`, `list`, `raw`
+
+Every object has a(n underlying) base type, can be checked with `typeof()`.
+
+---
+
+# Classes: S3
+
+.font17[
+Resources: 
+- https://stat.ethz.ch/R-manual/R-devel/library/methods/html/Introduction.html
+- https://adv-r.hadley.nz/s3.html
+
+S3 is the most commonly found class on CRAN. It&#39;s the only OO system used in the base and stats packages.
+
+An S3 object is a base type with - at least - a class attribute.
+
+If the object `x` is NOT of a base type, the S3 class is the answer to the call `class(x)`.
 ]
 
-How to define a new S3 class in a package?
+---
+
+# Classes: S3
+
+.font17[
+Take for example a factor:
+
+```r
+f &lt;- factor(c(&quot;a&quot;, &quot;b&quot;, &quot;c&quot;))
+
+typeof(f)
+```
+
+```
+## [1] &quot;integer&quot;
+```
+
+```r
+attributes(f)
+```
+
+```
+## $levels
+## [1] &quot;a&quot; &quot;b&quot; &quot;c&quot;
+## 
+## $class
+## [1] &quot;factor&quot;
+```
+
+`unclass()` strips away the attribute class:
+
+```r
+unclass(f)
+```
+
+```
+## [1] 1 2 3
+## attr(,&quot;levels&quot;)
+## [1] &quot;a&quot; &quot;b&quot; &quot;c&quot;
+```
+]
+
+---
+
+# Classes: S3
+
+.font17[
+When a generic function is used on a S3 class, the result can differ from using it on the underlying base type, e.g.
+
+```r
+# check function type:
+sloop::ftype(print)
+```
+
+```
+## [1] &quot;S3&quot;      &quot;generic&quot;
+```
+
+```r
+print(f)
+```
+
+```
+## [1] a b c
+## Levels: a b c
+```
+
+Mind, that a generic function has a defined interface - i.e. available arguments - that needs to be the same for all method implementations.
+
+You can check the source code for a method implementation of a generic by calling e.g.
+
+```r
+print.factor
+# or better, cause it will work even if S3 method isn&#39;t exported:
+sloop::s3_get_method(print.factor)
+```
+]
+
+.font14[
+Link to package {sloop} for examining OOP objects: https://sloop.r-lib.org/
+]
+
+---
+
+# Classes: S3
+
+.font17[How to define a new S3 class?
 
 You do not have to explicitly define/export a class.
 You set an attribute `class` with the name of the new class, that&#39;s all, e.g.:
@@ -804,21 +907,89 @@ class(create_new_class(&quot;1&quot;))
 ## [1] &quot;new_class&quot; &quot;character&quot;
 ```
 
+```r
+# alternatively:
+new_obj &lt;- &quot;test&quot;
+class(new_obj) &lt;- &quot;new_class&quot;
+class(new_obj)
+```
+
+```
+## [1] &quot;new_class&quot;
+```
+]
 
 ---
 
-# S3 Classes
-
-Now we know how to invent a new class.
-Why would we want that though?
+# Classes: S3
 
 .font17[
-For example:
-- We want to deal with objects which are a certain subset of another class or base type.
-- We are dealing with data for which certain rules apply and we want to exploit the associated possibilities.
+You can perform a check if an object is a member of a class (child or on of the parent classes) with `inherits(x, &quot;&lt;class_name&gt;&quot;)`.
+
+```r
+inherits(new_obj, &quot;new_class&quot;)
+```
+
+```
+## [1] TRUE
+```
+
+```r
+inherits(new_obj, &quot;character&quot;)
+```
+
+```
+## [1] FALSE
+```
+
+If you provide a user-facing new class in your package, it would be good practice to implement three functions:
+- A low-level internal constructor, new_myclass(), that efficiently creates new objects with the correct structure.
+- An internal validator, validate_myclass(), that performs more computationally expensive checks to ensure that the object has correct values.
+- An exported user-friendly helper, myclass(), that provides a convenient way for others to create objects of your class.
 ]
 
-R example:
+---
+
+# Classes: S3
+
+Creating a new generic:
+
+```r
+# in addition to `x` there can be more arguments
+my_new_generic &lt;- function(x) {
+  UseMethod(&quot;my_new_generic&quot;)
+}
+```
+
+Then you would add a method for one or more classes for this generic.
+
+---
+
+# Classes: S3
+
+An S3 object can have more than one class.
+The first class in the list is called a subclass of the following entries.
+
+When a generic looks for a method to use for a S3 class object, a search takes place for registered methods in order of the class list.
+
+For example, there is no specific print method for objects of class `ordered`, so it uses the print method for `factor`:
+
+```r
+o &lt;- ordered(&quot;x&quot;)
+sloop::s3_dispatch(print(o))
+```
+
+```
+##    print.ordered
+## =&gt; print.factor
+##  * print.default
+```
+
+---
+
+# Classes: S3
+
+Example for implementing a new class for digits and implementing a print-method for it:
 
 ```r
 create_digit &lt;- function(x) {
@@ -837,7 +1008,7 @@ digit
 
 ---
 
-# Methods vs. functions
+# Classes: S3
 
 Print method:
 
@@ -868,14 +1039,14 @@ sum(digit, digit, digit)
 ## Digit: 2
 ```
 
-etc.
+More methods for new classes can be implemented for other generics.
 
 ---
 
-# Methods vs. functions
+# Classes: S3
 
 .font17[
-Alternatively, you can also use your own functions to create the same behaviour.
+If you do not want to rely on methods, you can also use your own functions to create the same behaviour.
 The caveat is that you will need to test for the object class yourself and throw an error if a &quot;wrong&quot; object is passed to the function.
 
 It&#39;s good practice to choose a descriptive function name.
@@ -898,6 +1069,94 @@ sum_digit_modulo_10(digit, digit, digit)
 ```
 ## Digit: 2
 ```
+
+---
+
+# Classes: S4
+
+.font17[
+Resources for learning about S4, e.g.:
+- https://stat.ethz.ch/R-manual/R-devel/library/methods/html/Introduction.html
+- https://adv-r.hadley.nz/s4.html
+
+&quot;The implementation of S4 is much stricter than that of S3 and makes use of specialized functions for creating classes (`setClass()`), generics (`setGeneric()`), and methods (`setMethod()`).
+Additionally, S4 provides both multiple inheritance (i.e. a class can have multiple parents) and multiple dispatch (i.e. method dispatch can use the class of multiple arguments).
+
+An important new component of S4 is the slot, a named component of the object that is accessed using the specialised subsetting operator @ (pronounced at). The set of slots, and their classes, forms an important part of the definition of an S4 class.&quot;
+
+All S4-related functions live in the {methods} package, which is part of base R.
+]
+
+---
+
+# Classes: S4
+
+Creating a new S4 class &quot;Person&quot;:
+
+```r
+setClass(&quot;Person&quot;, 
+  slots = c(
+    name = &quot;character&quot;, 
+    age = &quot;numeric&quot;
+  )
+)
+```
+
+Create a new object of this class with `new()`:
+
+```r
+john &lt;- new(&quot;Person&quot;, name = &quot;John Smith&quot;, age = NA_real_)
+john
+```
+
+```
+## An object of class &quot;Person&quot;
+## Slot &quot;name&quot;:
+## [1] &quot;John Smith&quot;
+## 
+## Slot &quot;age&quot;:
+## [1] NA
+```
+
+---
+
+# Classes: S4
+
+Check an S4 objects class with `is()` and access its slots with `@` or `slot()`:
+
+```r
+is(john)
+```
+
+```
+## [1] &quot;Person&quot;
+```
+
+```r
+john@name
+```
+
+```
+## [1] &quot;John Smith&quot;
+```
+
+```r
+slot(john, &quot;age&quot;)
+```
+
+```
+## [1] NA
+```
+
+---
+
+# Classes: R6
+
+.font17[
+Resources for learning about R6, e.g.:
+- https://r6.r-lib.org/articles/Introduction.html
+- https://adv-r.hadley.nz/r6.html
+]
 
 ---
 
