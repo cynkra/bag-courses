@@ -368,7 +368,6 @@ Overview:
 1. Dependencies (DESCRIPTION) &amp; NAMESPACE
 1. Useful little helpers: `{usethis}`
 1. Classes
-1. Methods vs. functions
 1. Unit testing
 1. Errors and warnings
 1. Versioning
@@ -575,6 +574,7 @@ The documentation of a function consists of:
 
 # Documentation
 
+.font17[
 Important: In order to make a function available to users loading the package, there needs to be a tag `@export`.
 
 Usually only exported functions are documented in that detailed manner.
@@ -583,6 +583,8 @@ It helps to add commentary to internal functions too though.
 
 All non-exported (so-called internal) functions are available for all other internal or exported functions of the package.
 They are available in the console as well after calling `devtools::load_all()` while working on the package.
+They can be individually referred to as well by `&lt;your.package&gt;:::&lt;internal_function&gt;()`.
+]
 
 ---
 
@@ -728,7 +730,7 @@ For pretty much all other purposes use `.onLoad()`, e.g. for setting customs opt
 
 We have already encountered a few functions from the package {devtools} (`document()`, `load_all()`, `build()`) that help with package development.
 
-Another package that has the same goal is [{usethis}](https://usethis.r-lib.org/).
+Another package that has the same goal is {usethis} (https://usethis.r-lib.org/).
 It is full of helper functions that facilitate package creation. We already encountered `usethis::create_package()`.
 
 ---
@@ -1854,7 +1856,7 @@ The workflow for the CI is defined in yaml-files located in &quot;.github/workfl
 
 # Best practices
 
-- &quot;Functions should do one thing only, but do it well&quot;
+- &quot;Functions should do one thing only, but do it well&quot; (at least it should be built on such functions)
 &lt;!-- you&#39;ll see if your function is too much &quot;all over the place&quot; while documenting its behaviour. --&gt;
 - But: wrapper functions can of course also be useful
 - Comments in the code for others/your future self
