@@ -29,6 +29,10 @@ header-includes:
 .font14 {
     font-size: 14px;
 }
+.remark-slide-number {
+  display: inline;
+  font-size: 15px;
+}
 </style>
 
 
@@ -96,8 +100,9 @@ https://github.com/cynkra/bag-courses
 
 # General remarks
 
-<!-- - Even though we are starting out remotely, we hope for these courses to be interactive: go ahead and ask if something is unclear! -->
-<!-- - We were asked to provide recordings of the courses for those of you who cannot join, so recording is activated -->
+- Even though we are starting out remotely, we hope for these courses to be interactive: go ahead and ask if something is unclear!
+- If we feel that some questions are holding back the course, we will defer answering to the next break.
+- We were asked to provide recordings of the courses for those of you who cannot join, so recording is activated.
 - Per course unit, we offer 4 hours of follow up time; approach us with questions (nicolas@cynkra.com)!
 
 ???
