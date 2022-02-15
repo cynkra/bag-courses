@@ -443,6 +443,7 @@ There are 2 obvious and easy ways of creating a new valid package in R/RStudio i
 
 - Create an R package (or 2) in one of the shown ways.
 - Examine the files/directories that were created.
+- Build the package (Ctrl+Shift+B)
 
 ---
 
@@ -1000,6 +1001,7 @@ digit
 
 # Classes: S3
 
+.font17[
 Print method:
 
 ```r
@@ -1030,6 +1032,7 @@ sum(digit, digit, digit)
 ```
 
 More methods for new classes can be implemented for other generics.
+]
 
 ---
 
@@ -1069,10 +1072,12 @@ Resources for learning about S4, e.g.:
 - https://stat.ethz.ch/R-manual/R-devel/library/methods/html/Introduction.html
 - https://adv-r.hadley.nz/s4.html
 
+S4 is widely used for the Bioconductor project, not so much on CRAN though.
+
 &quot;The implementation of S4 is much stricter than that of S3 and makes use of specialized functions for creating classes (`setClass()`), generics (`setGeneric()`), and methods (`setMethod()`).
 Additionally, S4 provides both multiple inheritance (i.e. a class can have multiple parents) and multiple dispatch (i.e. method dispatch can use the class of multiple arguments).
 
-An important new component of S4 is the slot, a named component of the object that is accessed using the specialised subsetting operator @ (pronounced at). The set of slots, and their classes, forms an important part of the definition of an S4 class.&quot;
+An important new component of S4 is the slot, a named component of the object that is accessed using the specialised subsetting operator `@` (pronounced at). The set of slots, and their classes, forms an important part of the definition of an S4 class.&quot;
 
 All S4-related functions live in the {methods} package, which is part of base R.
 ]
@@ -1310,7 +1315,7 @@ setMethod(&quot;myGeneric&quot;, &quot;Person&quot;, function(x) {
 })
 ```
 
-The second argument to `setMethod()` is called `signature` and can multiple arguments, which turns method dispatch into a complicated issue.
+The second argument to `setMethod()` is called `signature` and can take multiple arguments, which turns method dispatch into a complicated issue.
 
 In order to list all methods associated with a generic or all methods that belong to a class, use `methods(&quot;generic&quot;)` or `methods(class = &quot;class&quot;)`.
 
@@ -1326,7 +1331,7 @@ The rule for method dispatch with one argument for `signature` is the following:
 - If 2 or more methods are then available, a warning is issued and the method for the class is chosen which comes first in the alphabet
 - Generally the method is chosen with the smallest distance to the actual class
 
-In general it is possible though to keep these cases rare.
+In general it is possible though to keep these cases of ambiguity rare.
 
 If `signature` consists of e.g. 2 classes, the same process takes place for both classes of the objects that are provided to the generic
 ]
@@ -1340,11 +1345,11 @@ Resources for learning about R6, e.g.:
 - https://r6.r-lib.org/articles/Introduction.html
 - https://adv-r.hadley.nz/r6.html
 
-This OOP comes with the package {R6}.
+This OOP system comes with the package {R6}. It&#39;s for example used in {plumber} and {shiny}.
 
-&quot;R6 has two special properties:
+R6 has two special properties:
 - It uses the encapsulated OOP paradigm, which means that methods belong to objects, not generics, and you call them like `object$method()`.
-- R6 objects are mutable, which means that they are modified in place, and hence have reference semantics.&quot;
+- R6 objects are mutable, which means that they are modified in place, and hence have reference semantics.
 ]
 
 ---
@@ -1475,6 +1480,7 @@ Person &lt;- R6Class(&quot;Person&quot;, list(
 
 # Classes: R6
 
+This leads to the following behaviour:
 
 ```r
 john &lt;- Person$new(&quot;John&quot;, age = 40)
