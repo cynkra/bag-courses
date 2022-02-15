@@ -1217,6 +1217,14 @@ Even if using a database in a Docker container specifically created for the dura
 ]
 
 ---
+
+# Exercise
+
+- Create useful tests for your function in your new package
+- Execute the tests using devtools::test() or "Ctrl+Shift+T"
+
+---
+
 # Errors and warnings
 
 Descriptive error messages and warnings are enormously helpful for the user.
