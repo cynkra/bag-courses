@@ -738,13 +738,317 @@ slot(john, "age")
 
 ---
 
+# Classes: S4
+
+.font17[It is good practice to create accessor functions for setting and getting the values in the slots, e.g. we create a setter and getter generic for "age" using `setGeneric()`:
+```{r}
+setGeneric("age", function(x) standardGeneric("age"))
+setGeneric("age<-", function(x, value) standardGeneric("age<-"))
+```
+
+Now we can add methods for our new class "Person" using `setMethod()`:
+```{r}
+setMethod("age", "Person", function(x) x@age)
+setMethod("age<-", "Person", function(x, value) {
+  x@age <- value
+  x
+})
+
+age(john) <- 50
+age(john)
+```
+]
+---
+
+# Classes: S4
+
+.font17[
+`setClass()` takes three arguments:
+- The class name (convention: UpperCamelCase)
+- A named character vector with the names and classes of the slots (see above). The pseudo-class `ANY` allows a slot to accept objects of any type.
+- A prototype, a list of default values for each slot. Technically, the prototype is optional, but you should always provide it.
+
+So a better implementation for "Person" would be:
+```{r}
+setClass("Person", 
+  slots = c(
+    name = "character", 
+    age = "numeric"
+  ), 
+  prototype = list(
+    name = NA_character_,
+    age = NA_real_
+  )
+)
+```
+]
+
+---
+
+# Classes: S4
+
+One more important argument for `setClass()` is `contains`. Here a class can be specified to inherit slots and behaviour from:
+```{r}
+setClass("Employee", 
+  contains = "Person", 
+  slots = c(
+    boss = "Person"
+  ),
+  prototype = list(
+    boss = new("Person")
+  )
+)
+
+str(new("Employee"))
+```
+
+---
+
+# Classes: S4
+
+.font17[
+In addition to checking the S4 classes, testing inheritance also works with `is()`:
+```{r}
+is(new("Employee"))
+is(new("Employee"), "Person")
+```
+
+It's a good idea to provide a user-facing constructor for creating objects of the new class:
+```{r}
+Person <- function(name, age = NA) {
+  age <- as.double(age)
+  
+  new("Person", name = name, age = age)
+}
+```
+
+A validator is necessary to check more specific requirements for the slot contents.
+It is checked upon creation of the object though, if the slot fields are of the specified class.
+]
+
+---
+
+# Classes: S4
+
+.font17[To create a new S4 generic, call `setGeneric()` with a function that calls `standardGeneric()`:
+```{r}
+setGeneric("myGeneric", function(x) standardGeneric("myGeneric"))
+```
+
+The argument `signature` of `setGeneric()` allows you to control the arguments that are used for method dispatch.
+If signature is not supplied, all arguments (apart from ...) are used. It is occasionally useful to remove arguments from dispatch. This allows you to require that methods provide arguments like `verbose = TRUE` or `quiet = FALSE`, but they don’t take part in dispatch.
+```{r}
+setGeneric("myGeneric", 
+  function(x, ..., verbose = TRUE) standardGeneric("myGeneric"),
+  signature = "x"
+)
+```
+]
+
+---
+
+# Classes: S4
+
+You create a method for an S4 class generic with `setMethod()`:
+```{r}
+setMethod("myGeneric", "Person", function(x) {
+  # method implementation
+})
+```
+
+The second argument to `setMethod()` is called `signature` and can multiple arguments, which turns method dispatch into a complicated issue.
+
+In order to list all methods associated with a generic or all methods that belong to a class, use `methods("generic")` or `methods(class = "class")`.
+
+---
+
+# Classes: S4
+
+.font17[
+The rule for method dispatch with one argument for `signature` is the following:
+
+- You start from the actual class supplied to the generic. If there is a method for it, it will be used.
+- If there is no method for it and the class has multiple equally valid parents (**multiple inheritance**), all of them are checked for existing methods
+- If 2 or more methods are then available, a warning is issued and the method for the class is chosen which comes first in the alphabet
+- Generally the method is chosen with the smallest distance to the actual class
+
+In general it is possible though to keep these cases rare.
+
+If `signature` consists of e.g. 2 classes, the same process takes place for both classes of the objects that are provided to the generic
+]
+
+---
+
 # Classes: R6
 
 .font17[
 Resources for learning about R6, e.g.:
 - https://r6.r-lib.org/articles/Introduction.html
 - https://adv-r.hadley.nz/r6.html
+
+This OOP comes with the package {R6}.
+
+"R6 has two special properties:
+- It uses the encapsulated OOP paradigm, which means that methods belong to objects, not generics, and you call them like `object$method()`.
+- R6 objects are mutable, which means that they are modified in place, and hence have reference semantics."
 ]
+
+---
+
+# Classes: R6
+
+.font17[
+```{r}
+library(R6)
+```
+
+R6 only needs a single function call to create both the class and its methods: `R6::R6Class()`:
+- The first argument is the classname. It’s not strictly needed, but it improves error messages and makes it possible to use R6 objects with S3 generics. By convention, R6 classes have UpperCamelCase names.
+- The second argument, `public`, supplies a list of methods (functions) and fields (anything else) that make up the public interface of the object. By convention, methods and fields use snake_case. Methods can access the methods and fields of the current object via `self$`
+
+Example:
+```{r}
+Accumulator <- R6Class("Accumulator", list(
+  sum = 0,
+  add = function(x = 1) {
+    self$sum <- self$sum + x 
+    invisible(self)
+  })
+)
+```
+
+]
+
+---
+
+# Classes: R6
+
+```{r}
+Accumulator
+```
+.font17[
+You construct a new object from the class by calling the new() method. In R6, methods belong to objects, so you use $ to access new():
+```{r}
+x <- Accumulator$new() 
+```
+You can then call methods and access fields with $:
+```{r}
+x$add(4)
+x$sum
+```
+]
+
+---
+
+# Classes: R6
+
+.font17[
+You can chain methods like so:
+```{r}
+x$add(10)$add(10)$sum
+```
+It might be more readable in the following manner:
+```{r}
+x$
+  add(10)$
+  add(10)$
+  sum
+```
+]
+
+---
+
+# Classes: R6
+
+.font17[
+Two important methods that should be defined for most classes are `$initialize()` and `$print()`.
+
+`$initialize()` overrides the default behaviour of `$new()` (e.g. here we add checks), and `$print()` allows it to customize the printed output:
+```{r}
+Person <- R6Class("Person", list(
+  name = NULL,
+  age = NA,
+  initialize = function(name, age = NA) {
+    stopifnot(is.character(name), length(name) == 1)
+    stopifnot(is.numeric(age), length(age) == 1)
+    
+    self$name <- name
+    self$age <- age
+  },
+  print = function(...) {
+    cat("Person: \n")
+    cat("  Name: ", self$name, "\n", sep = "")
+    cat("  Age:  ", self$age, "\n", sep = "")
+    invisible(self)
+  }
+))
+```
+]
+
+---
+
+# Classes: R6
+
+```{r}
+john <- Person$new("John", age = 40)
+john
+```
+
+---
+
+# Classes: R6
+
+.font17[
+An R6 class can inherit from another R6 class by providing the class object to the `inherit` argument:
+```{r}
+AccumulatorChatty <- R6Class("AccumulatorChatty", 
+  inherit = Accumulator,
+  public = list(
+    add = function(x = 1) {
+      cat("Adding ", x, "\n", sep = "")
+      super$add(x = x)
+    }
+  )
+)
+x2 <- AccumulatorChatty$new()
+x2$add(10)$add(1)$sum
+```
+Here we are referring to the method `add` of the (super-)class `Accumulator` with `super$add`.
+]
+
+---
+
+# Classes: R6
+
+You can inspect the class of an R6 object with `class()`:
+```{r}
+class(x2)
+```
+
+The methods and fields can be listed by `names()`:
+```{r}
+names(x2)
+```
+
+
+---
+
+# Classes: R6
+
+R6 objects are modified in place. If you want a copy of such an object you need to use the `$clone()` method:
+```{r}
+john_copy <- john$clone()
+john_test <- john
+john_test$name <- "Max"
+john
+john_copy
+```
+
+---
+
+# Exercise (~10min)
+
+Create and play with S3, S4 and R6 objects
 
 ---
 
