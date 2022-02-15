@@ -1654,7 +1654,7 @@ A few words on why they are useful nevertheless:
 # Unit testing
 
 .font17[
-In some situations the test approaches above are not up to the task, e.g.:
+In some situations the test approaches used above are not up to the task, e.g.:
 - Text output that includes many characters like quotes and newlines that require special handling in a string.
 - Output that is large, making it painful to define the reference output, and bloating the size of the test file and making it hard to navigate.
 - Binary formats like plots or images, which are very difficult to describe in code: i.e. the plot looks right, the error message is useful to a human, the print method uses colour effectively.
@@ -1759,11 +1759,11 @@ If, for example, you created a schema and tables for testing inside this schema 
 
 ```r
   withr::defer({
-    walk(
+    purrr::walk(
       remote_tbl_names,
-      ~ try(dbExecute(con_db, paste0(&quot;DROP TABLE &quot;, .x)))
+      ~ try(DBI::dbExecute(con_db, paste0(&quot;DROP TABLE &quot;, .x)))
     )
-    try(dbExecute(con_db, paste0(&quot;DROP SCHEMA &quot;, schema_name_q)))
+    try(DBI::dbExecute(con_db, paste0(&quot;DROP SCHEMA &quot;, schema_name_q)))
   })
 ```
 This ensures that upon completing the test, the test-tables and the schema will be dropped again.
