@@ -121,7 +121,6 @@ Overview:
 1. Dependencies (DESCRIPTION) & NAMESPACE
 1. Useful little helpers: `{usethis}`
 1. Classes
-1. Methods vs. functions
 1. Unit testing
 1. Errors and warnings
 1. Versioning
@@ -209,6 +208,7 @@ There are 2 obvious and easy ways of creating a new valid package in R/RStudio i
 
 - Create an R package (or 2) in one of the shown ways.
 - Examine the files/directories that were created.
+- Build the package (Ctrl+Shift+B)
 
 ---
 
@@ -293,6 +293,7 @@ tibble::tribble(
 
 # Documentation
 
+.font17[
 Important: In order to make a function available to users loading the package, there needs to be a tag `@export`.
 
 Usually only exported functions are documented in that detailed manner.
@@ -301,6 +302,8 @@ It helps to add commentary to internal functions too though.
 
 All non-exported (so-called internal) functions are available for all other internal or exported functions of the package.
 They are available in the console as well after calling `devtools::load_all()` while working on the package.
+They can be individually referred to as well by `<your.package>:::<internal_function>()`.
+]
 
 ---
 
@@ -443,7 +446,7 @@ For pretty much all other purposes use `.onLoad()`, e.g. for setting customs opt
 
 We have already encountered a few functions from the package {devtools} (`document()`, `load_all()`, `build()`) that help with package development.
 
-Another package that has the same goal is [{usethis}](https://usethis.r-lib.org/).
+Another package that has the same goal is {usethis} (https://usethis.r-lib.org/).
 It is full of helper functions that facilitate package creation. We already encountered `usethis::create_package()`.
 
 ---
@@ -648,6 +651,7 @@ digit
 
 # Classes: S3
 
+.font17[
 Print method:
 ```{r}
 print.digit <- function(x, ...) {
@@ -668,6 +672,7 @@ sum(digit, digit, digit)
 ```
 
 More methods for new classes can be implemented for other generics.
+]
 
 ---
 
@@ -702,10 +707,12 @@ Resources for learning about S4, e.g.:
 - https://stat.ethz.ch/R-manual/R-devel/library/methods/html/Introduction.html
 - https://adv-r.hadley.nz/s4.html
 
+S4 is widely used for the Bioconductor project, not so much on CRAN though.
+
 "The implementation of S4 is much stricter than that of S3 and makes use of specialized functions for creating classes (`setClass()`), generics (`setGeneric()`), and methods (`setMethod()`).
 Additionally, S4 provides both multiple inheritance (i.e. a class can have multiple parents) and multiple dispatch (i.e. method dispatch can use the class of multiple arguments).
 
-An important new component of S4 is the slot, a named component of the object that is accessed using the specialised subsetting operator @ (pronounced at). The set of slots, and their classes, forms an important part of the definition of an S4 class."
+An important new component of S4 is the slot, a named component of the object that is accessed using the specialised subsetting operator `@` (pronounced at). The set of slots, and their classes, forms an important part of the definition of an S4 class."
 
 All S4-related functions live in the {methods} package, which is part of base R.
 ]
@@ -861,7 +868,7 @@ setMethod("myGeneric", "Person", function(x) {
 })
 ```
 
-The second argument to `setMethod()` is called `signature` and can multiple arguments, which turns method dispatch into a complicated issue.
+The second argument to `setMethod()` is called `signature` and can take multiple arguments, which turns method dispatch into a complicated issue.
 
 In order to list all methods associated with a generic or all methods that belong to a class, use `methods("generic")` or `methods(class = "class")`.
 
@@ -877,7 +884,7 @@ The rule for method dispatch with one argument for `signature` is the following:
 - If 2 or more methods are then available, a warning is issued and the method for the class is chosen which comes first in the alphabet
 - Generally the method is chosen with the smallest distance to the actual class
 
-In general it is possible though to keep these cases rare.
+In general it is possible though to keep these cases of ambiguity rare.
 
 If `signature` consists of e.g. 2 classes, the same process takes place for both classes of the objects that are provided to the generic
 ]
@@ -891,11 +898,11 @@ Resources for learning about R6, e.g.:
 - https://r6.r-lib.org/articles/Introduction.html
 - https://adv-r.hadley.nz/r6.html
 
-This OOP comes with the package {R6}.
+This OOP system comes with the package {R6}. It's for example used in {plumber} and {shiny}.
 
-"R6 has two special properties:
+R6 has two special properties:
 - It uses the encapsulated OOP paradigm, which means that methods belong to objects, not generics, and you call them like `object$method()`.
-- R6 objects are mutable, which means that they are modified in place, and hence have reference semantics."
+- R6 objects are mutable, which means that they are modified in place, and hence have reference semantics.
 ]
 
 ---
@@ -994,6 +1001,7 @@ Person <- R6Class("Person", list(
 
 # Classes: R6
 
+This leads to the following behaviour:
 ```{r}
 john <- Person$new("John", age = 40)
 john
@@ -1108,7 +1116,7 @@ A few words on why they are useful nevertheless:
 # Unit testing
 
 .font17[
-In some situations the test approaches above are not up to the task, e.g.:
+In some situations the test approaches used above are not up to the task, e.g.:
 - Text output that includes many characters like quotes and newlines that require special handling in a string.
 - Output that is large, making it painful to define the reference output, and bloating the size of the test file and making it hard to navigate.
 - Binary formats like plots or images, which are very difficult to describe in code: i.e. the plot looks right, the error message is useful to a human, the print method uses colour effectively.
@@ -1198,11 +1206,11 @@ It has many useful functions, one of which is `defer()`. Using this function you
 If, for example, you created a schema and tables for testing inside this schema within a `test_that()`-call, you can add:
 ```{r eval=FALSE}
   withr::defer({
-    walk(
+    purrr::walk(
       remote_tbl_names,
-      ~ try(dbExecute(con_db, paste0("DROP TABLE ", .x)))
+      ~ try(DBI::dbExecute(con_db, paste0("DROP TABLE ", .x)))
     )
-    try(dbExecute(con_db, paste0("DROP SCHEMA ", schema_name_q)))
+    try(DBI::dbExecute(con_db, paste0("DROP SCHEMA ", schema_name_q)))
   })
 ```
 This ensures that upon completing the test, the test-tables and the schema will be dropped again.
@@ -1258,9 +1266,42 @@ The package {fledge} (https://cynkra.github.io/fledge/index.html) can be of assi
 
 ---
 
+# GitHub Actions (CI)
+
+If your package has a remote git-repo on GitHub you have access to a host of Continuous Integration features called GitHub Actions (GHA).
+
+Specifically for R this is a good resource to read more about the possibilities: https://orchid00.github.io/actions_sandbox/ (note: many of the {usethis}-helpers adding GHA-infrastructure to a package are now already on CRAN)
+
+The repo in which many useful R-related Actions are implemented can be found here: https://github.com/r-lib/actions (see README)
+This can be useful to check how certain details are implemented in case you want to tweak your workflow. There are also additional resources listed.
+
+A video of a talk by Jim Hester about GHA for R: https://www.jimhester.com/talk/2020-rsc-github-actions/
+
+---
+
+# GitHub Actions (CI)
+
+For example, on each push to the main/master-branch of the repo:
+- you can have a package automatically health-checked on several platforms
+- you can make use of Docker containers to simulate interaction of your package's functions with a database
+- you can trigger an update to your website on GitHub pages created with the {pkgdown}-package
+- etc.
+
+The workflow for the CI is defined in yaml-files located in ".github/workflows/".
+
+---
+
+# Exercise
+
+- In case it isn't yet, turn your package into a git-repo and bring it to GitHub.
+- Add a GHA workflow which triggers a standard R CMD check on each push to master/main and examine the related yaml-file.
+- Add a GHA workflow which triggers an update to a package-related website on GitHub pages on each push to master/main and examine the related yaml-file.
+
+---
+
 # Best practices
 
-- "Functions should do one thing only, but do it well"
+- "Functions should do one thing only, but do it well" (at least it should be built on such functions)
 <!-- you'll see if your function is too much "all over the place" while documenting its behaviour. -->
 - But: wrapper functions can of course also be useful
 - Comments in the code for others/your future self
@@ -1281,10 +1322,5 @@ The package {fledge} (https://cynkra.github.io/fledge/index.html) can be of assi
 Release to CRAN:
 
 - e.g. https://r-pkgs.org/release.html
-
----
-
-**Additional material**
-
 
 ---
