@@ -513,12 +513,11 @@ Every object has a(n underlying) base type, can be checked with `typeof()`.
 
 .font17[
 Resources: 
-- https://stat.ethz.ch/R-manual/R-devel/library/methods/html/Introduction.html
 - https://adv-r.hadley.nz/s3.html
 
 S3 is the most commonly found class on CRAN. It's the only OO system used in the base and stats packages.
 
-An S3 object is a base type with - at least - a class attribute.
+An S3 object is a base type with - at least - a `class` attribute.
 
 If the object `x` is NOT of a base type, the S3 class is the answer to the call `class(x)`.
 ]
@@ -688,7 +687,7 @@ In our case, possibly:
 ]
 ```{r}
 sum_digit_modulo_10 <- function(..., na.rm = FALSE) {
-  if (any(map_lgl(list(...), ~ class(.x)[[1]] != "digit"))) {
+  if (any(map_lgl(list(...), ~ !inherits(.x, "digit")))) {
     stop("not all elements in `...` are of class `digit`.")
   }
   x <- purrr::map_int(list(...), as.integer)
