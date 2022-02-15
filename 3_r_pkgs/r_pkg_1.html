@@ -1819,6 +1819,39 @@ The package {fledge} (https://cynkra.github.io/fledge/index.html) can be of assi
 
 ---
 
+# GitHub Actions (CI)
+
+If your package has a remote git-repo on GitHub you have access to a host of Continuous Integration features called GitHub Actions (GHA).
+
+Specifically for R this is a good resource to read more about the possibilities: https://orchid00.github.io/actions_sandbox/ (note: many of the {usethis}-helpers adding GHA-infrastructure to a package are now already on CRAN)
+
+The repo in which many useful R-related Actions are implemented can be found here: https://github.com/r-lib/actions (see README)
+This can be useful to check how certain details are implemented in case you want to tweak your workflow. There are also additional resources listed.
+
+A video of a talk by Jim Hester about GHA for R: https://www.jimhester.com/talk/2020-rsc-github-actions/
+
+---
+
+# GitHub Actions (CI)
+
+For example, on each push to the main/master-branch of the repo:
+- you can have a package automatically health-checked on several platforms
+- you can make use of Docker containers to simulate interaction of your package&#39;s functions with a database
+- you can trigger an update to your website on GitHub pages created with the {pkgdown}-package
+- etc.
+
+The workflow for the CI is defined in yaml-files located in &quot;.github/workflows/&quot;.
+
+---
+
+# Exercise
+
+- In case it isn&#39;t yet, turn your package into a git-repo and bring it to GitHub.
+- Add a GHA workflow which triggers a standard R CMD check on each push to master/main and examine the related yaml-file.
+- Add a GHA workflow which triggers an update to a package-related website on GitHub pages on each push to master/main and examine the related yaml-file.
+
+---
+
 # Best practices
 
 - &quot;Functions should do one thing only, but do it well&quot;
@@ -1842,11 +1875,6 @@ The package {fledge} (https://cynkra.github.io/fledge/index.html) can be of assi
 Release to CRAN:
 
 - e.g. https://r-pkgs.org/release.html
-
----
-
-**Additional material**
-
 
 ---
     </textarea>
