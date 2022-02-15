@@ -91,3 +91,28 @@ b2
 ls()
 detach("foo")
 search()
+
+# Depends/imports --------------------------------------------------------------
+
+devtools::install_github("nbenn/mockthat", subdir = "inst/testdata/mocktest")
+
+demo_ns <- asNamespace("mocktest")
+
+ls(envir = demo_ns)
+
+(imp_env <- parent.env(demo_ns))
+
+ls(envir = imp_env)
+
+ls(envir = getNamespaceInfo(demo_ns, "exports"))
+ls(envir = as.environment("package:mocktest"))
+
+# Function environments --------------------------------------------------------
+
+stats_pkg_env <- as.environment("package:stats")
+sd_fun <- get("sd", envir = stats_pkg_env)
+environment(sd_fun)
+
+stats_ns_env <- asNamespace("stats")
+sd_fun2 <- get("sd", envir = stats_ns_env)
+identical(environment(sd_fun), environment(sd_fun2))
