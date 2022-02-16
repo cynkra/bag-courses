@@ -538,8 +538,6 @@ ggplot(mpg, aes(x = displ)) +
 ```
 
 ]
-
---
   
   .pull-right[
 
@@ -622,11 +620,8 @@ ggplot(
 ```
 ]
 
---
-
   .pull-right[
-  
-```{r,echo=FALSE}
+```{r, echo=FALSE}
 ggplot(
   data = mpg,
   mapping = aes(x = displ, y = hwy, color = class)
@@ -635,7 +630,117 @@ ggplot(
   scale_x_log10()
 ```
   ]
-  
+
+
+---
+
+# Facetting
+
+“Facetting” denotes an idea of dividing a graphic into sub-graphics based on the (categorical) values of one or more variables of a dataset. Therefore, each sub-graphic shows a plot for a subset of the data.
+
+To implement it you can use two options:
+
+.pull-left[
+```{r, eval=FALSE}
+facet_grid(facets = vars(<variable>), 
+           scales = "fixed", 
+           ...)
+
+facet_wrap(rows = vars(<variable>), 
+           cols = vars(<variable>), 
+           scales = "fixed", 
+           ...)
+```
+]
+
+  .pull-right[
+<img src="fig/facets.png" width="800"/>
+]
+
+---
+
+#  `face_wrap*` function
+
+with `?face_wrap` we can find the different arguments to change our plot.
+
+- `facets` (required) : set of categorical variables
+- `dir` : `"h"` (default) for horizontal, or `"v"`, for vertical orientation.
+- `nrow` or `ncol` : 	Number of rows and columns.
+
+---
+
+#  `face_wrap*` direction
+
+.pull-left[
+```{r}
+ggplot(mpg, aes(displ, hwy)) +
+  geom_point(aes(colour = drv)) +
+  facet_wrap(vars(year))
+```
+]
+
+  .pull-right[
+```{r}
+ggplot(mpg, aes(displ, hwy)) +
+  geom_point(aes(colour = drv)) +
+  facet_wrap(vars(year), dir = "v")
+```
+]
+
+---
+
+#  `face_wrap*` `nrow` or `ncol`
+
+.pull-left[
+```{r}
+ggplot(mpg, aes(displ, hwy)) +
+  geom_point(aes(colour = drv)) +
+  facet_wrap(vars(class))
+```
+]
+
+  .pull-right[
+```{r}
+ggplot(mpg, aes(displ, hwy)) +
+  geom_point(aes(colour = drv)) +
+  facet_wrap(vars(class), nrow = 2)
+```
+]
+
+---
+
+#  `face_grid*` function
+
+While `facet_wrap()` tries to act smart and hide non-existing combinations of sub-plots, `facet_grid()` will create a full matrix of sub-plots for all possible combinations. 
+
+Most of the time when using only one categorical variable, `facet_wrap()` does a good job and is preferred over `facet_grid()`. However, `facet_grid` might be preferred in the following cases:
+
+- when faceting over >= 2 variables
+
+- when plots of empty combinations should be shown
+
+Let’s compare `facet_grid` and `facet_wrap` for 2 grouping variables.
+
+---
+
+#  `face_grid*` for 2 grouping variables
+
+```{r}
+ggplot(mpg, aes(displ, hwy)) +
+  geom_point(aes(colour = class)) +
+  facet_grid(vars(year), vars(cyl))
+```
+
+---
+
+#  `face_wrap*` for 2 grouping variables
+
+```{r}
+ggplot(mpg, aes(displ, hwy)) +
+  geom_point(aes(colour = class)) +
+  facet_wrap(vars(year, cyl))
+```
+
 ---
 
 # Export & saving
