@@ -1337,5 +1337,3 @@ The workflow for the CI is defined in yaml-files located in ".github/workflows/"
 Release to CRAN:
 
 - e.g. https://r-pkgs.org/release.html
-
----
