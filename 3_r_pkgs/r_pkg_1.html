@@ -604,17 +604,23 @@ One more tip: in general it can be helpful to &quot;cheat&quot; by checking out 
 
 # Dependencies (DESCRIPTION) &amp; NAMESPACE
 
-.font17[
 If you need another package&#39;s function(s), you should ask yourself, if these functions are needed for base functionality of your package, or if it&#39;s just e.g. for testing, building vignettes etc., that this package is necessary.
 
 In the former case, the package will be listed under &quot;`Imports:`&quot; in &quot;DESCRIPTION&quot;, in the latter case under &quot;`Suggests:`&quot;.
 The consequence is, that when installing your package, packages under &quot;`Imports:`&quot; are installed as well, whereas the other packages are not.
 
+---
+
+# Dependencies (DESCRIPTION) &amp; NAMESPACE
+
+.font17[
 There is an even stronger statement available for defining dependencies in &quot;DESCRIPTION&quot;: &quot;`Depends:`&quot;.
 If a package is listed here, this package&#39;s namespace is always attached to the search path whenever your package is, i.e. you can use its functions without the need of `::()` after calling `library(&quot;&lt;your.package&gt;&quot;)`.
 
 Using &quot;`Depends:`&quot; is generally not recommended, since this can potentially lead to namespace conflicts.
 In some cases (e.g. one package building on another one and only making sense in context with it) it should be used though.
+
+Tip: Use `usethis::use_package()` to add package dependencies, argument `type` can be one of &quot;Imports&quot;, &quot;Suggests&quot;, &quot;Depends&quot;.
 ]
 
 ---
