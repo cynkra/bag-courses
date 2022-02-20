@@ -1,7 +1,7 @@
 ---
 title: "R package creation"
 author: ["Tobias & Nicolas", "cynkra GmbH"]
-date: "February 15, 2022"
+date: "February 22, 2022"
 output:
   cynkradown::cynkra_slides:
     nature:
@@ -124,7 +124,7 @@ Overview:
 1. Unit testing
 1. Errors and warnings
 1. Versioning
-1. GitHub Actions (CI)
+1. Continuous Integration
 1. Best practices
 1. Further reading
 ]
@@ -133,12 +133,15 @@ Overview:
 
 # Intro: Advantages of R packages over R scripts
 
+.font17[
 - Best case: Package provides function(s) for working on re-occurring tasks
 - function as single source of truth (optimized implementation, higher chance of being bug-free)
 - sometimes related tasks can be solved by one function by introducing an argument
 - arguments, behaviour and result can be well documented (cf. later)
 - functions can be tested (cf. later)
+- there is some pressure to properly document functions (R CMD check)
 - can be shared easily
+]
 
 ---
 
@@ -1279,7 +1282,24 @@ The package {fledge} (https://cynkra.github.io/fledge/index.html) can be of assi
 
 ---
 
-# GitHub Actions (CI)
+# Continuous Integration (CI)
+
+.font17[
+CI makes it possible to start automated workflows that are triggered by customizable events.
+
+Triggers are typically e.g. a git push to the main branch on the remote git repo, or a pull request to this main branch.
+
+The triggered workflows are user-defined and can be virtually anything.
+Useful examples with respect to (R) package development would include:
+- Running the test suite
+- Updating test coverage for the functions defined in the package
+- Doing an R CMD check (potentially on several OS/using several R versions)
+- Updating the package related website (e.g. created using {pkgdown})
+]
+
+---
+
+# Continuous Integration (CI): e.g. GitHub Actions
 
 .font17[
 If your package has a remote git-repo on GitHub you have access to a host of Continuous Integration features called GitHub Actions (GHA).
@@ -1291,26 +1311,6 @@ This can be useful to check how certain details are implemented in case you want
 
 A video of a talk by Jim Hester about GHA for R: https://www.jimhester.com/talk/2020-rsc-github-actions/
 ]
-
----
-
-# GitHub Actions (CI)
-
-For example, on each push to the main/master-branch of the repo:
-- you can have a package automatically health-checked on several platforms
-- you can make use of Docker containers to simulate interaction of your package's functions with a database
-- you can trigger an update to your website on GitHub pages created with the {pkgdown}-package
-- etc.
-
-The workflow for the CI is defined in yaml-files located in ".github/workflows/".
-
----
-
-# Exercise
-
-- In case it isn't yet, turn your package into a git-repo and bring it to GitHub.
-- Add a GHA workflow which triggers a standard R CMD check on each push to master/main and examine the related yaml-file.
-- Add a GHA workflow which triggers an update to a package-related website on GitHub pages on each push to master/main and examine the related yaml-file.
 
 ---
 
