@@ -769,6 +769,92 @@ ggsave("mtcars.png")
 ]
 
 ---
+
+# ggplot extensions: *patchwork*
+
+It combines separated plots, and the data source can be different.
+
+  .pull-left[
+```{r, eval=FALSE}
+library(patchwork)
+
+p1 <- ggplot(mpg, aes(x = displ, y = hwy)) +
+  geom_point() +
+  labs(
+    title = "Plot using mpg dataset"
+  )
+
+p2 <- ggplot(economics, aes(x = date, y = pce)) + 
+  geom_line() +
+  labs(
+    title = "Plot using economics dataset"
+  )
+
+p1 + p2
+```
+]
+
+
+  .pull-right[
+```{r, echo=FALSE}
+library(patchwork)
+
+p1 <- ggplot(mpg, aes(x = displ, y = hwy)) +
+  geom_point() +
+  labs(
+    title = "Plot using mpg dataset"
+  )
+
+p2 <- ggplot(economics, aes(x = date, y = pce)) + 
+  geom_line() +
+  labs(
+    title = "Plot using economics dataset"
+  )
+
+p1 + p2
+```
+  ]
+
+---
+
+# ggplot extensions: *patchwork*
+
+The combination of plots can have different layouts:
+
+  .pull-left[
+```{r, eval=FALSE}
+p1 <- ggplot(mpg, aes(x = displ, y = hwy)) +
+  geom_point()
+p2 <- ggplot(economics, aes(x = date, y = pce)) + 
+  geom_line()
+p3 <- ggplot(mpg, aes(x = displ)) +
+  geom_histogram(fill = "darkblue", bins = 10)
+p4 <- ggplot(mpg, aes(x = class, y = displ)) +
+  geom_boxplot()
+
+(p1 | p2 | p3) /
+      p4
+```
+]
+
+
+  .pull-right[
+```{r, echo=FALSE}
+p1 <- ggplot(mpg, aes(x = displ, y = hwy)) +
+  geom_point()
+p2 <- ggplot(economics, aes(x = date, y = pce)) + 
+  geom_line()
+p3 <- ggplot(mpg, aes(x = displ)) +
+  geom_histogram(fill = "darkblue", bins = 10)
+p4 <- ggplot(mpg, aes(x = class, y = displ)) +
+  geom_boxplot()
+
+(p1 | p2 | p3) /
+      p4
+```
+]
+
+---
 <!-- 
 
 Current work stop here, below that is just copy pasted from the vistransrep course
