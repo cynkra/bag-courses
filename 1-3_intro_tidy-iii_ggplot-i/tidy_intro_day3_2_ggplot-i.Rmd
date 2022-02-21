@@ -426,6 +426,8 @@ ggplot(mpg, aes(x = displ, y = hwy)) +
   geom_line(color = "red", linetype = "dotdash")
 ```
 
+you can see the different line types using `?linetype`
+
 ---
 
 # `geom_line()`
@@ -454,7 +456,7 @@ ggplot(mpg, aes(x = displ, y = hwy, linetype = drv)) +
 
 Exercise :
 
-Using the economics dataset and the knowledge from the previous slides, draw a plot using `geom_line` and different aesthetics mapped to variables.
+Using the `economics` dataset available in R by default and the knowledge from the previous slides, draw a plot using `geom_line` and different aesthetics mapped to variables. Change the color and use a dashed linetype.
 
 ---
 
@@ -519,7 +521,7 @@ ggplot(mpg, aes(x = drv, fill = class)) +
 
 Exercise :
 
-Using the diamonds dataset and the knowledge from the previous slides, draw a barplot using different aesthetics mapped to variables.
+Using the `diamonds` dataset and the knowledge from the previous slides, draw a barplot using different aesthetics mapped to variables. Use different positions to compare the plots.
 
 
 ---
@@ -616,7 +618,7 @@ ggplot(
 
 Exercise :
 
-Using the iris dataset and the knowledge from the previous slides, draw a boxplot using different aesthetics mapped to variables, and also change the labels and title.
+Using the `iris` dataset and the knowledge from the previous slides, draw a boxplot using different aesthetics mapped to variables, and also change the labels and title.
 
 
 ---
