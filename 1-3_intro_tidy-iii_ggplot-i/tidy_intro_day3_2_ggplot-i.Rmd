@@ -192,17 +192,6 @@ ggplot(mpg, aes(x = displ, y = hwy, color = drv)) +
 
 Always good to have: The *ggplot2* cheatsheet (https://github.com/rstudio/cheatsheets/blob/master/data-visualization-2.1.pdf).
 
----
-
-# Exercise
-
-Using the `iris` dataset available in R by default, create a scatter plot using 2 numeric columns, and use `Species` as a color. You can use the pattern we used above.
-
-```{r}
-ggplot(mpg, aes(x = displ, y = hwy, color = drv)) +
-  geom_point()
-```
-
 <!-- --- -->
 
 <!-- # Terminology -->
@@ -402,12 +391,14 @@ ggplot(mpg, aes(x = displ, y = hwy, color = drv)) +
 
 ---
 
-# `geom_point()`
+# Exercise
 
-Exercise :
+Using the `iris` dataset available in R by default and the knowledge from the previous slides, create a scatter plot using 2 numeric columns, and use `Species` as a color. You can use the pattern we used above.
 
-Using the iris dataset and the knowledge from the previous slides, draw
-a series of scatterplot using different aesthetics mapped to variables or constant.
+```{r}
+ggplot(mpg, aes(x = displ, y = hwy, color = drv)) +
+  geom_point()
+```
 
 ---
 
