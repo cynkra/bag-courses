@@ -459,6 +459,14 @@ ggplot(mpg, aes(x = displ, y = hwy, linetype = drv)) +
 
 ---
 
+# `geom_line()`
+
+Exercise :
+
+Using the economics dataset and the knowledge from the previous slides, draw a plot using `geom_line` and different aesthetics mapped to variables.
+
+---
+
 # `geom_bar()`
 
 using `?geom_bar` we find which aesthetics are available, but to summarize the main ones are:
@@ -513,6 +521,15 @@ ggplot(mpg, aes(x = drv, fill = class)) +
 ggplot(mpg, aes(x = drv, fill = class)) +
   geom_bar(position = "fill")
 ```
+
+---
+
+# `geom_bar()`
+
+Exercise :
+
+Using the diamonds dataset and the knowledge from the previous slides, draw a barplot using different aesthetics mapped to variables.
+
 
 ---
 
@@ -601,6 +618,15 @@ ggplot(
   )
 ```
   ]
+
+---
+
+# Legend, and labels
+
+Exercise :
+
+Using the iris dataset and the knowledge from the previous slides, draw a boxplot using different aesthetics mapped to variables, and also change the labels and title.
+
 
 ---
 
@@ -855,6 +881,20 @@ p4 <- ggplot(mpg, aes(x = class, y = displ)) +
 ]
 
 ---
+
+# ggplot extensions
+
+You can find more extensions in:
+
+[exts.ggplot2.tidyverse.org](https://exts.ggplot2.tidyverse.org/gallery/)
+
+<img src="fig/ggplot_ext.png" width="800"/>
+
+
+
+---
+
+
 <!-- 
 
 Current work stop here, below that is just copy pasted from the vistransrep course
