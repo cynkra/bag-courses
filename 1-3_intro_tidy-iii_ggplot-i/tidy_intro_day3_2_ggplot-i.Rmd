@@ -1078,17 +1078,10 @@ ggplot(mpg, aes(x = displ, y = hwy, color = drv))  +
 
 
 
-### Summary
 
-The modular principle of `ggplot2` enables:
 
-- the combination of any geometric objects (geoms).
-- a high flexibility and customizability
 
-An extensive description of all geometric objects can be found on the `ggplot2` website https://ggplot2.tidyverse.org/reference/.
 
-**Exercises**
 
-https://krlmlr.github.io/vistransrep/2019-11-zhr/geoms.html
 
 
