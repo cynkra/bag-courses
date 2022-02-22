@@ -100,7 +100,7 @@ https://github.com/cynkra/bag-courses
 
 # General remarks
 
-- Even though we are starting out remotely, we hope for these courses to be interactive: go ahead and ask if something is unclear!
+- We are happy to be able to do the courses in a semi-remote fashion now. For those who are attending remotely, don't hesitate to interrupt up or write into the chat if anything is uncler or you have questions.
 - If we feel that some questions are holding back the course, we will defer answering to the next break.
 - We were asked to provide recordings of the courses for those of you who cannot join, so recording is activated.
 - Per course unit, we offer 4 hours of follow up time; approach us with questions (nicolas@cynkra.com)!
