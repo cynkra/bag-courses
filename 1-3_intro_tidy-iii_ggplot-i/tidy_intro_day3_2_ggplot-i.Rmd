@@ -604,6 +604,34 @@ ggplot(avgs, aes(x = displ, y = hwy, label = drv)) +
 
 ---
 
+# Inheritance
+
+`geom_*` functions need data and aesthetics, if they are not provided directly
+they are inherited fron the object created by `ggplot()`. This is what we've done
+so far and is mostly recommended but the following works
+
+```{r}
+ggplot() +
+  geom_point(aes(x = displ, y = hwy, color = drv), mpg)
+```
+
+---
+
+# Inheritance
+
+A use case
+
+```{r, message = FALSE}
+my_cars <- tibble(
+  displ = c(6, 3), hwy = c(25, 30), drv = c("r", "f"), lab = c("A", "B"),
+  txt = c("my small car", "my big car"))
+ggplot(mpg, aes(x = displ, y = hwy, color = drv))  +
+  geom_point() +
+  geom_label(data = avgs, aes(label = drv), nudge_y = 3, show.legend = FALSE)
+```
+
+---
+
 # Legend, and labels
 
 Using `labs` you can set the title/subtitle and also add a caption and a tag.
