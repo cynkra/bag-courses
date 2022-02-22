@@ -1017,28 +1017,7 @@ You can find more extensions in:
 
 
 
---------------------------------------------------------------------------------
 
-The `geom_*` family can be divided into three parts:
-
-**One variable plots**
-
-- `geom_hist()`
-- `geom_bar()`
-
-**Two variable plots**
-
-- `geom_point()`
-- `geom_line()`
-- `geom_boxplot()`
-- etc.
-
-**Three variables plots**
-
-- `geom_raster()`
-- `geom_sf()`
-- `geom_tile()`
-- etc.
 
 ### Arguments
 
