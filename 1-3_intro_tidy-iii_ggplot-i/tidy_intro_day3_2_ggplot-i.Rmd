@@ -261,7 +261,7 @@ In `?geom_point` we find which aesthetics are available :
 
 # `geom_point()`
 
-We can run `vignette("ggplot2-specs")` to know more about them, but to summarize the main ones:
+We can run `vignette("ggplot2-specs")` to know more about them, the main ones are:
 
 - `x` (required) : horizontal coordinate
 - `y` (required) : vertical coordinate
@@ -405,7 +405,7 @@ ggplot(mpg, aes(x = displ, y = hwy, color = drv)) +
 
 # `geom_line()`
 
-using `?geom_line` we find which aesthetics are available, but to summarize the main ones are:
+using `?geom_line` we find which aesthetics are available, the main ones are:
 
 - `x` (required) : horizontal coordinate
 - `y` (required) : vertical coordinate
@@ -463,7 +463,7 @@ Using the `economics` dataset available in R by default and the knowledge from t
 
 # `geom_bar()`
 
-using `?geom_bar` we find which aesthetics are available, but to summarize the main ones are:
+using `?geom_bar` we find which aesthetics are available, the main ones are:
 
 you should use only one coordinate `x` or `y`
 
