@@ -192,17 +192,6 @@ ggplot(mpg, aes(x = displ, y = hwy, color = drv)) +
 
 Always good to have: The *ggplot2* cheatsheet (https://github.com/rstudio/cheatsheets/blob/master/data-visualization-2.1.pdf).
 
----
-
-# Exercise
-
-Using the `iris` dataset available in R by default, create a scatter plot using 2 numeric columns, and use `Species` as a color. You can use the pattern we used above.
-
-```{r}
-ggplot(mpg, aes(x = displ, y = hwy, color = drv)) +
-  geom_point()
-```
-
 <!-- --- -->
 
 <!-- # Terminology -->
@@ -402,12 +391,14 @@ ggplot(mpg, aes(x = displ, y = hwy, color = drv)) +
 
 ---
 
-# `geom_point()`
+# Exercise
 
-Exercise :
+Using the `iris` dataset available in R by default and the knowledge from the previous slides, create a scatter plot using 2 numeric columns, and use `Species` as a color. You can use the pattern we used above.
 
-Using the iris dataset and the knowledge from the previous slides, draw
-a series of scatterplot using different aesthetics mapped to variables or constant.
+```{r}
+ggplot(mpg, aes(x = displ, y = hwy, color = drv)) +
+  geom_point()
+```
 
 ---
 
@@ -435,6 +426,8 @@ ggplot(mpg, aes(x = displ, y = hwy)) +
   geom_line(color = "red", linetype = "dotdash")
 ```
 
+you can see the different line types using `?linetype`
+
 ---
 
 # `geom_line()`
@@ -456,6 +449,14 @@ using `size` you can change how thick are the lines
 ggplot(mpg, aes(x = displ, y = hwy, linetype = drv)) +
   geom_line(size=2)
 ```
+
+---
+
+# `geom_line()`
+
+Exercise :
+
+Using the `economics` dataset available in R by default and the knowledge from the previous slides, draw a plot using `geom_line` and different aesthetics mapped to variables. Change the color and use a dashed linetype.
 
 ---
 
@@ -516,6 +517,15 @@ ggplot(mpg, aes(x = drv, fill = class)) +
 
 ---
 
+# `geom_bar()`
+
+Exercise :
+
+Using the `diamonds` dataset and the knowledge from the previous slides, draw a barplot using different aesthetics mapped to variables. Use different positions to compare the plots.
+
+
+---
+
 <!-- Probably it needs more explanation to understand the difference between geom_bar and geom_col -->
 
 # `geom_col()`
@@ -538,8 +548,6 @@ ggplot(mpg, aes(x = displ)) +
 ```
 
 ]
-
---
   
   .pull-right[
 
@@ -606,6 +614,15 @@ ggplot(
 
 ---
 
+# Legend, and labels
+
+Exercise :
+
+Using the `iris` dataset and the knowledge from the previous slides, draw a boxplot using different aesthetics mapped to variables, and also change the labels and title.
+
+
+---
+
 # Axis
 
 There is a plethora of `scale_...()` functions available, which influence the axes. For example there is a function to change the scale of an axis to a logarithmic scale.
@@ -622,11 +639,8 @@ ggplot(
 ```
 ]
 
---
-
   .pull-right[
-  
-```{r,echo=FALSE}
+```{r, echo=FALSE}
 ggplot(
   data = mpg,
   mapping = aes(x = displ, y = hwy, color = class)
@@ -635,7 +649,117 @@ ggplot(
   scale_x_log10()
 ```
   ]
-  
+
+
+---
+
+# Facetting
+
+“Facetting” denotes an idea of dividing a graphic into sub-graphics based on the (categorical) values of one or more variables of a dataset. Therefore, each sub-graphic shows a plot for a subset of the data.
+
+To implement it you can use two options:
+
+.pull-left[
+```{r, eval=FALSE}
+facet_grid(facets = vars(<variable>), 
+           scales = "fixed", 
+           ...)
+
+facet_wrap(rows = vars(<variable>), 
+           cols = vars(<variable>), 
+           scales = "fixed", 
+           ...)
+```
+]
+
+  .pull-right[
+<img src="fig/facets.png" width="800"/>
+]
+
+---
+
+#  `face_wrap*` function
+
+with `?face_wrap` we can find the different arguments to change our plot.
+
+- `facets` (required) : set of categorical variables
+- `dir` : `"h"` (default) for horizontal, or `"v"`, for vertical orientation.
+- `nrow` or `ncol` : 	Number of rows and columns.
+
+---
+
+#  `face_wrap*` direction
+
+.pull-left[
+```{r}
+ggplot(mpg, aes(displ, hwy)) +
+  geom_point(aes(colour = drv)) +
+  facet_wrap(vars(year))
+```
+]
+
+  .pull-right[
+```{r}
+ggplot(mpg, aes(displ, hwy)) +
+  geom_point(aes(colour = drv)) +
+  facet_wrap(vars(year), dir = "v")
+```
+]
+
+---
+
+#  `face_wrap*` `nrow` or `ncol`
+
+.pull-left[
+```{r}
+ggplot(mpg, aes(displ, hwy)) +
+  geom_point(aes(colour = drv)) +
+  facet_wrap(vars(class))
+```
+]
+
+  .pull-right[
+```{r}
+ggplot(mpg, aes(displ, hwy)) +
+  geom_point(aes(colour = drv)) +
+  facet_wrap(vars(class), nrow = 2)
+```
+]
+
+---
+
+#  `face_grid*` function
+
+While `facet_wrap()` tries to act smart and hide non-existing combinations of sub-plots, `facet_grid()` will create a full matrix of sub-plots for all possible combinations. 
+
+Most of the time when using only one categorical variable, `facet_wrap()` does a good job and is preferred over `facet_grid()`. However, `facet_grid` might be preferred in the following cases:
+
+- when faceting over >= 2 variables
+
+- when plots of empty combinations should be shown
+
+Let’s compare `facet_grid` and `facet_wrap` for 2 grouping variables.
+
+---
+
+#  `face_grid*` for 2 grouping variables
+
+```{r}
+ggplot(mpg, aes(displ, hwy)) +
+  geom_point(aes(colour = class)) +
+  facet_grid(vars(year), vars(cyl))
+```
+
+---
+
+#  `face_wrap*` for 2 grouping variables
+
+```{r}
+ggplot(mpg, aes(displ, hwy)) +
+  geom_point(aes(colour = class)) +
+  facet_wrap(vars(year, cyl))
+```
+
 ---
 
 # Export & saving
@@ -664,6 +788,106 @@ ggsave("mtcars.png")
 ]
 
 ---
+
+# ggplot extensions: *patchwork*
+
+It combines separated plots, and the data source can be different.
+
+  .pull-left[
+```{r, eval=FALSE}
+library(patchwork)
+
+p1 <- ggplot(mpg, aes(x = displ, y = hwy)) +
+  geom_point() +
+  labs(
+    title = "Plot using mpg dataset"
+  )
+
+p2 <- ggplot(economics, aes(x = date, y = pce)) + 
+  geom_line() +
+  labs(
+    title = "Plot using economics dataset"
+  )
+
+p1 + p2
+```
+]
+
+
+  .pull-right[
+```{r, echo=FALSE}
+library(patchwork)
+
+p1 <- ggplot(mpg, aes(x = displ, y = hwy)) +
+  geom_point() +
+  labs(
+    title = "Plot using mpg dataset"
+  )
+
+p2 <- ggplot(economics, aes(x = date, y = pce)) + 
+  geom_line() +
+  labs(
+    title = "Plot using economics dataset"
+  )
+
+p1 + p2
+```
+  ]
+
+---
+
+# ggplot extensions: *patchwork*
+
+The combination of plots can have different layouts:
+
+  .pull-left[
+```{r, eval=FALSE}
+p1 <- ggplot(mpg, aes(x = displ, y = hwy)) +
+  geom_point()
+p2 <- ggplot(economics, aes(x = date, y = pce)) + 
+  geom_line()
+p3 <- ggplot(mpg, aes(x = displ)) +
+  geom_histogram(fill = "darkblue", bins = 10)
+p4 <- ggplot(mpg, aes(x = class, y = displ)) +
+  geom_boxplot()
+
+(p1 | p2 | p3) /
+      p4
+```
+]
+
+
+  .pull-right[
+```{r, echo=FALSE}
+p1 <- ggplot(mpg, aes(x = displ, y = hwy)) +
+  geom_point()
+p2 <- ggplot(economics, aes(x = date, y = pce)) + 
+  geom_line()
+p3 <- ggplot(mpg, aes(x = displ)) +
+  geom_histogram(fill = "darkblue", bins = 10)
+p4 <- ggplot(mpg, aes(x = class, y = displ)) +
+  geom_boxplot()
+
+(p1 | p2 | p3) /
+      p4
+```
+]
+
+---
+
+# ggplot extensions
+
+You can find more extensions in:
+
+[exts.ggplot2.tidyverse.org](https://exts.ggplot2.tidyverse.org/gallery/)
+
+<img src="fig/ggplot_ext.png" width="800"/>
+
+
+
+---
+
+
 <!-- 
 
 Current work stop here, below that is just copy pasted from the vistransrep course
