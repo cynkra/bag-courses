@@ -232,6 +232,7 @@ The most popular ones are
 - `geom_col()`
 - `geom_histogram()`
 - `geom_boxplot()`
+- `geom_text()` / `geom_label()`
 
 ---
 
