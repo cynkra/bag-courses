@@ -1010,19 +1010,11 @@ You can find more extensions in:
 ---
 
 
-<!-- 
 
-Current work stop here, below that is just copy pasted from the vistransrep course
 
-I think from there one example per geom is enough
-since we've seen all common aesthetics
 
-I talked about position already because I don't think we want a general approach
-for a beginner course so we can skip it for the rest
 
-I don't think we should talk about stat_* nor computed variables in this course
 
--->
 
 
 --------------------------------------------------------------------------------
