@@ -1071,17 +1071,39 @@ ggplot(mpg, aes(x = displ, y = hwy, color = drv))  +
   
 ---
 
+## {esquisse}
 
+{esquisse} is a fantastic tool to create charts from a UI, copy and paste into your own code and learn a lot about ggplot.
 
+Reproduce this plot with `esquisse::esquisser(palmerpenguins::penguins)`
+```{r}
+ggplot(palmerpenguins::penguins) +
+  aes(x = island, y = body_mass_g, fill = species) +
+  geom_boxplot() +
+  theme_classic() + 
+  theme(legend.position = "bottom")
+```
 
+---
 
+## Extensions
 
+Many package extend {ggplot2} with new themes, palettes, geoms, and even ways to make your 
+charts interactive or animated.
 
+A selection :
 
+{ggforce}: https://ggforce.data-imaginist.com/
 
+{patchwork}: https://patchwork.data-imaginist.com/
 
+{ggtext}: https://github.com/clauswilke/ggtext
 
+{ggiraph}: http://davidgohel.github.io/ggiraph
 
+{plotly}: https://plotly-r.com/
 
+{ggbeeswarm}: https://github.com/eclarke/ggbeeswarm
 
+{esquisse}: https://dreamrs.github.io/esquisse
 
