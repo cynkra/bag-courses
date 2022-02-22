@@ -572,6 +572,38 @@ ggplot(mpg, aes(x = class, y = displ)) +
 
 ---
 
+# `geom_text()`/`geom_label()`
+
+These work a lot like `geom_point()`, but with the added aesthetic `label`
+
+```{r, message = FALSE}
+avgs <-
+  mpg %>% 
+  group_by(drv) %>% 
+  summarize(displ = mean(displ), hwy = mean(hwy))
+
+ggplot(avgs, aes(x = displ, y = hwy, label = drv, color = drv)) +
+  geom_label()
+```
+
+---
+
+# `geom_text()`/`geom_label()`
+
+These work a lot like `geom_point()`, but with the added aesthetic `label`
+
+```{r, message = FALSE}
+avgs <-
+  mpg %>% 
+  group_by(drv) %>% 
+  summarize(displ = mean(displ), hwy = mean(hwy))
+
+ggplot(avgs, aes(x = displ, y = hwy, label = drv)) +
+  geom_text(color = "black")
+```
+
+---
+
 # Legend, and labels
 
 Using `labs` you can set the title/subtitle and also add a caption and a tag.
