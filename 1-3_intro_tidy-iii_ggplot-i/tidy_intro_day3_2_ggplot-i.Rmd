@@ -1009,24 +1009,67 @@ You can find more extensions in:
 
 ---
 
+# Themes
 
+The `theme()` function is used to customize the non-data components of your plots:
 
+* titles
+* labels
+* fonts
+* background
+* gridlines
+* legends
 
+---
 
+# Themes
 
+`theme()` has a lot of arguments (95!), which themselves often need to be defined
+using other functions. You'll have to read the doc!
 
+OR use the simpler `theme_*()` wrapper functions documented in `?ggtheme`.
+These have good defaults and a limited amount of arguments easy to specify.
 
+```{r}
+ggplot(mpg, aes(x = displ, y = hwy, color = drv))  +
+  geom_point() + 
+  theme_classic()
+```
+  
 
+---
 
+# Themes
 
+`theme()` has a lot of arguments (95!), which themselves often need to be defined
+using other functions. You'll have to read the doc!
 
+OR use the simpler `theme_*()` wrapper functions documented in `?ggtheme`.
+These have good defaults and a limited amount of arguments easy to specify.
 
+```{r}
+ggplot(mpg, aes(x = displ, y = hwy, color = drv))  +
+  geom_point() + 
+  theme_light()
 ```
 
+---
 
+# Themes
 
+`theme()` has a lot of arguments (95!), which themselves often need to be defined
+using other functions. You'll have to read the doc!
 
+OR use the simpler `theme_*()` wrapper functions documented in `?ggtheme`.
+These have good defaults and a limited amount of arguments easy to specify.
 
+```{r}
+ggplot(mpg, aes(x = displ, y = hwy, color = drv))  +
+  geom_point() + 
+  theme_minimal()
+```
+  
+---
 
 
 
