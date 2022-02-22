@@ -958,57 +958,6 @@ p1 + p2
 
 ---
 
-# ggplot extensions: *patchwork*
-
-The combination of plots can have different layouts:
-
-  .pull-left[
-```{r, eval=FALSE}
-p1 <- ggplot(mpg, aes(x = displ, y = hwy)) +
-  geom_point()
-p2 <- ggplot(economics, aes(x = date, y = pce)) + 
-  geom_line()
-p3 <- ggplot(mpg, aes(x = displ)) +
-  geom_histogram(fill = "darkblue", bins = 10)
-p4 <- ggplot(mpg, aes(x = class, y = displ)) +
-  geom_boxplot()
-
-(p1 | p2 | p3) /
-      p4
-```
-]
-
-
-  .pull-right[
-```{r, echo=FALSE}
-p1 <- ggplot(mpg, aes(x = displ, y = hwy)) +
-  geom_point()
-p2 <- ggplot(economics, aes(x = date, y = pce)) + 
-  geom_line()
-p3 <- ggplot(mpg, aes(x = displ)) +
-  geom_histogram(fill = "darkblue", bins = 10)
-p4 <- ggplot(mpg, aes(x = class, y = displ)) +
-  geom_boxplot()
-
-(p1 | p2 | p3) /
-      p4
-```
-]
-
----
-
-# ggplot extensions
-
-You can find more extensions in:
-
-[exts.ggplot2.tidyverse.org](https://exts.ggplot2.tidyverse.org/gallery/)
-
-<img src="fig/ggplot_ext.png" width="800"/>
-
-
-
----
-
 # Themes
 
 The `theme()` function is used to customize the non-data components of your plots:
@@ -1071,21 +1020,6 @@ ggplot(mpg, aes(x = displ, y = hwy, color = drv))  +
   
 ---
 
-## {esquisse}
-
-{esquisse} is a fantastic tool to create charts from a UI, copy and paste into your own code and learn a lot about ggplot.
-
-Reproduce this plot with `esquisse::esquisser(palmerpenguins::penguins)`
-```{r}
-ggplot(palmerpenguins::penguins) +
-  aes(x = island, y = body_mass_g, fill = species) +
-  geom_boxplot() +
-  theme_classic() + 
-  theme(legend.position = "bottom")
-```
-
----
-
 ## Extensions
 
 Many package extend {ggplot2} with new themes, palettes, geoms, and even ways to make your 
@@ -1107,3 +1041,67 @@ A selection :
 
 {esquisse}: https://dreamrs.github.io/esquisse
 
+---
+
+# Extensions
+
+You can find more extensions in:
+
+[exts.ggplot2.tidyverse.org](https://exts.ggplot2.tidyverse.org/gallery/)
+
+<img src="fig/ggplot_ext.png" width="800"/>
+
+---
+
+# Extensions: {esquisse}
+
+{esquisse} is a fantastic tool to create charts from a UI, copy and paste into your own code and learn a lot about ggplot.
+
+Reproduce this plot with `esquisse::esquisser(palmerpenguins::penguins)`
+```{r}
+ggplot(palmerpenguins::penguins) +
+  aes(x = island, y = body_mass_g, fill = species) +
+  geom_boxplot() +
+  theme_classic() + 
+  theme(legend.position = "bottom")
+```
+
+
+---
+
+# Extensions: {patchwork}
+
+The combination of plots can have different layouts:
+
+  .pull-left[
+```{r, eval=FALSE}
+p1 <- ggplot(mpg, aes(x = displ, y = hwy)) +
+  geom_point()
+p2 <- ggplot(economics, aes(x = date, y = pce)) + 
+  geom_line()
+p3 <- ggplot(mpg, aes(x = displ)) +
+  geom_histogram(fill = "darkblue", bins = 10)
+p4 <- ggplot(mpg, aes(x = class, y = displ)) +
+  geom_boxplot()
+
+(p1 | p2 | p3) /
+      p4
+```
+]
+
+
+  .pull-right[
+```{r, echo=FALSE}
+p1 <- ggplot(mpg, aes(x = displ, y = hwy)) +
+  geom_point()
+p2 <- ggplot(economics, aes(x = date, y = pce)) + 
+  geom_line()
+p3 <- ggplot(mpg, aes(x = displ)) +
+  geom_histogram(fill = "darkblue", bins = 10)
+p4 <- ggplot(mpg, aes(x = class, y = displ)) +
+  geom_boxplot()
+
+(p1 | p2 | p3) /
+      p4
+```
+]
