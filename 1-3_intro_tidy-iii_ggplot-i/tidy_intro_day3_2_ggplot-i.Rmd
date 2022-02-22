@@ -702,12 +702,13 @@ Exercise :
 
 Using the `iris` dataset and the knowledge from the previous slides, draw a boxplot using different aesthetics mapped to variables, and also change the labels and title.
 
-
 ---
 
-# Axis
+# `scale_*()` functions
 
-There is a plethora of `scale_...()` functions available, which influence the axes. For example there is a function to change the scale of an axis to a logarithmic scale.
+Scales control the details of how data values are translated to visual properties
+There is a plethora of such functions, their name follow the `scale_<aes>_*()` functions available. 
+For example to change the scale of an axis to a logarithmic scale:
 
 .pull-left[
 
@@ -721,8 +722,13 @@ ggplot(
 ```
 ]
 
+More: https://stackoverflow.com/questions/70942728
+
+--
+
   .pull-right[
-```{r, echo=FALSE}
+  
+```{r,echo=FALSE}
 ggplot(
   data = mpg,
   mapping = aes(x = displ, y = hwy, color = class)
@@ -731,8 +737,7 @@ ggplot(
   scale_x_log10()
 ```
   ]
-
-
+  
 ---
 
 # Facetting
