@@ -34,7 +34,7 @@ editor_options:
 </style>
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(fig.height = 4)
+knitr::opts_chunk$set(fig.height = 4, cache = TRUE, message = FALSE, warning = FALSE)
 ```
 
 # Basics for visualisation in R using {ggplot2}
