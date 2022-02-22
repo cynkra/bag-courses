@@ -704,6 +704,41 @@ Using the `iris` dataset and the knowledge from the previous slides, draw a boxp
 
 ---
 
+# Legend, and labels
+
+There are often several ways of doing thing in {ggplot2}
+
+.pull-left[
+
+```{r, eval=FALSE}
+ggplot(
+  data = mpg,
+  mapping = aes(x = displ, y = hwy, color = class)
+) +
+  geom_point() +
+  xlab("Displacement") +
+  ylab("Highway mileage\n[miles per gallon]") +
+  ggtitle("Highway mileages depending on displacement", "By car class") +
+  scale_color_discrete(guide = guide_legend("Car class")) # more complex, more control!
+```
+]
+
+  .pull-right[
+```{r, echo=FALSE}
+ggplot(
+  data = mpg,
+  mapping = aes(x = displ, y = hwy, color = class)
+) +
+  geom_point() +
+  xlab("Displacement") +
+  ylab("Highway mileage\n[miles per gallon]") +
+  ggtitle("Highway mileages depending on displacement", "By car class") +
+  scale_color_discrete(guide = guide_legend("Car class"))
+```
+  ]
+  
+---
+
 # `scale_*()` functions
 
 Scales control the details of how data values are translated to visual properties
