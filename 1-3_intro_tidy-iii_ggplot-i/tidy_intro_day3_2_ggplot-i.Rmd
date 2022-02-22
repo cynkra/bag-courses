@@ -632,6 +632,27 @@ ggplot(mpg, aes(x = displ, y = hwy, color = drv))  +
 
 ---
 
+# What makes a layer ?
+
+A layer combines :
+
+* **data**, provided through the `data` argument
+* A **geometric object**, that we define by choosing the relevant `geom_*()` function
+* The **mapping** between data variables and visual components ("aesthetics"),
+  provided through the `mapping` argument
+* A **statistical transformation** to apply on variables, provided by the `stat` argument 
+(usually defaults are what we need, not covered in this course)
+* A **position** adjustment in case of overlapping data, provided through the `position`
+ argument and `position_*()` functions
+ 
+```{r}
+ggplot(mpg, aes(x = displ, y = hwy, color = drv))  +
+  geom_point(position = "jitter", ) 
+```
+ 
+
+---
+
 # Legend, and labels
 
 Using `labs` you can set the title/subtitle and also add a caption and a tag.
