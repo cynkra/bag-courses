@@ -192,24 +192,6 @@ ggplot(mpg, aes(x = displ, y = hwy, color = drv)) +
 
 Always good to have: The *ggplot2* cheatsheet (https://github.com/rstudio/cheatsheets/blob/master/data-visualization-2.1.pdf).
 
-<!-- --- -->
-
-<!-- # Terminology -->
-
-<!-- - **Data:** The data to visualize -- consists of variables and observations. -->
-
-<!-- - **Geoms:** Geometric objects which represent the data (points, lines, polygons, etc.). -->
-
-<!-- - **Mappings:** Match variables with aesthetic attributes of the (geometric) objects. -->
-
-<!-- - **Scales:** Mapping of the "data units" to "physical units" of the geometric objects (e.g. length, diameter or color); defines the _legend_. -->
-
-<!-- - **Coord:** System of coordinates, mapping of the data to a two dimensional plain of the graphic; defines the _axes_ and _grid_. -->
-
-<!-- - **Stats:** Statistical transformation of the data (5 point summary, classification, etc.). -->
-
-<!-- - **Facetting:** Division and illustration of data subsets, also known as "Trellis" images. -->
-
 ---
 
 # `geom_*` functions
@@ -800,9 +782,9 @@ facet_wrap(rows = vars(<variable>),
 
 ---
 
-#  `face_wrap*` function
+#  `facet_wrap*` function
 
-with `?face_wrap` we can find the different arguments to change our plot.
+with `?facet_wrap` we can find the different arguments to change our plot.
 
 - `facets` (required) : set of categorical variables
 - `dir` : `"h"` (default) for horizontal, or `"v"`, for vertical orientation.
@@ -810,7 +792,7 @@ with `?face_wrap` we can find the different arguments to change our plot.
 
 ---
 
-#  `face_wrap*` direction
+#  `facet_wrap*` direction
 
 .pull-left[
 ```{r}
@@ -830,7 +812,7 @@ ggplot(mpg, aes(displ, hwy)) +
 
 ---
 
-#  `face_wrap*` `nrow` or `ncol`
+#  `facet_wrap*` `nrow` or `ncol`
 
 .pull-left[
 ```{r}
@@ -850,7 +832,7 @@ ggplot(mpg, aes(displ, hwy)) +
 
 ---
 
-#  `face_grid*` function
+#  `facet_grid*` function
 
 While `facet_wrap()` tries to act smart and hide non-existing combinations of sub-plots, `facet_grid()` will create a full matrix of sub-plots for all possible combinations. 
 
@@ -864,7 +846,7 @@ Let’s compare `facet_grid` and `facet_wrap` for 2 grouping variables.
 
 ---
 
-#  `face_grid*` for 2 grouping variables
+#  `facet_grid*` for 2 grouping variables
 
 ```{r}
 ggplot(mpg, aes(displ, hwy)) +
@@ -874,7 +856,7 @@ ggplot(mpg, aes(displ, hwy)) +
 
 ---
 
-#  `face_wrap*` for 2 grouping variables
+#  `facet_wrap*` for 2 grouping variables
 
 ```{r}
 ggplot(mpg, aes(displ, hwy)) +
