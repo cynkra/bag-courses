@@ -1019,49 +1019,20 @@ You can find more extensions in:
 
 
 
-### Arguments
 
-```{r, eval=FALSE}
-ggplot(data, mapping = aes(), ...) +
-  geom_XXX(mapping = NULL, data = NULL, stat, ...)
-```
-```{r 12-ggplot-data-mapping-aes}
 
 ```
 
-`geom_*` functions have the same basic arguments as `ggplot()`.
-In addition, they come with more arguments specific to the respective "geom".
 
-**stat**
 
-The `stat` parameter defines a statistical transformation: 
 
-- if set to `"identity"`: No transformation
 
-- if set to `boxplot`: Boxplot transformation
 
-- etc.
 
-**position**
 
-The same applies to the `position` argument. 
-In the example below, points are not adjusted and just visualized where they appear in the data.
 
-In the case of boxplots, a special position arrangement function is used to arrange everything nicely: `position_dodge2()` (here denoted by `position = "dodge2"`).
 
-```{r eval = FALSE}
-geom_point(mapping = NULL, data = NULL, stat = "identity",
-  position = "identity", ..., na.rm = FALSE, show.legend = NA,
-  inherit.aes = TRUE)
 
-geom_boxplot(mapping = NULL, data = NULL, stat = "boxplot",
-  position = "dodge2", ..., outlier.colour = NULL,
-  outlier.color = NULL, outlier.fill = NULL, outlier.shape = 19,
-  outlier.size = 1.5, outlier.stroke = 0.5, outlier.alpha = NULL,
-  notch = FALSE, notchwidth = 0.5, varwidth = FALSE, na.rm = FALSE,
-  show.legend = NA, inherit.aes = TRUE)
-```
----
 
 
 ### Summary
