@@ -4,6 +4,8 @@ install.packages("readxl")
 install.packages("writexl")
 install.packages("lubridate")
 install.packages("waldo")
+install.packages("patchwork")
+install.packages("ggplot2")
 
 # attach relevant packages
 library(tidyverse)
@@ -12,6 +14,8 @@ library(skimr)
 library(readxl)
 library(writexl)
 library(lubridate)
+library(ggplot2)
+library(patchwork)
 
 # display chosen presentation (it might take a few seconds to appear)
 slide_viewer <- function(path) {
