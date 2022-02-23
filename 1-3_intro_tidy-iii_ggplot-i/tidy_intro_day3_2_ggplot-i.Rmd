@@ -1,7 +1,7 @@
 ---
 title: "Introduction to ggplot2"
 author: ["Antoine & Nicolas", "cynkra GmbH"]
-date: "February 1st, 2022"
+date: "February 24th, 2022"
 output:
   cynkradown::cynkra_slides:
     nature:
@@ -35,6 +35,7 @@ editor_options:
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(fig.height = 4, cache = TRUE, message = FALSE, warning = FALSE)
+options(tidyverse.quiet = FALSE, tibble.print_max = 4, tibble.print_min = 4)
 ```
 
 # Basics for visualisation in R using {ggplot2}
@@ -43,7 +44,7 @@ knitr::opts_chunk$set(fig.height = 4, cache = TRUE, message = FALSE, warning = F
 * "gg" stands for the "grammar of graphics"
 * It is shipped with {tidyverse}
 
-```{r}
+```{r, message=TRUE, warning=TRUE, cache = FALSE}
 library(tidyverse)
 ```
 
@@ -60,8 +61,8 @@ In this section we want to give a short introduction, how to get started with {g
 * Grammar: A set of structural rules which help define and establish the component of a language
 * Grammar of graphics : framework to describe the components of any graphics
 
-With ggplot we don't create a plot just by calling a `scatter_plot()` or a `histogram()`
-function that would have different arguments.
+With ggplot we don't create different plots by calling completely different functions,
+instead we recognize the universal quality of some components.
 
 A more general approach means there's a learning curve, but it pays off!
 
@@ -77,28 +78,25 @@ mpg
 * displ : engine displacement, in litres
 * cyl : number of cylinders
 * hwy : highway miles per gallon
-
-<!-- * trans: type of transmission -->
-<!-- * drv: type of drive train, f = front-wheel drive, r = rear wheel drive, 4 = 4wd -->
-<!-- * cty : city miles per gallon -->
-<!-- * fl : fuel type -->
-<!-- * class : "type" of car -->
+* drv: drive train, f = front-wheel drive, r = rear wd, 4 = 4wd
+* cty : city miles per gallon
+* class : "type" of car
 
 ---
 
 # Creating the plot skeleton
 
-`ggplot()` is used to set up the chart, but can't be used alone
-to create a useful visualization
-
-1. Choose dataset (argument `data`)
-2. Map variables to visual properties (argument `mapping`)
-3. Create a "ggplot" object that can be enhanced to display a useful chart when it's
-printed
+The `ggplot()` function is used to set up the chart
 
 ```{r, eval = FALSE}
 ggplot(data = mpg, mapping = aes(x = displ, y = hwy))
 ```
+
+1. Choose dataset (argument `data`) : `mpg`
+2. Map variables to visual properties (argument `mapping`) :
+  - map `displ` to `x` (horizontal coord)
+  - map `hwy` to `y` (horizontal coord)
+3. Create a "ggplot" object containing this information, that can be enhanced to display a useful chart when it's printed
 
 ---
 
@@ -145,6 +143,10 @@ ggplot(mpg, aes(x = displ, y = hwy)) +
   geom_point()
 ```
 
+* `geom_*()` functions define the **geometry** of a layer
+* Visual properties `x` and `y` are called aesthetics, different geoms recogize different
+ aesthetics
+
 ???
 
 This is maybe the most basic plot you can create.
@@ -185,7 +187,8 @@ ggplot(mpg, aes(x = displ, y = hwy, color = drv)) +
   geom_smooth(se = FALSE) +
   facet_wrap(vars(drv)) +
   theme_bw() +
-  ggtitle("Highway miles per gallon vs engine displacement",  "for different drive train types")
+  labs(title = "Highway miles per gallon vs engine displacement",  
+       subtitle = "for different drive train types")
 ```
 
 ???
@@ -256,21 +259,7 @@ We can run `vignette("ggplot2-specs")` to know more about them, the main ones ar
 
 # `geom_point()`
 
-`color`
-
-We can use a constant value for these aesthetics if we provide it in the geom
-function.
-
-```{r}
-ggplot(mpg, aes(x = displ, y = hwy)) +
-  geom_point(color = "red")
-```
-
----
-
-# `geom_point()`
-
-`color`
+`color` **mapping**
 
 To map a variable to an aesthetics we use `aes()` in the `mapping` argument of
 `ggplot()`
@@ -284,7 +273,34 @@ ggplot(mpg, aes(x = displ, y = hwy, color = drv)) +
 
 # `geom_point()`
 
-`color` can also take a continuous value
+`color` **setting**
+
+We set an aesthetic to a constant value if we provide it in the geom
+function as an independent parameter.
+
+```{r}
+ggplot(mpg, aes(x = displ, y = hwy)) +
+  geom_point(color = "blue")
+```
+
+---
+
+# `geom_point()`
+
+`color` mapping or setting ?
+
+Oops! what happened here ?
+
+```{r}
+ggplot(mpg, aes(x = displ, y = hwy, color = "blue")) +
+  geom_point()
+```
+
+---
+
+# `geom_point()`
+
+Some aesthetis like `color` can take both discrete and continuous values
 
 ```{r}
 ggplot(mpg, aes(x = displ, y = hwy, color = cty)) +
@@ -328,7 +344,7 @@ ggplot(mpg, aes(x = displ, y = hwy, color = drv, size = cty)) +
 
 # `geom_point()`
 
-but it can also be defined with an specific `size` for all points in the plot
+We can also set a specific `size` for all points in the plot
 
 ```{r}
 ggplot(mpg, aes(x = displ, y = hwy, color = drv)) +
@@ -351,7 +367,8 @@ ggplot(mpg, aes(x = displ, y = hwy, color = drv)) +
 
 # `geom_point()`
 
-`geom_*()` functions have a `position` argument to adjust the position.
+`geom_*()` functions have a `position` argument to adjust the position of geometric
+objects.
 A common use for `geom_point()` is `position = "jitter"`, also good to handle
 overplotting!
 
@@ -364,7 +381,8 @@ ggplot(mpg, aes(x = displ, y = hwy, color = drv)) +
 
 # `geom_point()`
 
-`position = "jitter"` and `position = position_jitter()` are equivalent,
+`position = "jitter"` and  
+`position = position_jitter()` are equivalent,
 but `position_jitter()` offers more control through arguments
 
 ```{r}
@@ -406,7 +424,7 @@ We can use a constant value for these aesthetics if we provide it in the geom fu
 
 ```{r}
 ggplot(mpg, aes(x = displ, y = hwy)) +
-  geom_line(color = "red", linetype = "dotdash")
+  geom_line(color = "blue", linetype = "dotdash")
 ```
 
 you can see the different line types using `?linetype`
@@ -604,9 +622,6 @@ ggplot() +
 A use case
 
 ```{r, message = FALSE}
-my_cars <- tibble(
-  displ = c(6, 3), hwy = c(25, 30), drv = c("r", "f"), lab = c("A", "B"),
-  txt = c("my small car", "my big car"))
 ggplot(mpg, aes(x = displ, y = hwy, color = drv))  +
   geom_point() +
   geom_label(data = avgs, aes(label = drv), nudge_y = 3, show.legend = FALSE)
@@ -614,7 +629,7 @@ ggplot(mpg, aes(x = displ, y = hwy, color = drv))  +
 
 ---
 
-# What makes a layer ?
+# Summary : What makes a layer ?
 
 A layer combines :
 
@@ -626,12 +641,6 @@ A layer combines :
 (usually defaults are what we need, not covered in this course)
 * A **position** adjustment in case of overlapping data, provided through the `position`
  argument and `position_*()` functions
- 
-```{r}
-ggplot(mpg, aes(x = displ, y = hwy, color = drv))  +
-  geom_point(position = "jitter", ) 
-```
- 
 
 ---
 
@@ -724,7 +733,7 @@ ggplot(
 # `scale_*()` functions
 
 Scales control the details of how data values are translated to visual properties
-There is a plethora of such functions, their name follow the `scale_<aes>_*()` functions available. 
+There is a plethora of such functions, their name follow the `scale_<aes>_*()` pattern. 
 For example to change the scale of an axis to a logarithmic scale:
 
 .pull-left[
@@ -761,7 +770,7 @@ ggplot(
 
 “Facetting” denotes an idea of dividing a graphic into sub-graphics based on the (categorical) values of one or more variables of a dataset. Therefore, each sub-graphic shows a plot for a subset of the data.
 
-To implement it you can use two options:
+`facet_grid()` and `facet_wrap()` provide 2 ways of facetting:
 
 .pull-left[
 ```{r, eval=FALSE}
