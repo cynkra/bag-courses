@@ -873,79 +873,6 @@ ggplot(mpg, aes(displ, hwy)) +
   facet_wrap(vars(year, cyl))
 ```
 
----
-
-# Export & saving
-
-The default way to export plots is by using `ggsave()`.
-
-It differs slightly from other “exporting” functions in R because it comes with some smart defaults (see `?ggsave()`)
-
-  .pull-left[
-```{r}
-ggplot(mtcars, aes(mpg, wt)) +
-  geom_point()
-```
-]
-
---
-
-  .pull-right[
-```{r}
-ggsave("mtcars.pdf")
-```
-
-```{r}
-ggsave("mtcars.png")
-```
-]
-
----
-
-# ggplot extensions: *patchwork*
-
-It combines separated plots, and the data source can be different.
-
-  .pull-left[
-```{r, eval=FALSE}
-library(patchwork)
-
-p1 <- ggplot(mpg, aes(x = displ, y = hwy)) +
-  geom_point() +
-  labs(
-    title = "Plot using mpg dataset"
-  )
-
-p2 <- ggplot(economics, aes(x = date, y = pce)) + 
-  geom_line() +
-  labs(
-    title = "Plot using economics dataset"
-  )
-
-p1 + p2
-```
-]
-
-
-  .pull-right[
-```{r, echo=FALSE}
-library(patchwork)
-
-p1 <- ggplot(mpg, aes(x = displ, y = hwy)) +
-  geom_point() +
-  labs(
-    title = "Plot using mpg dataset"
-  )
-
-p2 <- ggplot(economics, aes(x = date, y = pce)) + 
-  geom_line() +
-  labs(
-    title = "Plot using economics dataset"
-  )
-
-p1 + p2
-```
-  ]
 
 ---
 
@@ -1008,6 +935,33 @@ ggplot(mpg, aes(x = displ, y = hwy, color = drv))  +
   geom_point() + 
   theme_minimal()
 ```
+
+---
+
+# Export & saving
+
+The default way to export plots is by using `ggsave()`.
+
+It differs slightly from other “exporting” functions in R because it comes with some smart defaults (see `?ggsave()`)
+
+  .pull-left[
+```{r}
+ggplot(mtcars, aes(mpg, wt)) +
+  geom_point()
+```
+]
+
+--
+
+  .pull-right[
+```{r}
+ggsave("mtcars.pdf")
+```
+
+```{r}
+ggsave("mtcars.png")
+```
+]
   
 ---
 
@@ -1057,6 +1011,52 @@ ggplot(palmerpenguins::penguins) +
   theme(legend.position = "bottom")
 ```
 
+---
+
+# Extensions: {patchwork}
+
+It combines separated plots, and the data source can be different.
+
+  .pull-left[
+```{r, eval=FALSE}
+library(patchwork)
+
+p1 <- ggplot(mpg, aes(x = displ, y = hwy)) +
+  geom_point() +
+  labs(
+    title = "Plot using mpg dataset"
+  )
+
+p2 <- ggplot(economics, aes(x = date, y = pce)) + 
+  geom_line() +
+  labs(
+    title = "Plot using economics dataset"
+  )
+
+p1 + p2
+```
+]
+
+
+  .pull-right[
+```{r, echo=FALSE}
+library(patchwork)
+
+p1 <- ggplot(mpg, aes(x = displ, y = hwy)) +
+  geom_point() +
+  labs(
+    title = "Plot using mpg dataset"
+  )
+
+p2 <- ggplot(economics, aes(x = date, y = pce)) + 
+  geom_line() +
+  labs(
+    title = "Plot using economics dataset"
+  )
+
+p1 + p2
+```
+  ]
 
 ---
 
