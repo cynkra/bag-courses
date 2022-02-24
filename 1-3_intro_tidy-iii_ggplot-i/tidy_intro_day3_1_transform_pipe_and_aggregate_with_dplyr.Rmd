@@ -408,7 +408,7 @@ longest3
 
 # Introducing the pipe operator
 
-* We still polluted our local environment with a temporary variableß
+* We still polluted our local environment with a temporary variable
 * We still communicate our intent ("longest3") only in the end
 * The pipe operator `%>%` from {magrittr} solves those issues
 
@@ -431,7 +431,7 @@ The dot is a special variable when using the pipe, it means "what was computed b
 
 # Introducing the pipe operator
 
-When a naked `"."` is not found in arguments, `%>%` assumes it should come first,
+When no naked `"."` is not found in arguments, `%>%` assumes it should come first,
 so we can simplify our call into:
 
 ```{r}
@@ -504,7 +504,7 @@ summarize(public_response, mean_rt_score = mean(rotten_tomatoes, na.rm = TRUE))
 # Aggregate with `group_by()` and `summarize()`
 
 * Most often we use `summarize()` with `group_by()`
-* `group_by()` makes the date "grouped" so `summarize()` and other functions
+* `group_by()` makes the data "grouped" so `summarize()` and other functions
 can make use of groups.
 
 ```{r}
@@ -556,6 +556,37 @@ Look at the `academy` dataset
  
 ---
 
+# Aggregate with `group_by()` and `summarize()`
+
+Count the nominations for every movie
+
+```{r}
+academy %>% 
+  filter(status == "Nominated") %>% 
+  count(film, sort = TRUE)
+```
+
+---
+
+# Aggregate with `group_by()` and `summarize()`
+
+A nomination is 1 point, winning an award is 2 points, compute every movie's
+ score and show the top 3
+
+```{r}
+academy %>% 
+    mutate(points = case_when(
+      status == "Nominated" ~ 1,
+      startsWith(status, "Won") ~ 2,
+      TRUE ~ 0)) %>% 
+  group_by(film) %>% 
+  summarize(score = sum(points), .groups = "drop") %>% 
+  arrange(desc(score)) %>% 
+  slice(1:3)
+```
+ 
+---
+
 # Using `group_by()` with other verbs
 
 Groups are most useful with `summarize()` but other verbs can use them too!
@@ -594,3 +625,47 @@ public_response %>%
   filter(metacritic > median(metacritic, na.rm = TRUE)) %>% 
   ungroup()
 ```
+
+---
+
+# Pivoting data
+
+A quick introduction!
+
+`pivot_longer()` is used to gather column names in a column and their values in another
+
+```{r}
+relig_income
+```
+
+---
+
+# Pivoting data
+
+```{r}
+relig_income %>%
+  pivot_longer(!religion, names_to = "income", values_to = "count")
+```
+
+---
+
+# Pivoting data
+
+A quick introduction!
+
+`pivot_wider()` is used to spread  a 
+label column and a value columns over several columns
+
+```{r}
+fish_encounters
+```
+
+---
+
+# Pivoting data
+
+```{r}
+fish_encounters %>%
+  pivot_wider(names_from = station, values_from = seen)
+```
+
