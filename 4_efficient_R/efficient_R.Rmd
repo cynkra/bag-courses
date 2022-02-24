@@ -4,11 +4,13 @@ author: ["Patrick & Nicolas", "cynkra GmbH"]
 date: "December 21, 2021"
 output:
   cynkradown::cynkra_slides:
-  # xaringan::moon_reader:
     nature:
       highlightStyle: github
       highlightLines: true
-      countIncrementalSlides: false
+      countIncrementalSlides: true
+      slideNumberFormat: "%current%/%total%"
+    css:
+      - ./extra.css
     seal: true
 fontsize: 10pt
 lang: english
@@ -20,197 +22,549 @@ header-includes:
   - \usepackage{parskip}
 ---
 
+---
 
-# Efficient iteration
 
-Two different approaches exist:
+class: center, inverse, middle
+
+# Section - Parallelization
+
+---
+
+## Parallelization
+
+### Motivation
+
+- Use the resources your machine provides
+- Execute independent analysis parts asynchronous
+- Scale up your analysis if needed
+
+### Goal
+
+👉️ Get an overview of the available parallelization options in R
+
+👉️ Understand parallelization examples
+
+✋️ Avoid common pitfalls
+
+---
+
+### Available libraries
+
+**R base**
+
+- {parallel} package
+
+**Community**
+
+- {future} framework
+  - {future.callr}
+  - {doFuture}
+  - {future.apply}
+  - {future.batchtools}
+  - {furrr}
+
+- {foreach} package
+
+---
+
+### Iteration concepts
+
+.pull-left[
+
+Two main iteration concepts exist in R:
 
 - for-loops
-- apply-functions
+- The apply-family
 
-**If done right**, both approaches are equally fast.
-The myth that for-loops are slow is not true.
+]
 
-"for-loops" are a generic concept language-agnostic concept.
-"apply functions" are mainly popular in R and not available in every language.
+.pull-right[
 
----
+Two main parallel execution concepts exist in R:
 
-## The apply family
+- cluster-based (PSOCK) (default)
+- Forking (UNIX only)
 
-Package: {base}
+]
 
-**single list/vector**
-- `tapply()`: Apply a function on a group of values
-- `sapply()`: Apply a function over a list or vector (not typesafe!)
-- `vapply()`: Apply a function over a list or vector
-
-**multiple lists/vectors**
-- `mapply()`: Apply a function to multiple list or arguments
-- `lapply()`: Apply a function over a list and get a list in return
-- `rapply()`: Recursive apply a fuction over a list of list
+💡️ Parallelization packages combine the **iteration concepts** (left) with the **parallel concepts** (right) to allow for parallelized execution with minimal code adaptions compared to sequential execution.
 
 ---
 
-## {purrr} - tidyverse pkg for iteration
+## Other parallelization frameworks
 
-Pros:
-- Typesafe: you always get a predefined type returned
-  `map_chr()`, `map_int()`, `map_dbl()`, etc.
-- Possibly simplified syntax
-- Cat power (?)
+Mainly for High-Performance-Computing (HPC) jobs. Requires often third-party software.
 
-Cons:
-- Imports {rlang}
-- Requires another pkg just for iteration
+- [MPI](https://en.wikipedia.org/wiki/Message_Passing_Interface) (R package: [{Rmpi}](https://cran.r-project.org/web/packages/Rmpi/index.html))
 
----
+Interfaces to *HPC schedulers* (SLURM, LSF, TORQUE, SGE):
 
-## purrr vs base apply
+- ZeroMQ (R package: [{clustermq}](https://mschubert.github.io/clustermq/))
 
-Create a matrix with 5 rows and 6 columns:
-
-```{r }
-mat <- matrix(rnorm(30), nrow = 5, ncol = 6)
-mat <- tibble::as_tibble(mat) # tibble is an optimized dataframe
-```
+- Batchtools (R package: [{batchtools}](https://mllg.github.io/batchtools/))
 
 ---
 
-Now let´s sum the values of each column with `apply()`:
+### PSOCK vs. forking
 
-```{r}
-apply(X = mtcars, MARGIN = 2, FUN = sum)
-```
+.fl.w-50.pa1[
+**PSOCK**
 
-and with {purrr}:
+Creates a socket cluster of R workers which use `Rscript` to execute code.
+]
 
-```{r}
-purrr::map_dbl(mtcars, sum)
-```
+.fl.w-40.pa1[
+**Forking**
 
----
-
-## `vapply()` / `purrr:map_int()`
-
-Count the number of characters of each name.
-
-```{r}
-names <- list("Antoine", "Mary", "Duncan", "Obalaya")
-```
-
-```{r}
-vapply(names, nchar, FUN.VALUE = integer(1))
-```
-
-```{r}
-purrr::map_int(names, nchar)
-```
+Creates copies of the current R process.
+Both parent and child process share the same memory.
+]
 
 ---
 
-Exercise: Execute the same task but store the result in a list instead of a numeric vector
+### PSOCK cluster vs. forking
+
+.fl.w-50.pr2[
+**PSOCK**
+
+.small[
+
+➕️ Available on all platforms
+
+➖️ Requires to create/copy required objects into the worker environment as the workers are not full copies of the master process
+
+➖️ Higher initialization time than forking, though since R v4 worker creation happens in parallel
+]
+]
+
+.fl.w-50.pa0[
+**Forking**
+
+.small[
+➕️ Relatively cheap
+
+➕️ Almost no setup costs, immediate start
+
+
+➖️ Should/cannot be used in GUI applications (e.g. RStudio) as the forked processes will share a copy of the GUI process.
+  This may lead to crashes or deadlocks
+
+➖️ Should not be used in multithreaded R processes (i.e. nested/stacked parallelization)
+
+➖️ Not available on Windows
+]
+]
 
 ---
 
-### Flexible argument placement
+### Examples
 
-If the input is not the first argument of the applied function, one needs to be more explicit during the call specification.
-Often, `function(x)` is used.
-The "x" is an arbitray choice and could also be any other character (sequence).
+**{foreach}** - https://github.com/RevolutionAnalytics/foreach
 
-```{r}
-vapply(names, function(y) nchar(y), FUN.VALUE = integer(1))
-```
+```{r eval=FALSE}
+dat_list <- split(iris, iris$Species)
+mod_list <- vector("list", length(dat_list))
 
-```{r}
-purrr::map_int(names, ~ nchar(.x))
-```
-
-{purrr} uses the `~` and `.x` syntax to "simplify" the iteration syntax.
-
----
-
-## `tapply()`
-
-`tapply()` is the 'group by and apply function' member of the 'apply-family'.
-
-Return the mean of `Sepal.Length`, grouped by `Species`:
-
-```{r}
-tapply(iris$Sepal.Length, iris$Species, mean)
-```
-
----
-
-
-This can also be done **for all variables at once** combining `apply()` and `tapply()`.
-However, the code line below is a bit advanced.
-Let's break it down:
-
-```{r}
-apply(iris[, -5], MARGIN = 2, function(x) {
-  tapply(x, iris$Species, mean)
-})
-```
-
-1. In the `apply()` call, deselect the factor column which defines the grouping (`iris[, -5]`).
-1. Apply `tapply()` to all columns (specified via ` MARGIN = 2`).
-
----
-
-## `mapply()` / `purrr::map2*()`
-
-Iterate over multiple vectors or lists at the same time.
-
-Combine first and last names of the following vector and list:
-
-```{r}
-names_first <- c("Antoinette", "Mary", "Duncan")
-names_last <- list("Miller", "Blidge", "Murdoc")
-```
-
-```{r}
-mapply(paste, names_first, names_last, USE.NAMES = FALSE)
-```
-
-```{r}
-purrr::map2_chr(names_first, names_last, ~ paste(.x, .y))
-```
-
----
-
-## rapply()
-
-Recurisve apply on list of lists.
-One use case would be an if/else replacement across all items of the nested lists.
-To do so, we first define our own little function:
-
-```{r}
-myFun <- function(x) {
-  return(paste(x, "!", sep = ""))
+for (i in seq_along(dat_list)) {
+  mod_list[[i]] <- lm(Sepal.Length ~ Sepal.Width +
+    Petal.Length + Petal.Width, data = dat_list[[i]])
 }
 ```
 
-This function adds an "!" to each item.
+---
 
-```{r}
-rl <- list(
-  a = list(a1 = "Boo", b1 = "Eeek"),
-  b = list(a2 = "Foo", b2 = list(a3 = "Hey"))
-)
+### Examples
+
+**{foreach}** - https://github.com/RevolutionAnalytics/foreach
+
+.info[
+Sequential
+]
+
+```{r eval=FALSE}
+library(foreach)
+mod_list2 <- foreach(dat = dat_list) %do% {
+  lm(Sepal.Length ~ Sepal.Width + Petal.Length +
+    Petal.Width, data = dat)
+}
 ```
 
 ---
 
-```{r}
-rapply(l, function(x) myFun(x))
+### Examples
+
+**{foreach}** - https://github.com/RevolutionAnalytics/foreach
+
+.info[
+Parallel
+]
+
+Be aware of the `%dopar%` operator.
+
+```{r eval=FALSE}
+library(foreach)
+mod_list2 <- foreach(dat = dat_list) %dopar% {
+  lm(Sepal.Length ~ Sepal.Width + Petal.Length +
+    Petal.Width, data = dat)
+}
 ```
 
-The result is an array.
-To preserve the list structure you put in, use argument `how = "replace"`.
+---
 
-```{r}
-rapply(l, function(x) myFun(x), how = "replace")
+### Examples
+
+**{foreach}** - Adaptors
+
+- `%dopar%`: Native parallel adaptor from {foreach} using socket parallelization
+- `%doMC%`: Custom "multicore" adaptor from {doMC}
+- `%doMPI%`: Custom MPI-based parallel adaptor from {doMPI}
+- `%doRNG%`: Custom parallel adaptor from {doRNG} for reproducible parallel loops
+- `%doSNOW%`: Custom parallel adaptor from {doSNOW}
+- `%dopar%`: via {doFuture} - a "better" version of all of the above
+
+---
+
+### Benefits of {doFuture}
+
+
+- Takes care of exports and packages automatically
+
+- Allows to select the backend via the cannonical {future} syntax (`plan(<backend>)`)
+
+- Only one package to deal with for users
+
+- Actively maintained
+
+---
+
+### apply-parallelization
+
+**built-in**
+
+- `parallel::mclapply()`
+- `parallel::mcmapply()`
+- `parallel::parApply()`
+- `parallel::parLapply()`
+- `parallel::parSapply()`
+- `parallel::parRapply()`
+
+**{future}**
+
+- `{furrr}` - parallelized {purrr} using {future} internally
+- Using {future} and basic `apply*` functions
+- Using {future} and {future.apply} -> `future_lapply()`
+
+---
+
+### {future}-based apply-parallelization
+
+**{furrr}** - https://github.com/DavisVaughan/furrr
+
+- Allows to use the {future} backend with {purrr} syntax
+- {purrr} functions are prefixed with `future_`
+- Go parallel with `plan(<parallel plan>)`
+
+Examples:
+
+- `map()` -> `future_map()`
+- `walk()` -> `future_walk()`
+- `imap2()` -> `future_imap2()`
+- etc.
+
+---
+
+### {future}-based apply-parallelization
+
+**{future.apply}** - https://github.com/HenrikBengtsson/future.apply
+
+- Similar as {furrr} but for base R `apply*` functions.
+- Go parallel with `plan(<parallel plan>)`.
+
+Examples:
+
+- `lapply()` -> `future_lapply()`
+- `mapply()` -> `future_mapply()`
+- `vapply()` -> `future_vapply()`
+- etc.
+
+---
+
+### future - Exercises
+
+.info[
+  Duration: 15 mins
+]
+
+Write some code that iterates over multiple objects (e.g. in a list) and runs a few seconds.
+
+Choose your parallel workhorse (foreach, future, apply, etc.).
+
+Try different parallel backends (socket parallelization, forking (if possible), callr, etc.)
+
+**What problems do you face?**
+**Are some concepts still unclear?**
+
+---
+
+### {future} examples
+
+From https://future.futureverse.org/articles/future-1-overview.html#demos
+
+Run the following code and exchange `sequential` in the `plan()` function
+
+```{r eval=FALSE}
+library("future")
+plan(sequential)
+demo("mandelbrot", package = "future", ask = FALSE)
 ```
 
+Curious what is happening under the hood? 👉️ see next slide
+
+---
+
+### {future} examples
+
+Source: https://github.com/HenrikBengtsson/future/blob/develop/demo/mandelbrot.R
+
+The following `lapply()` call is executed in parallel when a parallel `plan()` (e.g. `plan(multisession)`) is applied.
+
+```{r eval=FALSE}
+lapply(seq_along(Cs), FUN=function(ii) {
+  future({
+    message(sprintf("Calculating tile #%d of %d ...", ii, n))
+    fit <- mandelbrot(C)
+  })
+}
+```
+
+---
+
+### {future} examples
+
+Available {future} backends:
+
+- `sequential`
+- `multisession` (= socket parallelization)
+- `multicore` (= forking parallelization)
+- `callr` (via {future.callr}) (possibly >> multisession)
+- `batchtools`
+
+---
+
+## Parallelization - Putting it all together
+
+**Do you like for-loops?**
+
+ ➡️ {foreach} + {doFuture} + `%doRNG%` adaptor for reproducibility (optional)
+
+**Do you like the apply family?**
+
+Do you like {purrr}? ➡️ {furrr} or {future}
+
+Do you favor the classical apply functions? ➡️ `future()` + `lapply()` & friends or `future_*apply()` via {future.apply}
+
+---
+
+
+class: center, inverse, middle
+
+# Section - Profiling
+
+---
+
+### Profiling
+
+**Profiling** aims to unravel code parts with respect to
+
+  - execution time
+  - memory consumption
+
+This can help to optimize code and reduce runtime and resource usage.
+
+---
+
+### Profiling - R packages
+
+- {profvis} - https://rstudio.github.io/profvis
+- {proffer} - https://r-prof.github.io/proffer
+- {profmem} - https://github.com/HenrikBengtsson/profmem
+
+and more, see https://cran.r-project.org/web/views/HighPerformanceComputing.html.
+
+---
+
+### Profiling - Example
+
+Taken from https://github.com/r-prof/proffer
+
+Note: Your timing result will depend on your respective hardware.
+
+```{r , eval=FALSE}
+system.time({
+  n <- 1e5
+  x <- data.frame(x = rnorm(n), y = rnorm(n))
+  for (i in seq_len(n)) {
+    x[i, ] <- x[i, ] + 1
+  }
+  x
+})
+
+##    user  system elapsed
+##  52.205   9.026  61.745
+```
+
+---
+
+### Profiling - Example (slow)
+
+```{r, eval=FALSE}
+library(proffer)
+px <- pprof({
+  n <- 1e5
+  x <- data.frame(x = rnorm(n), y = rnorm(n))
+  for (i in seq_len(n)) {
+    x[i, ] <- x[i, ] + 1
+  }
+  x
+})
+```
+
+.info[
+ℹ️ Execute in an editor, e.g. RStudio or VSCode
+]
+
+---
+
+### Profiling - Example (fast)
+
+Avoid data.frame row assignments - use vectors directly!
+```{r , eval=FALSE}
+system.time({
+  n <- 1e5
+  x <- rnorm(n)
+  y <- rnorm(n)
+  for (i in seq_len(n)) {
+    x[i] <- x[i] + 1
+    y[i] <- y[i] + 1
+  }
+  x <- data.frame(x = x, y = y)
+})
+
+##    user  system elapsed
+##   0.016   0.001   0.016
+```
+
+---
+
+class: center, inverse, middle
+
+# Section - BLAS + LAPACK
+
+---
+
+### BLAS + LAPACK
+
+- BLAS: Basic Linear Algebra Subprograms
+- LAPACK: Linear Algebra Package
+
+Main libraries for *linear algebra* computations.
+
+CRAN ships it's installers with standalone BLAS and LAPACK libraries which are well tested but often lack in terms of performance against other implementations.
+
+.info[
+ℹ️ To check your current BLAS/LAPACK libraries in R, execute `sessionInfo()`.
+]
+
+---
+
+### BLAS + LAPACK
+
+Other BLAS and LAPACK libraries:
+
+- ATLAS (Automatically Tuned Linear Algebra Software) http://math-atlas.sourceforge.net/
+- OpenBLAS - https://www.openblas.net/
+- IntelMKL (only for Intel CPUs)
+
+To link against such external libraries, R needs to be **installed from source**.
+This is usually recommended for centrally managed R installations on servers or HPC clusters.
+
+More information: https://cran.r-project.org/doc/manuals/r-release/R-admin.html#Linear-algebra
+
+---
+
+class: center, inverse, middle
+
+# Section - Data handling
+
+---
+
+## Data handling - practical considerations
+
+Know where your data is written to!
+
+Writing/compressing/serializing large datasets (MB, GB) will use the **write speed of the underlying disk**.
+Often, disks with lots of space (usually HDDs) do have a slow read/write performance.
+This causes read/write/move processes to appear slow as the disk speed is the bottleneck.
+
+The same goes for **file shares/file mounts** of pretty much **any protocol** (samba, sshfs, nfs, etc.).
+The mileage varies among protocols but it will usually never be percieved as "fast".
+
+---
+
+## Data handling - practical considerations
+
+.info[
+💡️ To speed things up, perform read/write operations on the local file system, preferably on SSD drives.
+]
+
+BUT: Avoid **big reoccurring read/write tasks on SSDs** if possible as this will quickly reduce a SSDs lifetime.
+
+- If possible, try to use **databases**.
+- If possible, keep things **in memory** and only write to disk when it's really needed.
+
+---
+
+## Data handling - practical considerations
+
+Alternatives to R's native `saveRDS()` and `readRDS()`
+
+- {fst} package (tabular data only): https://github.com/fstpackage/fst
+- {qs} package: https://github.com/traversc/qs
+
+---
+
+## Resources
+
+- [Video: Barret Schloerke || Maximize computing resources using future_promise()](https://www.youtube.com/watch?v=3gtk8uRrrL4)
+- [{future} documentation](https://future.futureverse.org/)
+- [CRAN: R admin manual](https://cran.r-project.org/doc/manuals/r-release/R-admin.html)
+
+```{r xaringan-extra, echo=FALSE}
+xaringanExtra::use_tile_view()
+xaringanExtra::use_fit_screen()
+xaringanExtra::use_extra_styles(
+  hover_code_line = TRUE,
+  mute_unhighlighted_code = TRUE
+)
+xaringanExtra::use_progress_bar(color = "#0051BA", location = "top", height = "0.1em")
+# css framework
+xaringanExtra::use_tachyons()
+```
+
+```{r xaringanExtra-clipboard, echo=FALSE}
+xaringan_themer_css <- "./cynkra-xaringan.css"
+xaringanthemer::style_xaringan(
+  extra_css = list(
+    # "li" = list("padding" = "8px 0px 0px"),
+  ), outfile = xaringan_themer_css
+)
+htmltools::tagList(
+  xaringanExtra::use_clipboard(
+    button_text = "<i class=\"fa fa-clipboard\"></i>",
+    success_text = "<i class=\"fa fa-check\" style=\"color: #90BE6D\"></i>",
+    error_text = "<i class=\"fa fa-times-circle\" style=\"color: #F94144\"></i>"
+  ),
+  rmarkdown::html_dependency_font_awesome()
+)
+```
