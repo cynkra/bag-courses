@@ -40,11 +40,11 @@ Organization of half-day R courses:
 - Intro courses:
   * Tidyverse intro I
   * Tidyverse intro II
-  * Data visualization I
+  * Tidyverse intro III & Data visualization I (this course)
   * Data visualization II
 - Advanced courses:
   * Advanced tidyverse
-  * R package creation (this course)
+  * R package creation
   * Working with database systems
   * Parallelization & efficient R programming
   * Advanced topics (tbd)
