@@ -1,26 +1,38 @@
+<!DOCTYPE html>
+<html lang="english" xml:lang="english">
+  <head>
+    <title>BAG R-Courses</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Patrick &amp; Nicolas" />
+    <meta name="author" content="cynkra GmbH" />
+    <script src="efficient_R_files/header-attrs-2.11/header-attrs.js"></script>
+    <link href="efficient_R_files/remark-css-0.0.1/default.css" rel="stylesheet" />
+    <link href="efficient_R_files/tile-view-0.2.6/tile-view.css" rel="stylesheet" />
+    <script src="efficient_R_files/tile-view-0.2.6/tile-view.js"></script>
+    <script src="efficient_R_files/xaringanExtra_fit-screen-0.2.6/fit-screen.js"></script>
+    <link href="efficient_R_files/xaringanExtra-extra-styles-0.2.6/xaringanExtra-extra-styles.css" rel="stylesheet" />
+    <script src="efficient_R_files/xaringanExtra-progressBar-0.0.1/progress-bar.js"></script>
+    <link href="efficient_R_files/tachyons-4.12.0/tachyons.min.css" rel="stylesheet" />
+    <script src="efficient_R_files/clipboard-2.0.6/clipboard.min.js"></script>
+    <link href="efficient_R_files/xaringanExtra-clipboard-0.2.6/xaringanExtra-clipboard.css" rel="stylesheet" />
+    <script src="efficient_R_files/xaringanExtra-clipboard-0.2.6/xaringanExtra-clipboard.js"></script>
+    <script>window.xaringanExtraClipboard(null, {"button":"<i class=\"fa fa-clipboard\"><\/i>","success":"<i class=\"fa fa-check\" style=\"color: #90BE6D\"><\/i>","error":"<i class=\"fa fa-times-circle\" style=\"color: #F94144\"><\/i>"})</script>
+    <link href="efficient_R_files/font-awesome-5.1.0/css/all.css" rel="stylesheet" />
+    <link href="efficient_R_files/font-awesome-5.1.0/css/v4-shims.css" rel="stylesheet" />
+    <link rel="stylesheet" href="slides.css" type="text/css" />
+    <link rel="stylesheet" href="extra.css" type="text/css" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+# BAG R-Courses
+### Patrick &amp; Nicolas
+### cynkra GmbH
+### March 2022
+
 ---
-title: "BAG R-Courses"
-author: ["Patrick & Nicolas", "cynkra GmbH"]
-date: "March 2022"
-output:
-  cynkradown::cynkra_slides:
-    nature:
-      highlightStyle: github
-      highlightLines: true
-      countIncrementalSlides: true
-      slideNumberFormat: "%current%/%total%"
-    css:
-      - ./extra.css
-    seal: true
-fontsize: 10pt
-lang: english
-font: frutiger
-wide: false
-colorlinks: false
-logo: true
-header-includes:
-  - \usepackage{parskip}
----
+
 
 
 # What's in the box?
@@ -73,19 +85,40 @@ Good to know:
 Credit: https://github.com/r-lib/memoise
 
 .small[
-```{r }
+
+```r
 library(memoise)
-mean_fun <- function(x) {
+mean_fun &lt;- function(x) {
   Sys.sleep(1) # represents some long computation part
   mean(x)}
-mean_fun <- memoise(mean_fun)
+mean_fun &lt;- memoise(mean_fun)
 ```
 
-```{r }
-system.time(mean_fun(1:10))
-system.time(mean_fun(1:10))
 
+```r
+system.time(mean_fun(1:10))
+```
+
+```
+##    user  system elapsed 
+##   0.001   0.001   1.005
+```
+
+```r
+system.time(mean_fun(1:10))
+```
+
+```
+##    user  system elapsed 
+##       0       0       0
+```
+
+```r
 is.memoised(mean_fun)
+```
+
+```
+## [1] TRUE
 ```
 ]
 
@@ -321,12 +354,13 @@ Both parent and child process share the same memory.
 
 **{foreach}** - https://github.com/RevolutionAnalytics/foreach
 
-```{r eval=FALSE}
-dat_list <- split(iris, iris$Species)
-mod_list <- vector("list", length(dat_list))
+
+```r
+dat_list &lt;- split(iris, iris$Species)
+mod_list &lt;- vector("list", length(dat_list))
 
 for (i in seq_along(dat_list)) {
-  mod_list[[i]] <- lm(Sepal.Length ~ Sepal.Width +
+  mod_list[[i]] &lt;- lm(Sepal.Length ~ Sepal.Width +
     Petal.Length + Petal.Width, data = dat_list[[i]])
 }
 ```
@@ -341,9 +375,10 @@ for (i in seq_along(dat_list)) {
 Sequential
 ]
 
-```{r eval=FALSE}
+
+```r
 library(foreach)
-mod_list2 <- foreach(dat = dat_list) %do% {
+mod_list2 &lt;- foreach(dat = dat_list) %do% {
   lm(Sepal.Length ~ Sepal.Width + Petal.Length +
     Petal.Width, data = dat)
 }
@@ -361,9 +396,10 @@ Parallel
 
 Note the `%dopar%` adaptor.
 
-```{r eval=FALSE}
+
+```r
 library(foreach)
-mod_list2 <- foreach(dat = dat_list) %dopar% {
+mod_list2 &lt;- foreach(dat = dat_list) %dopar% {
   lm(Sepal.Length ~ Sepal.Width + Petal.Length +
     Petal.Width, data = dat)
 }
@@ -389,7 +425,7 @@ mod_list2 <- foreach(dat = dat_list) %dopar% {
 
 - Takes care of exports and packages automatically
 
-- Allows to select the backend via the cannonical {future} syntax (`plan(<backend>)`)
+- Allows to select the backend via the cannonical {future} syntax (`plan(&lt;backend&gt;)`)
 
 - Only one package to deal with for users
 
@@ -422,7 +458,7 @@ mod_list2 <- foreach(dat = dat_list) %dopar% {
 
 - Allows to use the {future} backend with {purrr} syntax
 - {purrr} functions are prefixed with `future_`
-- Go parallel with `plan(<parallel plan>)`
+- Go parallel with `plan(&lt;parallel plan&gt;)`
 
 Examples:
 
@@ -438,7 +474,7 @@ Examples:
 **{future.apply}** - https://github.com/HenrikBengtsson/future.apply
 
 - Similar as {furrr} but for base R `apply*` functions.
-- Go parallel with `plan(<parallel plan>)`.
+- Go parallel with `plan(&lt;parallel plan&gt;)`.
 
 Examples:
 
@@ -472,7 +508,8 @@ From https://future.futureverse.org/articles/future-1-overview.html#demos
 
 Run the following code and exchange `sequential` in the `plan()` function
 
-```{r eval=FALSE}
+
+```r
 library("future")
 plan(sequential)
 demo("mandelbrot", package = "future", ask = FALSE)
@@ -488,11 +525,12 @@ Source: https://github.com/HenrikBengtsson/future/blob/develop/demo/mandelbrot.R
 
 The following `lapply()` call is executed in parallel when a parallel `plan()` (e.g. `plan(multisession)`) is applied.
 
-```{r eval=FALSE}
+
+```r
 lapply(seq_along(Cs), FUN=function(ii) {
   future({
     message(sprintf("Calculating tile #%d of %d ...", ii, n))
-    fit <- mandelbrot(C)
+    fit &lt;- mandelbrot(C)
   })
 }
 ```
@@ -506,7 +544,7 @@ Available {future} backends:
 - `sequential`
 - `multisession` (= socket parallelization)
 - `multicore` (= forking parallelization)
-- `callr` (via {future.callr}) (possibly >> multisession)
+- `callr` (via {future.callr}) (possibly &gt;&gt; multisession)
 - `batchtools`
 
 ---
@@ -521,7 +559,7 @@ Available {future} backends:
 
 Do you like {purrr}? ➡️ {furrr} or {future}
 
-Do you favor the classical apply functions? ➡️ `future()` + `lapply()` & friends or `future_*apply()` via {future.apply}
+Do you favor the classical apply functions? ➡️ `future()` + `lapply()` &amp; friends or `future_*apply()` via {future.apply}
 
 ---
 
@@ -559,12 +597,13 @@ Taken from https://github.com/r-prof/proffer
 
 Note: Your timing result will depend on your respective hardware.
 
-```{r , eval=FALSE}
+
+```r
 system.time({
-  n <- 1e5
-  x <- data.frame(x = rnorm(n), y = rnorm(n))
+  n &lt;- 1e5
+  x &lt;- data.frame(x = rnorm(n), y = rnorm(n))
   for (i in seq_len(n)) {
-    x[i, ] <- x[i, ] + 1
+    x[i, ] &lt;- x[i, ] + 1
   }
   x
 })
@@ -577,13 +616,14 @@ system.time({
 
 ### Profiling - Example (slow)
 
-```{r, eval=FALSE}
+
+```r
 library(proffer)
-px <- pprof({
-  n <- 1e5
-  x <- data.frame(x = rnorm(n), y = rnorm(n))
+px &lt;- pprof({
+  n &lt;- 1e5
+  x &lt;- data.frame(x = rnorm(n), y = rnorm(n))
   for (i in seq_len(n)) {
-    x[i, ] <- x[i, ] + 1
+    x[i, ] &lt;- x[i, ] + 1
   }
   x
 })
@@ -598,16 +638,17 @@ px <- pprof({
 ### Profiling - Example (fast)
 
 Avoid data.frame row assignments - use vectors directly!
-```{r , eval=FALSE}
+
+```r
 system.time({
-  n <- 1e5
-  x <- rnorm(n)
-  y <- rnorm(n)
+  n &lt;- 1e5
+  x &lt;- rnorm(n)
+  y &lt;- rnorm(n)
   for (i in seq_len(n)) {
-    x[i] <- x[i] + 1
-    y[i] <- y[i] + 1
+    x[i] &lt;- x[i] + 1
+    y[i] &lt;- y[i] + 1
   }
-  x <- data.frame(x = x, y = y)
+  x &lt;- data.frame(x = x, y = y)
 })
 
 ##    user  system elapsed
@@ -629,37 +670,155 @@ system.time({
 
 **General best practices**
 
-- [Book: "Efficient R" - Colin Gillespie & Robin Lovelace](https://csgillespie.github.io/efficientR)
+- [Book: "Efficient R" - Colin Gillespie &amp; Robin Lovelace](https://csgillespie.github.io/efficientR)
 
 **BLAS/LAPACK**
 
 - [Benchmark of BLAS libraries in R](https://github.com/andre-wojtowicz/blas-benchmarks)
 
-```{r xaringan-extra, echo=FALSE}
-xaringanExtra::use_tile_view()
-xaringanExtra::use_fit_screen()
-xaringanExtra::use_extra_styles(
-  hover_code_line = TRUE,
-  mute_unhighlighted_code = TRUE
-)
-xaringanExtra::use_progress_bar(color = "#0051BA", location = "top", height = "0.1em")
-# css framework
-xaringanExtra::use_tachyons()
-```
+<style>.xe__progress-bar__container {
+  top:0;
+  opacity: 1;
+  position:absolute;
+  right:0;
+  left: 0;
+}
+.xe__progress-bar {
+  height: 0.1em;
+  background-color: #0051BA;
+  width: calc(var(--slide-current) / var(--slide-total) * 100%);
+}
+.remark-visible .xe__progress-bar {
+  animation: xe__progress-bar__wipe 200ms forwards;
+  animation-timing-function: cubic-bezier(.86,0,.07,1);
+}
+@keyframes xe__progress-bar__wipe {
+  0% { width: calc(var(--slide-previous) / var(--slide-total) * 100%); }
+  100% { width: calc(var(--slide-current) / var(--slide-total) * 100%); }
+}</style>
 
-```{r xaringanExtra-clipboard, echo=FALSE}
-xaringan_themer_css <- "./cynkra-xaringan.css"
-xaringanthemer::style_xaringan(
-  extra_css = list(
-    # "li" = list("padding" = "8px 0px 0px"),
-  ), outfile = xaringan_themer_css
-)
-htmltools::tagList(
-  xaringanExtra::use_clipboard(
-    button_text = "<i class=\"fa fa-clipboard\"></i>",
-    success_text = "<i class=\"fa fa-check\" style=\"color: #90BE6D\"></i>",
-    error_text = "<i class=\"fa fa-times-circle\" style=\"color: #F94144\"></i>"
-  ),
-  rmarkdown::html_dependency_font_awesome()
-)
-```
+
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script>var slideshow = remark.create({
+"highlightStyle": "github",
+"highlightLines": true,
+"countIncrementalSlides": true,
+"slideNumberFormat": "%current%/%total%"
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();
+(function() {
+  "use strict"
+  // Replace <script> tags in slides area to make them executable
+  var scripts = document.querySelectorAll(
+    '.remark-slides-area .remark-slide-container script'
+  );
+  if (!scripts.length) return;
+  for (var i = 0; i < scripts.length; i++) {
+    var s = document.createElement('script');
+    var code = document.createTextNode(scripts[i].textContent);
+    s.appendChild(code);
+    var scriptAttrs = scripts[i].attributes;
+    for (var j = 0; j < scriptAttrs.length; j++) {
+      s.setAttribute(scriptAttrs[j].name, scriptAttrs[j].value);
+    }
+    scripts[i].parentElement.replaceChild(s, scripts[i]);
+  }
+})();
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+// adds .remark-code-has-line-highlighted class to <pre> parent elements
+// of code chunks containing highlighted lines with class .remark-code-line-highlighted
+(function(d) {
+  const hlines = d.querySelectorAll('.remark-code-line-highlighted');
+  const preParents = [];
+  const findPreParent = function(line, p = 0) {
+    if (p > 1) return null; // traverse up no further than grandparent
+    const el = line.parentElement;
+    return el.tagName === "PRE" ? el : findPreParent(el, ++p);
+  };
+
+  for (let line of hlines) {
+    let pre = findPreParent(line);
+    if (pre && !preParents.includes(pre)) preParents.push(pre);
+  }
+  preParents.forEach(p => p.classList.add("remark-code-has-line-highlighted"));
+})(document);</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>
