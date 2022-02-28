@@ -33,13 +33,27 @@ resource_files:
 
 1. BLAS/LAPACK
 
-1. Data handling - practical considerations
-
 1. Parallelization
 
 1. Profiling
 
 1. Benchmarking
+
+1. Efficient data handling
+
+---
+
+# Schedule
+
+- (13:30) 10 min Intro
+- (13:40) Caching & Memoization (10 mins, pres only)
+- (13:50) BLAS/LAPACK (10 mins, pres only)
+- (14:00) Parallelization
+- (14:45) BREAK (20 mins)
+- (15:05) Parallelization
+- (15:45) Profiling
+- (16:00) Benchmarking
+- (16:20) Efficient data handling
 
 ---
 
@@ -143,96 +157,6 @@ class: center
 
 class: center, inverse, middle
 
-# Section - Data handling
-
----
-
-## Data handling - practical considerations
-
-.info[
-☝️ Know where your data is written to
-]
-
-Writing/compressing/serializing large datasets (MB, GB) is limited by the **write speed of the underlying disk**.
-Often, disks with lots of space (usually HDDs) do have a slow read/write performance.
-This causes read/write/move processes to appear slow as the disk speed is the bottleneck.
-
-The same goes for **file shares/file mounts** of pretty much **any protocol** (samba, sshfs, nfs, etc.).
-The mileage varies among protocols but reading/writing to file shares will usually never be percieved as "fast".
-
----
-
-## Data handling - practical considerations
-
-.info[
-💡️ To speed things up, perform read/write operations on the local file system, preferably on SSD drives.
-]
-
-BUT: Avoid **big reoccurring write tasks on SSDs** if possible as this will (quickly) reduce a SSDs lifetime.
-
-- If possible, try to use **databases**.
-- If possible, keep things **in memory** and only write to disk when it's really needed.
-
----
-
-## Data handling - practical considerations
-
-Alternatives to R's native `saveRDS()` and `readRDS()`
-
-- {fst} package (tabular data only): https://github.com/fstpackage/fst
-- {qs} package: https://github.com/traversc/qs (Example 👇️)
-
-.center[
-![](fig/qs-ex-1.png)
-]
-
----
-
-## Data handling - Exercise `flights` dataset
-
-1. Load the `flights` dataset from the {nycflights13} package
-1. Serialize it via `saveRDS()` and track the time
-1. Serialize it via {fst} and track the time
-1. Serialize it via {qs} and track the time
-1. Serialize it via {fst} with openMP and track the time
-1. Serialize it via {qs} and use the "fast" mode
-1. Serialize it via {qs} and use the "fast" mode and all available cores of your machine
-1. Read rows 100:200 of the `"dep_time"` column using {fst}
-1. Read rows 100:200 of the `"dep_time"` column using {qs}
-1. Read rows 100:200 of the `"dep_time"` column using {saveRDS}
-1. (optional) execute all of the above in a dedicated benchmarking tool
-
----
-
-## Data handling - practical considerations
-
-[Apache Arrow](https://github.com/apache/arrow/)
-
-- High-performance reading and writing of data files with multiple file formats and compression codecs, including built-in support for cloud storage
-- Analyzing and manipulating bigger-than-memory data with {dplyr} verbs
-- Supports various formats
-  - feather
-  - parquet
-  - json
-  - csv
-
----
-
-## Data handling - Arrow exercise
-
-Helpful instructions at: https://arrow.apache.org/docs/r/articles/dataset.html
-
-1. Download the NYC Taxi data **for the year 2010**.
-  (don't copy all data, one year takes already few minutes and is about 5GB in size)
-
-2. List and sum the file size of the downloaded data (careful, tricky)
-
-3. Print the overall passenger count for March
-
----
-
-class: center, inverse, middle
-
 # Section - Parallelization
 
 ---
@@ -247,11 +171,11 @@ class: center, inverse, middle
 
 ### Goal
 
-👉️ Get an overview of the available parallelization options in R
+👉️ Get an overview of the available parallelization options/framework in R
 
-👉️ Understand how to go parallel in practice
+👉️ Practically understand how to go parallel
 
-✋️ Avoid common pitfalls
+ℹ️️ Understand the differences of the various concepts
 
 ---
 
@@ -269,64 +193,65 @@ class: center, inverse, middle
   - {future.apply}
   - {future.batchtools}
   - {furrr}
-
 - {foreach} package
+- {promises} (focus on shiny)
 
 ---
 
 ### Iteration concepts
 
 .pull-left[
-
-Two main iteration concepts exist in R:
+Two main *iteration* concepts exist in R:
 
 - for-loops
 - The apply-family
-
 ]
 
 .pull-right[
-
-Two main parallel execution concepts exist in R:
+Two main *parallel execution* concepts exist in R:
 
 - socket-based (PSOCK) (default)
 - Forking (UNIX only)
-
 ]
 
-💡️ Parallelization packages combine the **iteration concepts** (left) with the **parallel concepts** (right) to allow for parallelized execution with minimal code adaptions compared to sequential execution.
+💡️ Parallelization packages in R combine the **iteration concepts** (left) with the **parallel execution concepts** (right) to allow for parallelized execution with minimal code adaptions compared to sequential execution.
 
 ---
 
 ## Other parallelization frameworks
 
-Mainly for High-Performance-Computing (HPC) jobs.
-Usually requires third-party tools.
+Making use of non-R parallelization libraries often requires third-party tools or explicit linking during installation.
+
+- [openMP](https://www.openmp.org/) (implicit code parallelization, configured during compile time of R packages, e.g. in {data.table}, {fst}, etc.)
+
+Messaging Interfaces to *HPC schedulers* (SLURM, LSF, TORQUE, SGE):
 
 - [MPI](https://en.wikipedia.org/wiki/Message_Passing_Interface) (R package: [{Rmpi}](https://cran.r-project.org/web/packages/Rmpi/index.html))
-- [openMP](https://www.openmp.org/)
 
-Interfaces to *HPC schedulers* (SLURM, LSF, TORQUE, SGE):
+- [ZeroMQ](https://github.com/zeromq/libzmq) (R package: [{clustermq}](https://mschubert.github.io/clustermq/))
 
-- ZeroMQ (R package: [{clustermq}](https://mschubert.github.io/clustermq/))
+Other HPC related frameworks:
 
-- Batchtools (R package: [{batchtools}](https://mllg.github.io/batchtools/))
+- R package [{batchtools}](https://mllg.github.io/batchtools/))
 
 ---
 
 ### PSOCK vs. forking
 
-.fl.w-50.pr2[
+.fl.w-50.pr1[
 **PSOCK**
 
-Creates a socket cluster of R workers which use `Rscript` to execute code
+The "p" means "created by the parallel package".
+
+Creates a socket cluster of R workers which use `Rscript` to execute code.
 ]
 
-.fl.w-40.pa0[
+.fl.w-50.pl1[
 **Forking**
 
 Creates copies of the current R process.
-Both parent and child process share the same memory.
+
+At the point of forking child processes share exactly the same state including the workspace, global options, loaded packages etc.
 ]
 
 ---
@@ -358,7 +283,7 @@ Both parent and child process share the same memory.
 ➖️ Should/cannot be used in GUI applications (e.g. RStudio) as the forked processes will share a copy of the GUI process.
   This may lead to crashes or deadlocks
 
-➖️ Should not be used in multithreaded R processes (i.e. nested/stacked parallelization)
+➖️ Caution should be taken when combining forking with multithreaded R processes (e.g. via openMP), i.e. nested/stacked parallelization
 
 ➖️ Not available on Windows
 ]
@@ -433,8 +358,7 @@ mod_list2 <- foreach(dat = dat_list) %dopar% {
 
 ---
 
-### Benefits of {doFuture}
-
+### Benefits of the {doFuture} parallel adaptor
 
 - Takes care of exports and packages automatically
 
@@ -446,9 +370,9 @@ mod_list2 <- foreach(dat = dat_list) %dopar% {
 
 ---
 
-### apply-parallelization
+### apply-parallelization - Available options
 
-**built-in**
+**{parallel}** (built-in)
 
 - `parallel::mclapply()`
 - `parallel::mcmapply()`
@@ -457,11 +381,11 @@ mod_list2 <- foreach(dat = dat_list) %dopar% {
 - `parallel::parSapply()`
 - `parallel::parRapply()`
 
-**{future}**
+**{future}** (community)
 
 - `{furrr}` - parallelized {purrr} using {future} internally
-- Using {future} and basic `apply*` functions
-- Using {future} and {future.apply}: `future_lapply()`
+- Using {future} with `future()` and basic `apply*` functions
+- Using {future} and {future.apply}: e.g. `future_lapply()`
 
 ---
 
@@ -495,23 +419,6 @@ Examples:
 - `mapply()` - `future_mapply()`
 - `vapply()` - `future_vapply()`
 - etc.
-
----
-
-### future - Exercises
-
-.info[
-  Duration: 15 mins
-]
-
-Write some code that iterates over multiple objects (e.g. in a list) and runs a few seconds.
-
-Choose your parallel workhorse (foreach, future, apply, furrr, etc.).
-
-Try different parallel backends (socket parallelization, forking (if possible), callr, etc.)
-
-**What problems do you face?**
-**Is something still unclear?**
 
 ---
 
@@ -560,6 +467,41 @@ Available {future} backends:
 
 ---
 
+### Parallelization - Exercises
+
+.info[
+  Duration: 30 mins
+]
+
+The code on the next slide should finish in a little bit more than two seconds in parallel and in about four seconds sequentially.
+
+Rewrite the code using different parallel variations in R
+
+- {foreach} and {doParallel}
+- {foreach} and {doFuture}
+- `parLapply()` and a PSOCK cluster
+- `furrr::future_walk()`
+- {future.apply}
+- {future} + `lapply()` + `future()`
+- {future.callr} + `future_lapply()`
+
+---
+
+### Parallelization - Exercises
+
+```{r eval = FALSE}
+system.time({
+  vec = c(2, 2, 2)
+  for (i in vec) {
+    Sys.sleep(i)
+  }
+})
+```
+
+👉️ Inspect the time differences between the different parallel options.
+
+---
+
 ## Parallelization - Putting it all together
 
 **Do you like for-loops?**
@@ -573,7 +515,6 @@ Do you like {purrr}? ➡️ {furrr} or {future}
 Do you favor the classical apply functions? ➡️ `future()` + `lapply()` & friends or `future_*apply()` via {future.apply}
 
 ---
-
 
 class: center, inverse, middle
 
@@ -604,7 +545,9 @@ and more, see https://cran.r-project.org/web/views/HighPerformanceComputing.html
 
 ### Profiling - Example
 
+.small[
 Taken from https://github.com/r-prof/proffer
+]
 
 Note: Your timing result will depend on your respective hardware.
 
@@ -617,7 +560,6 @@ system.time({
   }
   x
 })
-
 ##    user  system elapsed
 ##  52.205   9.026  61.745
 ```
@@ -658,10 +600,239 @@ system.time({
   }
   x <- data.frame(x = x, y = y)
 })
-
 ##    user  system elapsed
 ##   0.016   0.001   0.016
 ```
+
+
+---
+
+class: center, inverse, middle
+
+# Section - Benchmarking
+
+---
+
+## Benchmarking
+
+### Motivation
+
+- Compare different approaches yielding the same result
+- Inspect runtime differences and memory consumption
+
+### R packages
+
+- [{microbenchmark}](https://github.com/joshuaulrich/microbenchmark)
+- [{bench}](https://github.com/r-lib/bench)
+- [{benchmarkme}](https://github.com/csgillespie/benchmarkme) (local hardware benchmarking)
+- [{mlbench}](https://cran.r-project.org/web/packages/mlbench/index.html) (ML benchmark datasets)
+
+---
+
+## Benchmarking
+
+Source: https://github.com/r-lib/bench
+
+Benchmark different ways to subset a `data.frame`:
+
+```{r }
+library(bench)
+set.seed(42)
+dat <- data.frame(x = runif(10000, 1, 1000),
+  y=runif(10000, 1, 1000))
+bm = bench::mark(
+  dat[dat$x > 500, ],
+  dat[which(dat$x > 500), ],
+  subset(dat, x > 500))
+```
+
+.info[
+ℹ️ Execute in an editor, e.g. RStudio or VSCode
+]
+
+---
+
+## Benchmarking
+
+```{r  warning=FALSE, dpi = 200, fig.asp = 0.5}
+library(ggplot2)
+autoplot(bm)
+```
+
+---
+
+## Benchmarking
+
+Examples of efficient implementations in R
+
+{fastmatch}
+
+```{r }
+library(fastmatch)
+x = as.integer(rnorm(1e6) * 1000000)
+s = 1:100
+
+bm_match = bench::mark(
+  fmatch(s,x),
+  match(s,x)
+)
+```
+
+---
+
+## Benchmarking
+
+Examples of efficient implementations in R
+
+```{r dpi = 200, fig.asp = 0.5, cache = TRUE}
+autoplot(bm_match)
+```
+
+---
+
+## Benchmarking
+
+Examples of efficient implementations in R: Rolling Window computations
+
+{data.table} vs. {roll} vs. base R vs. {zoo}
+
+```{r cache = TRUE, dpi = 200, fig.asp = 0.5, warning  = FALSE}
+library(data.table); library(roll)
+x <- rnorm(15)
+
+bm_roll = bench::mark(
+  data.table::frollmean(x, 5),
+  roll::roll_mean(x, 5),
+  apply(embed(x, 5), 1, mean),
+  zoo::rollapply(x, FUN = mean, width = 5),
+  relative = TRUE, check = FALSE
+)
+```
+
+---
+
+## Benchmarking
+
+Examples of efficient implementations in R
+
+```{r dpi = 200, fig.asp = 0.5, cache = TRUE}
+autoplot(bm_roll)
+```
+
+---
+
+## Benchmarking - Exercise
+
+.info[
+  Duration: 20 mins
+]
+
+1. Use `bench::mark()` to compare the coercion of the `"dep_time"` column in the `flights` dataset from integer to character
+  1. Using `dplyr::mutate()`
+  1. Using `as.character()` and base R syntax
+  1. Using {data.table}
+
+Hints:
+- Take care to use "fair" inputs in all three cases and avoid additinal class coercing within the individual benchmark calls
+- Optional: use profiling to find the bottlenecks
+
+---
+
+class: center, inverse, middle
+
+# Section - Efficient data handling
+
+---
+
+## Efficient data handling
+
+.info[
+☝️ Know where your data is written to
+]
+
+Writing/compressing/serializing large datasets (MB, GB) is limited by the **write speed of the underlying disk**.
+Often, disks with lots of space (usually HDDs) do have a slow read/write performance.
+This causes read/write/move processes to appear slow as the disk speed is the bottleneck.
+
+The same goes for **file shares/file mounts** of pretty much **any protocol** (samba, sshfs, nfs, etc.).
+The mileage varies among protocols but reading/writing to file shares will usually never be percieved as "fast".
+
+---
+
+## Efficient data handling
+
+.info[
+💡️ To speed things up, perform read/write operations on the local file system, preferably on SSD drives.
+]
+
+BUT: Avoid **big reoccurring write tasks on SSDs** if possible as this will (quickly) reduce a SSDs lifetime.
+
+- If possible, try to use **databases**.
+- If possible, keep things **in memory** and only write to disk when it's really needed.
+
+---
+
+## Efficient data handling
+
+Alternatives to R's native `saveRDS()` and `readRDS()`
+
+- {fst} package (tabular data only): https://github.com/fstpackage/fst
+- {qs} package: https://github.com/traversc/qs (Example 👇️)
+
+.center[
+![](fig/qs-ex-1.png)
+]
+
+---
+
+## Efficient data handling - Exercise `flights` dataset
+
+.info[
+  Duration: 20 mins
+]
+
+1. Load the `flights` dataset from the {nycflights13} package
+1. Serialize it via `saveRDS()` and track the time via `system.time()`
+1. Serialize it via {fst} and track the time
+1. Serialize it via {qs} and track the time
+1. Serialize it via {fst} and track the time
+1. Serialize it via {qs} and use the "fast" mode
+1. Serialize it via {qs} and use the "fast" mode and all available cores of your machine
+1. Read rows 100:200 of the `"dep_time"` column using {fst}
+1. Read rows 100:200 of the `"dep_time"` column using {qs}
+1. Read rows 100:200 of the `"dep_time"` column using {saveRDS}
+1. (optional) execute all of the above using a dedicated benchmarking tool
+
+---
+
+## Efficient data handling  - practical considerations
+
+[Apache Arrow](https://github.com/apache/arrow/)
+
+- High-performance reading and writing of data files with multiple file formats and compression codecs, including built-in support for cloud storage
+- Analyzing and manipulating bigger-than-memory data with {dplyr} verbs
+- Supports various formats
+  - feather
+  - parquet
+  - json
+  - csv
+
+---
+
+## Efficient data handling - Arrow exercise
+
+.info[
+  Duration: 15 mins
+]
+
+Helpful instructions at: https://arrow.apache.org/docs/r/articles/dataset.html
+
+1. Download the NYC Taxi data **for the year 2010**.
+  (don't copy all data, one year takes already few minutes and is about 5GB in size)
+
+1. Print the overall passenger count for March
+
+1. List and sum the file size of the downloaded data (potentially skip - somewhat tricky)
 
 ---
 
