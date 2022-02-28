@@ -116,11 +116,7 @@ code {
 }
 
 .remark-slide-number {
-  color: inherit;
-  /* font-size: 10pt !important; */
-  /* margin-bottom: -11.6px !important; */
-  /* margin-right: 10px !important; */
-  /* color: #333 !important; */
+  color: inherit !important;
   opacity: 0.9 !important;
 }
 
@@ -739,11 +735,11 @@ Source: https://github.com/r-lib/bench
 
 Benchmark different ways to subset a `data.frame`:
 
-```{r }
+```{r cache = TRUE}
 library(bench)
 set.seed(42)
 dat <- data.frame(x = runif(10000, 1, 1000),
-  y=runif(10000, 1, 1000))
+  y = runif(10000, 1, 1000))
 bm = bench::mark(
   dat[dat$x > 500, ],
   dat[which(dat$x > 500), ],
@@ -758,7 +754,7 @@ bm = bench::mark(
 
 ## Benchmarking
 
-```{r  warning=FALSE, dpi = 200, fig.asp = 0.5}
+```{r  warning=FALSE, dpi = 200, fig.asp = 0.5, cache = TRUE}
 library(ggplot2)
 autoplot(bm)
 ```
@@ -801,7 +797,7 @@ Examples of efficient implementations in R: Rolling Window computations
 {data.table} vs. {roll} vs. base R vs. {zoo}
 
 ```{r cache = TRUE, dpi = 200, fig.asp = 0.5, warning  = FALSE}
-library(data.table); library(roll)
+library(data.table); library(roll); set.seed(42)
 x <- rnorm(15)
 
 bm_roll = bench::mark(
