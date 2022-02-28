@@ -20,7 +20,6 @@
     <link href="efficient_R_files/font-awesome-5.1.0/css/all.css" rel="stylesheet" />
     <link href="efficient_R_files/font-awesome-5.1.0/css/v4-shims.css" rel="stylesheet" />
     <link rel="stylesheet" href="slides.css" type="text/css" />
-    <link rel="stylesheet" href="extra.css" type="text/css" />
   </head>
   <body>
     <textarea id="source">
@@ -46,6 +45,8 @@ class: center, middle, inverse, title-slide
 1. Parallelization
 
 1. Profiling
+
+1. Benchmarking
 
 ---
 
@@ -101,7 +102,7 @@ system.time(mean_fun(1:10))
 
 ```
 ##    user  system elapsed 
-##   0.001   0.001   1.005
+##   0.001   0.001   1.003
 ```
 
 ```r
@@ -110,7 +111,7 @@ system.time(mean_fun(1:10))
 
 ```
 ##    user  system elapsed 
-##       0       0       0
+##   0.001   0.000   0.000
 ```
 
 ```r
@@ -195,7 +196,7 @@ The mileage varies among protocols but reading/writing to file shares will usual
 💡️ To speed things up, perform read/write operations on the local file system, preferably on SSD drives.
 ]
 
-BUT: Avoid **big reoccurring read/write tasks on SSDs** if possible as this will quickly reduce a SSDs lifetime.
+BUT: Avoid **big reoccurring write tasks on SSDs** if possible as this will (quickly) reduce a SSDs lifetime.
 
 - If possible, try to use **databases**.
 - If possible, keep things **in memory** and only write to disk when it's really needed.
@@ -212,6 +213,49 @@ Alternatives to R's native `saveRDS()` and `readRDS()`
 .center[
 ![](fig/qs-ex-1.png)
 ]
+
+---
+
+## Data handling - Exercise `flights` dataset
+
+1. Load the `flights` dataset from the {nycflights13} package
+1. Serialize it via `saveRDS()` and track the time
+1. Serialize it via {fst} and track the time
+1. Serialize it via {qs} and track the time
+1. Serialize it via {fst} with openMP and track the time
+1. Serialize it via {qs} and use the "fast" mode
+1. Serialize it via {qs} and use the "fast" mode and all available cores of your machine
+1. Read rows 100:200 of the `"dep_time"` column using {fst}
+1. Read rows 100:200 of the `"dep_time"` column using {qs}
+1. Read rows 100:200 of the `"dep_time"` column using {saveRDS}
+1. (optional) execute all of the above in a dedicated benchmarking tool
+
+---
+
+## Data handling - practical considerations
+
+[Apache Arrow](https://github.com/apache/arrow/)
+
+- High-performance reading and writing of data files with multiple file formats and compression codecs, including built-in support for cloud storage
+- Analyzing and manipulating bigger-than-memory data with {dplyr} verbs
+- Supports various formats
+  - feather
+  - parquet
+  - json
+  - csv
+
+---
+
+## Data handling - Arrow exercise
+
+Helpful instructions at: https://arrow.apache.org/docs/r/articles/dataset.html
+
+1. Download the NYC Taxi data **for the year 2010**.
+  (don't copy all data, one year takes already few minutes and is about 5GB in size)
+
+2. List and sum the file size of the downloaded data (careful, tricky)
+
+3. Print the overall passenger count for March
 
 ---
 
@@ -698,6 +742,157 @@ system.time({
 }</style>
 
 
+
+
+
+```css
+.remark-slide-content h1 {
+  /*color: #5DA5DA;*/
+  color: inherit;
+  /*r blue*/
+  /*color: rgb(31, 101, 183);*/
+
+  font-weight: 600;
+  font-size: 45px;
+  /*text-transform: uppercase;*/
+}
+
+.remark-slide-content h2 {
+  color: inherit;
+
+  /*color: rgb(31, 101, 183);*/
+  font-weight: 600;
+  font-size: 30px;
+}
+
+.remark-slide-content h3 {
+  color: inherit;
+
+  /*color: #4D4D4D;*/
+  font-weight: 600;
+  font-size: 30px;
+}
+
+.title-slide h3 {
+  color: #333 !important;
+}
+
+.remark-slide-content {
+  /* default: padding: 1em 4em 1em 4em; */
+  padding: 1em 2em 1em 2em;
+}
+
+.small {
+  font-size: 75%;
+}
+
+.small .remark-code {
+  font-size: 85%;
+}
+
+.info {
+  background-color: rgb(31 101 183);
+  font-weight: 600;
+  border-radius: 6px;
+  padding-left: 6px;
+  color: white;
+  border-left: solid 12px #faa43a;
+}
+
+.code,
+code {
+  font-size: 0.9em;
+}
+
+.remark-slide-number {
+  color: inherit;
+  /* font-size: 10pt !important; */
+  /* margin-bottom: -11.6px !important; */
+  /* margin-right: 10px !important; */
+  /* color: #333 !important; */
+  opacity: 0.9 !important;
+}
+
+a {
+  color: #498e33 !important;
+}
+
+```
+
+
+&lt;style type="text/css"&gt;
+.remark-slide-content h1 {
+  /*color: #5DA5DA;*/
+  color: inherit;
+  /*r blue*/
+  /*color: rgb(31, 101, 183);*/
+
+  font-weight: 600;
+  font-size: 45px;
+  /*text-transform: uppercase;*/
+}
+
+.remark-slide-content h2 {
+  color: inherit;
+
+  /*color: rgb(31, 101, 183);*/
+  font-weight: 600;
+  font-size: 30px;
+}
+
+.remark-slide-content h3 {
+  color: inherit;
+
+  /*color: #4D4D4D;*/
+  font-weight: 600;
+  font-size: 30px;
+}
+
+.title-slide h3 {
+  color: #333 !important;
+}
+
+.remark-slide-content {
+  /* default: padding: 1em 4em 1em 4em; */
+  padding: 1em 2em 1em 2em;
+}
+
+.small {
+  font-size: 75%;
+}
+
+.small .remark-code {
+  font-size: 85%;
+}
+
+.info {
+  background-color: rgb(31 101 183);
+  font-weight: 600;
+  border-radius: 6px;
+  padding-left: 6px;
+  color: white;
+  border-left: solid 12px #faa43a;
+}
+
+.code,
+code {
+  font-size: 0.9em;
+}
+
+.remark-slide-number {
+  color: inherit;
+  /* font-size: 10pt !important; */
+  /* margin-bottom: -11.6px !important; */
+  /* margin-right: 10px !important; */
+  /* color: #333 !important; */
+  opacity: 0.9 !important;
+}
+
+a {
+  color: #498e33 !important;
+}
+
+&lt;/style&gt;
     </textarea>
 <style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
 <script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
