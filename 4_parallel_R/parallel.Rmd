@@ -11,7 +11,6 @@ output:
       highlightLines: yes
       countIncrementalSlides: yes
       slideNumberFormat: '%current%/%total%'
-    # css: ./extra.css
     seal: yes
 fontsize: 10pt
 lang: english
@@ -25,6 +24,111 @@ resource_files:
 - fig/blas-ex-2.png
 - fig/blas-ex-1.png
 ---
+
+```{r xaringan-extra, echo=FALSE}
+xaringanExtra::use_tile_view()
+xaringanExtra::use_fit_screen()
+xaringanExtra::use_scribble()
+xaringanExtra::use_extra_styles(
+  hover_code_line = TRUE,
+  mute_unhighlighted_code = TRUE
+)
+xaringanExtra::use_progress_bar(color = "#0051BA", location = "top", height = "0.1em")
+# css framework
+xaringanExtra::use_tachyons()
+```
+
+```{r xaringanExtra-clipboard, echo=FALSE}
+xaringan_themer_css <- "./cynkra-xaringan.css"
+xaringanthemer::style_xaringan(
+  extra_css = list(
+    # "li" = list("padding" = "8px 0px 0px"),
+  ), outfile = xaringan_themer_css
+)
+htmltools::tagList(
+  xaringanExtra::use_clipboard(
+    button_text = "<i class=\"fa fa-clipboard\"></i>",
+    success_text = "<i class=\"fa fa-check\" style=\"color: #90BE6D\"></i>",
+    error_text = "<i class=\"fa fa-times-circle\" style=\"color: #F94144\"></i>"
+  ),
+  rmarkdown::html_dependency_font_awesome()
+)
+```
+
+
+```{css, echo = FALSE }
+.remark-slide-content h1 {
+  /*color: #5DA5DA;*/
+  color: inherit;
+  /*r blue*/
+  /*color: rgb(31, 101, 183);*/
+
+  font-weight: 600;
+  font-size: 45px;
+  /*text-transform: uppercase;*/
+}
+
+.remark-slide-content h2 {
+  color: inherit;
+
+  /*color: rgb(31, 101, 183);*/
+  font-weight: 600;
+  font-size: 30px;
+}
+
+.remark-slide-content h3 {
+  color: inherit;
+
+  /*color: #4D4D4D;*/
+  font-weight: 600;
+  font-size: 30px;
+}
+
+.title-slide h3 {
+  color: #333 !important;
+}
+
+.remark-slide-content {
+  /* default: padding: 1em 4em 1em 4em; */
+  padding: 1em 2em 1em 2em;
+}
+
+.small {
+  font-size: 75%;
+}
+
+.small .remark-code {
+  font-size: 85%;
+}
+
+.info {
+  background-color: rgb(31 101 183);
+  font-weight: 600;
+  border-radius: 6px;
+  padding-left: 6px;
+  color: white;
+  border-left: solid 12px #faa43a;
+}
+
+.code,
+code {
+  font-size: 0.9em;
+}
+
+.remark-slide-number {
+  color: inherit;
+  /* font-size: 10pt !important; */
+  /* margin-bottom: -11.6px !important; */
+  /* margin-right: 10px !important; */
+  /* color: #333 !important; */
+  opacity: 0.9 !important;
+}
+
+a {
+  color: #498e33 !important;
+}
+
+```
 
 
 # What's in the box?
@@ -855,106 +959,4 @@ Helpful instructions at: https://arrow.apache.org/docs/r/articles/dataset.html
 
 - [Benchmark of BLAS libraries in R](https://github.com/andre-wojtowicz/blas-benchmarks)
 
-```{r xaringan-extra, echo=FALSE}
-xaringanExtra::use_tile_view()
-xaringanExtra::use_fit_screen()
-xaringanExtra::use_extra_styles(
-  hover_code_line = TRUE,
-  mute_unhighlighted_code = TRUE
-)
-xaringanExtra::use_progress_bar(color = "#0051BA", location = "top", height = "0.1em")
-# css framework
-xaringanExtra::use_tachyons()
-```
 
-```{r xaringanExtra-clipboard, echo=FALSE}
-xaringan_themer_css <- "./cynkra-xaringan.css"
-xaringanthemer::style_xaringan(
-  extra_css = list(
-    # "li" = list("padding" = "8px 0px 0px"),
-  ), outfile = xaringan_themer_css
-)
-htmltools::tagList(
-  xaringanExtra::use_clipboard(
-    button_text = "<i class=\"fa fa-clipboard\"></i>",
-    success_text = "<i class=\"fa fa-check\" style=\"color: #90BE6D\"></i>",
-    error_text = "<i class=\"fa fa-times-circle\" style=\"color: #F94144\"></i>"
-  ),
-  rmarkdown::html_dependency_font_awesome()
-)
-```
-
-
-```{css }
-.remark-slide-content h1 {
-  /*color: #5DA5DA;*/
-  color: inherit;
-  /*r blue*/
-  /*color: rgb(31, 101, 183);*/
-
-  font-weight: 600;
-  font-size: 45px;
-  /*text-transform: uppercase;*/
-}
-
-.remark-slide-content h2 {
-  color: inherit;
-
-  /*color: rgb(31, 101, 183);*/
-  font-weight: 600;
-  font-size: 30px;
-}
-
-.remark-slide-content h3 {
-  color: inherit;
-
-  /*color: #4D4D4D;*/
-  font-weight: 600;
-  font-size: 30px;
-}
-
-.title-slide h3 {
-  color: #333 !important;
-}
-
-.remark-slide-content {
-  /* default: padding: 1em 4em 1em 4em; */
-  padding: 1em 2em 1em 2em;
-}
-
-.small {
-  font-size: 75%;
-}
-
-.small .remark-code {
-  font-size: 85%;
-}
-
-.info {
-  background-color: rgb(31 101 183);
-  font-weight: 600;
-  border-radius: 6px;
-  padding-left: 6px;
-  color: white;
-  border-left: solid 12px #faa43a;
-}
-
-.code,
-code {
-  font-size: 0.9em;
-}
-
-.remark-slide-number {
-  color: inherit;
-  /* font-size: 10pt !important; */
-  /* margin-bottom: -11.6px !important; */
-  /* margin-right: 10px !important; */
-  /* color: #333 !important; */
-  opacity: 0.9 !important;
-}
-
-a {
-  color: #498e33 !important;
-}
-
-```
