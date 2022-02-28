@@ -754,7 +754,7 @@ bm = bench::mark(
 
 ## Benchmarking
 
-```{r  warning=FALSE, dpi = 200, fig.asp = 0.5, cache = TRUE}
+```{r  warning=FALSE, dpi = 200, fig.asp = 0.5, cache = TRUE, message = FALSE}
 library(ggplot2)
 autoplot(bm)
 ```
