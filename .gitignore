@@ -40,3 +40,10 @@ vignettes/*.pdf
 
 
 .DS_Store
+
+webfonts/
+favicon/
+*.ico
+*.css
+*.js
+logo-transparent.png
