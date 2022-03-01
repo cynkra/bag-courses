@@ -11,6 +11,7 @@ output:
       highlightLines: yes
       countIncrementalSlides: yes
       slideNumberFormat: '%current%/%total%'
+      beforeInit: "js/macros.js"
     seal: yes
 fontsize: 10pt
 lang: english
@@ -29,6 +30,7 @@ resource_files:
 xaringanExtra::use_tile_view()
 xaringanExtra::use_fit_screen()
 xaringanExtra::use_scribble()
+xaringanExtra::use_webcam()
 xaringanExtra::use_extra_styles(
   hover_code_line = TRUE,
   mute_unhighlighted_code = TRUE
@@ -126,6 +128,33 @@ a {
 
 ```
 
+## Who I am
+
+.fl.w-50.pr1[
+
+.center[
+![:scale 30%](fig/ich.jpeg)
+]
+
+- M.Sc. Geoinformatics
+- Previously researcher at University of **Jena** and LMU **Munich**
+- **Head of Infrastructure** at cynkra
+- PhD Candidate (Environmental modelling)
+
+]
+
+.fl.w-50.pr1[
+- Unix & R enthusiast
+
+- [Gitea](https://gitea.io/en-us/) (https://gitea.io) contributor
+
+- Member of mlr-org core team; Machine learning in R ![:scale 10%](fig/mlr.png)
+  - [{mlr3}](https://github.com/mlr-org/mlr3) 
+  - [{mlr}](https://github.com/mlr-org/mlr)
+
+]
+
+---
 
 # What's in the box?
 
@@ -470,6 +499,40 @@ mod_list2 <- foreach(dat = dat_list) %dopar% {
 
 ---
 
+### Parallelization - Exercises
+
+.info[
+  Duration: 10 mins
+]
+
+The code on the next slide finishes in a little bit more than two seconds in parallel and in about six seconds sequentially.
+
+Rewrite the code using different parallel variations in R:
+
+- {foreach} and {doParallel}
+- {foreach} and {doFuture}
+
+---
+
+### Parallelization - Exercises
+
+```{r eval = FALSE}
+system.time({
+  vec = c(2, 2, 2)
+  for (i in vec) {
+    Sys.sleep(i)
+  }
+})
+```
+
+👉️ Inspect the time differences between the different parallel options.
+
+.small[
+(Solutions can be found in `exercises/parallelization-solutions.R`)
+]
+
+---
+
 ### apply-parallelization - Available options
 
 **{parallel}** (built-in)
@@ -497,7 +560,7 @@ mod_list2 <- foreach(dat = dat_list) %dopar% {
 - {purrr} functions are prefixed with `future_`
 - Go parallel with `plan(<parallel plan>)`
 
-Examples:
+{purrr} ➡️ {furrr} equivalent:
 
 - `map()` - `future_map()`
 - `walk()` - `future_walk()`
@@ -513,7 +576,7 @@ Examples:
 - Similar as {furrr} but for base R `apply*` functions.
 - Go parallel with `plan(<parallel plan>)`.
 
-Examples:
+base R ➡️ {future.apply} equivalent:
 
 - `lapply()` - `future_lapply()`
 - `mapply()` - `future_mapply()`
@@ -563,7 +626,7 @@ Available {future} backends:
 - `multisession` (= socket parallelization)
 - `multicore` (= forking parallelization)
 - `callr` (via {future.callr}) (possibly >> multisession)
-- `batchtools`
+- `batchtools` (not of interest for local executions)
 
 ---
 
@@ -573,12 +636,10 @@ Available {future} backends:
   Duration: 30 mins
 ]
 
-The code on the next slide should finish in a little bit more than two seconds in parallel and in about four seconds sequentially.
+The code on the next slide finishes in a little bit more than two seconds in parallel and in about six seconds sequentially.
 
-Rewrite the code using different parallel variations in R
+Rewrite the code using different parallel variations in R:
 
-- {foreach} and {doParallel}
-- {foreach} and {doFuture}
 - `parLapply()` and a PSOCK cluster
 - `furrr::future_walk()`
 - {future.apply}
@@ -592,13 +653,15 @@ Rewrite the code using different parallel variations in R
 ```{r eval = FALSE}
 system.time({
   vec = c(2, 2, 2)
-  for (i in vec) {
-    Sys.sleep(i)
-  }
+  lapply(vec, Sys.sleep)
 })
 ```
 
 👉️ Inspect the time differences between the different parallel options.
+
+.small[
+(Solutions can be found in `exercises/parallelization-solutions.R`)
+]
 
 ---
 
@@ -606,13 +669,13 @@ system.time({
 
 **Do you like for-loops?**
 
- ➡️ {foreach} + {doFuture} + `%doRNG%` adaptor for reproducibility (optional)
+➡️ {foreach} + {doFuture} + (optional) `%doRNG%` adaptor for reproducibility
 
-**Do you like the apply family?**
+**Do you favor the apply family?**
 
-Do you like {purrr}? ➡️ {furrr} or {future}
+➡️ Do you like {purrr}? ➡️ {furrr}
 
-Do you favor the classical apply functions? ➡️ `future()` + `lapply()` & friends or `future_*apply()` via {future.apply}
+➡️ Do you favor the classical apply functions? ➡️ `future()` + `lapply()` & friends or `future_*apply()` via {future.apply}
 
 ---
 
@@ -628,8 +691,9 @@ class: center, inverse, middle
 
   - execution time
   - memory consumption
+  - and more helpful statistics
 
-This can help to optimize code and reduce runtime and resource usage.
+The idea is to get insights into code execution statistics which can help to optimize code and reduce runtime and resource usage.
 
 ---
 
@@ -667,6 +731,10 @@ system.time({
 ---
 
 ### Profiling - Example (slow)
+
+.small[
+(You might need to install `go` externally, see https://github.com/r-prof/proffer#non-r-dependencies)
+]
 
 ```{r, eval=FALSE}
 library(proffer)
@@ -758,6 +826,24 @@ bm = bench::mark(
 library(ggplot2)
 autoplot(bm)
 ```
+
+---
+
+## Benchmarking
+
+Excursion: R's Garbage Collector
+
+> GC automatically releases memory when an object is no longer used. It does this by tracking how many names point to each object, and when there are no names pointing to an object, it deletes that object.
+
+.small[
+Source: http://adv-r.had.co.nz/memory.html#gc
+]
+
+> Level 0 collects only the youngest generation, level 1 collects the two youngest generations and level 2 collects all generations. After 20 level-0 collections the next collection is at level 1, and after 5 level-1 collections at level 2.
+
+.small[
+Source: https://cran.r-project.org/doc/manuals/r-release/R-ints.html#The-write-barrier
+]
 
 ---
 
@@ -928,11 +1014,11 @@ Alternatives to R's native `saveRDS()` and `readRDS()`
 Helpful instructions at: https://arrow.apache.org/docs/r/articles/dataset.html
 
 1. Download the NYC Taxi data **for the year 2010**.
-  (don't copy all data, one year takes already few minutes and is about 5GB in size)
+  .small[(don't copy all data, one year already takes a few minutes and is about 5GB in size)]
 
-1. Print the overall passenger count for March
+1. Return the overall passenger count for March (hint: you can use {dplyr} syntax)
 
-1. List and sum the file size of the downloaded data (potentially skip - somewhat tricky)
+1. List and sum the file size of the downloaded data (⚠️ tricky)
 
 ---
 
@@ -947,9 +1033,14 @@ Helpful instructions at: https://arrow.apache.org/docs/r/articles/dataset.html
 
 - [CRAN: R admin manual](https://cran.r-project.org/doc/manuals/r-release/R-admin.html)
 
+---
+
+## Resources
+
 **General best practices**
 
 - [Book: "Efficient R" - Colin Gillespie & Robin Lovelace](https://csgillespie.github.io/efficientR)
+- [Book: "Advanced R" - Hadley Wickham](http://adv-r.had.co.nz/)
 
 **BLAS/LAPACK**
 
