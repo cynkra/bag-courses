@@ -1,0 +1,287 @@
+---
+title: "Introduction to ggplot2"
+author: ["Antoine & Nicolas", "cynkra GmbH"]
+date: "February 24th, 2022"
+output:
+  cynkradown::cynkra_slides:
+    nature:
+      highlightStyle: github
+      highlightLines: true
+      countIncrementalSlides: false
+    seal: true
+fontsize: 10pt
+lang: english
+font: frutiger
+wide: false
+colorlinks: false
+logo: true
+header-includes:
+  - \usepackage{parskip}
+editor_options: 
+  chunk_output_type: console
+---
+
+<style type="text/css">
+.remark-code {
+    font-size: 12px;
+}
+.font17 {
+    font-size: 17px;
+}
+.font14 {
+    font-size: 14px;
+}
+</style>
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(fig.height = 4, cache = TRUE, message = FALSE, warning = FALSE)
+options(tidyverse.quiet = FALSE, tibble.print_max = 4, tibble.print_min = 4)
+```
+
+# Exercises!
+
+Let's wrap everything up ! Analyze gapminder data
+
+```{r, eval = FALSE}
+install.packages("gapminder")
+library(gapminder)
+gapminder
+```
+
+```{r, eval = TRUE, echo = FALSE}
+library(gapminder)
+gapminder
+```
+
+---
+
+# Video introduction to the dataset
+
+<iframe width="709" height="399" src="https://www.youtube.com/embed/jbkSRLYSojo?t=29" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+
+---
+
+# Can we reproduce this ?
+
+![](gapminder.png)
+
+---
+
+# Report
+
+* We will work directly in a Rmd report as shown in previous part
+* We give some steps to follow and your mission is to arrange those into a nice report
+* We encourage you to take notes directly in the report
+
+---
+
+# America's poorer countries
+
+* Use `summary(gapminder)` to get an overview of the data
+
+* Filter the data for the Americas in 2007
+
+* Create the variable gdp, defined as the product of population size and gdp per person.
+
+* select `country`, `lifeExp`, `gdp` and `gdpPercap`
+
+* Keep the 5 countries with the lowest gdp
+
+---
+
+# America's poorer countries
+
+* Use the pipe to combine these operations
+* save the new data in a variable
+* print it
+* plot it
+
+---
+
+# America's poorer countries
+
+```{r}
+library(tidyverse)
+
+rich_americas_2007 <-
+  gapminder %>%
+  filter(continent == "Americas", year == 2007) %>% 
+  mutate(gdp = gdpPercap * pop) %>% 
+  select(country, lifeExp, gdp, gdpPercap) %>% 
+  arrange(gdp) %>% 
+  slice_head(n = 5)
+
+rich_americas_2007
+```
+
+---
+
+# America's poorer countries
+
+```{r}
+library(tidyverse)
+
+ggplot(rich_americas_2007, aes(gdpPercap, lifeExp, color = country)) +
+  geom_point(size = 10) +
+  scale_y_continuous(limits = c(0, max(rich_americas_2007$lifeExp)))
+```
+
+---
+
+# Comparing continents
+
+* Do the same but using averages by continent
+* Do the same but using averages weighted by population
+* place both plots side by side using {patchwork} 
+  * use `+ plot_layout(guides = 'collect')` to collect legends
+  * use `+ plot_annotation()` to add a global title
+)
+
+---
+
+# Comparing continents
+
+```{r}
+continents <- gapminder %>% 
+  group_by(continent) %>% 
+  summarize(
+    lifeExp_avg = mean(lifeExp), 
+    lifeExp_wavg = sum(pop*lifeExp) / sum(pop), 
+    gdpPercap_avg = mean(gdpPercap), 
+    gdpPercap_wavg = sum(pop*gdpPercap) / sum(pop), 
+    pop = sum(pop),
+    .groups = "drop")
+
+```
+
+---
+
+# Comparing continents
+
+```{r}
+p1 <- ggplot(continents, aes(lifeExp_avg, gdpPercap_avg, size = pop, color = continent)) +
+  geom_point() + labs(title = "simple average")
+
+p2 <- ggplot(continents, aes(lifeExp_wavg, gdpPercap_wavg, size = pop, color = continent)) +
+  geom_point() + labs(title = "weighted average")
+
+library(patchwork)
+p1 + p2 + plot_layout(guides = 'collect') + plot_annotation("Averages can't be trusted!")
+```
+
+---
+
+# Comparing continents
+
+This looks like a chart that should be faceted doesn't it ?
+
+We'll need to transform it in tidy form for that. We want one observation per row,
+where one observation translates to one dot on the chart.
+
+```{r}
+continents
+```
+
+---
+
+# Comparing continents
+
+This is not trivial! but will sometimes be useful
+
+```{r}
+continents_long <- 
+  continents %>% 
+  pivot_longer(
+    cols = lifeExp_avg:gdpPercap_wavg,
+    names_pattern = "(.*)_(.*)", 
+    names_to = c("var", "type"), 
+    values_to = "value")
+
+continents_long
+```
+
+---
+
+# Comparing continents
+
+This is not over because we want lifeExp and gdpPercap in separate columns
+
+```{r}
+continents_tidy <- 
+  continents_long %>% 
+  pivot_wider(names_from = var, values_from = value)
+
+continents_tidy
+```
+
+---
+
+# Comparing continents
+
+Now that it's tidy we can take our previous code and tweak it slightly :
+
+```{r}
+ggplot(continents_tidy, aes(lifeExp, gdpPercap, size = pop, color = continent)) +
+  geom_point() + labs(title = "Averages can't be trusted!") +
+  facet_wrap(vars(type))
+```
+
+---
+
+# Reproducing the plot : stage 1
+
+Start again from the raw data
+
+* plot the 2007 data, with color mapped to `continent` and size mapped to `pop`
+* Use `alpha` in `geom_point()` to handle overplotting better
+* Use a logarithmic scale for x (use `scale_x_log10()`)
+* Set the colors manually using `scale_color_manual()` check the example at the
+  bottom of `?scale_color_manual` (use a named vector).
+
+Use Europe orange, Asia red, Africa = blue, Americas yellow, Oceania green
+(Oceania is absent from picture, where Middle East has its own category, so we're a bit different)
+You can improve your colors using: https://r-charts.com/colors/
+
+---
+
+# Reproducing the plot : stage 2
+
+* Set the labels using `labs()` and remove the legend with `legend(position = "none")`
+* Zoom on a similar window using `coord_cartesian`
+* Set specific breaks on the x axis using the `breaks` arg in `scale_x_log10()`
+* Set specific breaks on the y axis using the `breaks` arg in `scale_y_continuous()`
+
+---
+
+# Reproducing the plot : stage 3
+
+* Use a nice default theme among the `theme_*()` functions of ggplot and increase font size
+* Use `axis.text = element_text(size =)` in `theme()` to increase the size of the axis text,
+ do the same for `axis.title`
+* Increase the size of the bubbles, using `scale_size(range=)`
+* Use the `label` argument in `scale_x_log10()` to set labels in dollars
+
+---
+
+# Reproducing the plot : stage 4
+
+* Build a dataset containing only the data for Congo ("Congo, Dem. Rep."), Ghana and South Africa
+* Use `geom_label()` to print the label on top of the chart
+* Use `geom_point()` to draw a big circle for these 3 countries, use 
+`shape = 14`, it looks like a regular dot but it has a `fill` and a `color`, 
+set both to constant values
+
+---
+
+# We could go further!
+
+What do we miss ?
+
+* labels inside the axes
+  * use annotate("text", ...)
+* Specific fonts and color
+  * use `theme()`
+* background image
+  * ggpubr::background_image
+  
+Almost anything is possible, Google is your friend!

@@ -1,0 +1,318 @@
+---
+title: "Introduction to R Markdown"
+author: ["Antoine & Nicolas", "cynkra GmbH"]
+date: "February 24th, 2022"
+output:
+  cynkradown::cynkra_slides:
+    nature:
+      highlightStyle: github
+      highlightLines: true
+      countIncrementalSlides: false
+    seal: true
+fontsize: 10pt
+lang: english
+font: frutiger
+wide: false
+colorlinks: false
+logo: true
+header-includes:
+  - \usepackage{parskip}
+editor_options: 
+  chunk_output_type: console
+---
+
+<style type="text/css">
+.remark-code {
+    font-size: 12px;
+}
+.font17 {
+    font-size: 17px;
+}
+.font14 {
+    font-size: 14px;
+}
+</style>
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(fig.height = 4, cache = TRUE, message = FALSE, warning = FALSE)
+options(tidyverse.quiet = FALSE, tibble.print_max = 4, tibble.print_min = 4)
+```
+
+# R Markdown
+
+R Markdown file (.Rmd) provide a way to write reports that contain both
+text and code.
+
+These can be rendered to show results and plots that are always up to date
+with the provided data.
+
+Find the full documentation at :
+
+https://bookdown.org/yihui/rmarkdown/
+
+Or use the cheat sheet in RStudio
+
+rMarkdown was created by RStudio so it's very well integrated in the editor!
+
+---
+
+# Your first Rmd report
+
+* File/New File/R Markdown... Or "+" icon top left /R Markdown
+* Look around but keep the default choice (document + html)
+* Give a name to your file (e.g. "My first report")
+* Save your document (e.g. "My_first_report.Rmd")
+* Look at the default content, can you guess what it does ? 
+  * Hint: the default content tells you what it does!
+* Use the "knit" button at the top of the editor
+* A report appears, compare its content to which of the Rmd file
+* A new file has appeared next to your Rmd file
+
+---
+
+# Report preview
+
+You can customize if you want to see the preview :
+* In the viewer pane
+* In a separate window
+* nowhere
+
+To do so : Tools/Global Options/Code/R Markdown/Show output preview
+
+Go change the setting, and see which one you like better
+
+---
+
+# Components
+
+* Header
+* Text
+* Code
+
+---
+
+# Components
+
+* Header : 
+  * YAML (Language often used for configuration files)
+* Text :
+  * Markdown (A lightweight markup language for creating formatted text using a plain-text editor)
+* Code : 
+  * R (you know this one!s)
+
+---
+
+# The YAML header
+
+The top lines, encapsulated by `---`, are called the *YAML header*.
+
+It is were the document settings are stored, currently the title and the output format.
+
+A new language, but we don't really have to learn it!
+
+You can use the gear icon / output options to change basic parameters of the report without
+having to learn anything more about YAML
+
+---
+
+# YAML header, output
+
+`output` can have many values:
+
+.pull-left[
+context_document
+github_document
+html_document
+latex_document
+md_document
+odt_document
+pdf_document
+rtf_document
+word_document]
+
+.pull-right[
+beamer_presentation
+ioslides_presentation
+powerpoint_presentation
+slidy_presentation
+]
+
+To use `pdf_document` you'll need `install.packages("tinytex")` and
+`tinytex::install_tinytex()`
+
+---
+
+# YAML header, output
+
+Try to create a new Rmd document directly as an `ioslides_presentation`
+
+---
+
+# Markdown 
+ 
+ The text is written in markdown
+ 
+ A new language, but an easy one! (It's the one used for wiki articles like wikipedia's)
+ 
+ Text means everything that is not graphics, tables or calculations. It includes:
+ * headers
+ * pictures
+ * formulas
+ 
+---
+
+# Text: The Markdown Syntax 
+ 
+ It is basically plain text with some formatting rules
+ 
+.pull-left[
+\*\*bold text\*\* 
+
+\*italic text\*
+
+\#\#\# header 3
+
+`` `r '\x60code\x60'` ``
+
+\- bullet point 
+]
+
+.pull-right[
+**bold text**
+
+*italic text*
+
+### header 3
+
+`code`
+
+- bullet point
+]
+
+---
+
+# Text: The Markdown Syntax 
+ 
+For link and images you can use:
+
+`[](https://cran.r-project.org)`
+
+`[link description](https://cran.r-project.org)`
+
+`![](https://cran.r-project.org/Rlogo.jpg)`
+
+---
+
+# Text: The Markdown Syntax 
+ 
+To go to a new line in the output document you can either skip one line entirely in the Rmd or finish your line with two spaces and go to the next line.
+
+---
+
+# Code : Inline
+
+If we replace single quotes by backticks, the following :
+
+Today is 'r Sys.Date()'
+
+will print as :
+
+Today is `r Sys.Date()`
+
+Inline code is sometimes useful but usually we'll use chunks much more!
+
+---
+
+# Code : Chunks
+
+If we replace single quotes by backticks, the following :
+
+'''{r}  
+x <- 1  
+y <- 1 + x  
+y  
+'''  
+
+will print as 
+
+```{r}
+x <- 1
+y <- 1 + x
+y
+```
+
+---
+
+# Code : Chunk options
+
+R *chunks* contain R code. They do everything what is not text --
+graphs, tables, calculations.
+
+We can set options to chunks, they set up wherever the code, results, or figures
+are displayed, the size of the figures etc
+
+They're documented there: http://rmarkdown.rstudio.com/authoring_rcodechunks.html
+
+We'll see the main ones
+
+---
+
+# Code : Chunk options
+
+Often, you want to show the result of a calculation in your report, but not
+the calculation itself, for this you can use `echo = FALSE` 
+    
+     # ```{r, echo = FALSE}
+     # rnorm(10)
+     # ```
+     
+Note: ignore the comments, `#`, they are there to tell R
+not to execute the code
+
+---
+
+# Code : Chunk options
+
+Sometimes, this is not enough. Package startup messages will still be shown.
+To turn them off as well, use  `message = FALSE`:
+     
+     # ```{r, echo = FALSE, message = FALSE}
+     # library(forecast)
+     # ```
+---
+
+# Code : Chunk options
+  
+To display R code without evaluating it, you specify the `eval = FALSE` chunk
+option:
+     
+     # ```{r, eval = FALSE}
+     # rnorm(10)
+     # ```
+---
+
+# Code : Chunk options
+   
+To control the width and the height of your graph, use the `fig.width` and
+`fig.height` option:
+     
+     # ```{r, fig.width = 8, fig.height = 8, echo = FALSE}
+     # plot(cars)
+     # ```
+
+---
+
+# Code : Chunk options
+   
+To cache a chunk so it will be reevaluated only if the code change, use the
+`cache` option:
+
+     # ```{r, cache = TRUE}
+     # sys.sleep(cars)
+     # ```
+
+---
+
+# Code : Chunk options
+
+These options can be set globally at the top with `knitr::opts_chunk$set(echo = TRUE)`
