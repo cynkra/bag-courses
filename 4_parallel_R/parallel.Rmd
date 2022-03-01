@@ -732,13 +732,9 @@ system.time({
 
 ### Profiling - Example (slow)
 
-.small[
-(You might need to install `go` externally, see https://github.com/r-prof/proffer#non-r-dependencies)
-]
-
 ```{r, eval=FALSE}
-library(proffer)
-px <- pprof({
+library(profvis)
+px <- profvis({
   n <- 1e5
   x <- data.frame(x = rnorm(n), y = rnorm(n))
   for (i in seq_len(n)) {
