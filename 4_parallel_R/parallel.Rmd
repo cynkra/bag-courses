@@ -149,7 +149,7 @@ a {
 - [Gitea](https://gitea.io/en-us/) (https://gitea.io) contributor
 
 - Member of mlr-org core team; Machine learning in R ![:scale 10%](fig/mlr.png)
-  - [{mlr3}](https://github.com/mlr-org/mlr3) 
+  - [{mlr3}](https://github.com/mlr-org/mlr3)
   - [{mlr}](https://github.com/mlr-org/mlr)
 
 ]
@@ -163,6 +163,9 @@ a {
 1. BLAS/LAPACK
 
 1. Parallelization
+  - for-loops
+  - apply-family
+  - Reproducibility
 
 1. Profiling
 
@@ -425,13 +428,10 @@ At the point of forking child processes share exactly the same state including t
 **{foreach}** - https://github.com/RevolutionAnalytics/foreach
 
 ```{r eval=FALSE}
-dat_list <- split(iris, iris$Species)
-mod_list <- vector("list", length(dat_list))
-
-for (i in seq_along(dat_list)) {
-  mod_list[[i]] <- lm(Sepal.Length ~ Sepal.Width +
-    Petal.Length + Petal.Width, data = dat_list[[i]])
-}
+  vec = c(2, 2, 2)
+  for (i in vec) {
+    Sys.sleep(i)
+  }
 ```
 
 ---
@@ -446,9 +446,9 @@ Sequential
 
 ```{r eval=FALSE}
 library(foreach)
-mod_list2 <- foreach(dat = dat_list) %do% {
-  lm(Sepal.Length ~ Sepal.Width + Petal.Length +
-    Petal.Width, data = dat)
+vec = c(2, 2, 2)
+foreach (i = vec) %do% {
+  Sys.sleep(i)
 }
 ```
 
@@ -462,13 +462,15 @@ mod_list2 <- foreach(dat = dat_list) %do% {
 Parallel
 ]
 
-Note the `%dopar%` adaptor.
+Note the `%dopar%` adaptor and cluster initialization
 
 ```{r eval=FALSE}
 library(foreach)
-mod_list2 <- foreach(dat = dat_list) %dopar% {
-  lm(Sepal.Length ~ Sepal.Width + Petal.Length +
-    Petal.Width, data = dat)
+library(doParallel)
+registerDoParallel(3)
+
+foreach (i = vec) %dopar% {
+  Sys.sleep(i)
 }
 ```
 
@@ -489,7 +491,7 @@ mod_list2 <- foreach(dat = dat_list) %dopar% {
 
 ### Benefits of the {doFuture} parallel adaptor
 
-- Takes care of exports and packages automatically
+- Takes care of object and package exports automatically
 
 - Allows to select the backend via the cannonical {future} syntax (`plan(<backend>)`)
 
@@ -505,12 +507,14 @@ mod_list2 <- foreach(dat = dat_list) %dopar% {
   Duration: 10 mins
 ]
 
-The code on the next slide finishes in a little bit more than two seconds in parallel and in about six seconds sequentially.
+The code on the next slide finishes in a little bit more than two seconds in parallel (when using 3 cores) and in about six seconds sequentially.
 
 Rewrite the code using different parallel variations in R:
 
-- {foreach} and {doParallel}
-- {foreach} and {doFuture}
+- {foreach} and {doFuture} using the `"multisession"` backend
+- {foreach} and {doFuture} using the `"future.callr"` backend
+
+(hint: do research how to init parallel backends via {future})
 
 ---
 
@@ -640,11 +644,11 @@ The code on the next slide finishes in a little bit more than two seconds in par
 
 Rewrite the code using different parallel variations in R:
 
-- `parLapply()` and a PSOCK cluster
-- `furrr::future_walk()`
-- {future.apply}
-- {future} + `lapply()` + `future()`
-- {future.callr} + `future_lapply()`
+- `furrr::future_walk()` and a {future} plan
+- Using the {future.apply} package and a {future} plan
+- Using {future} via `lapply()` + `future()` + `value()`
+- Using `parallel::parLapply()` and a PSOCK cluster from the {parallel}
+- {future.callr} as the {future} backend and `future_lapply()`
 
 ---
 
@@ -662,6 +666,82 @@ system.time({
 .small[
 (Solutions can be found in `exercises/parallelization-solutions.R`)
 ]
+
+---
+
+### Parallelization - Reproducibility
+
+The default Random Number Generator (RNG) kind in R (`"Mersenne-Twister"`) **does not** ensure numerical reproducibility in parallel scenarios.
+
+Instead, *most often* the `"L'Ecuyer-CMRG"` RNG kind needs to be used, e.g.
+
+```r
+set.seed(<seed>, "L'Ecuyer-CMRG")
+```
+
+Depending on the parallel framework used, the ways how to set this RNG kind differs.
+
+---
+
+### Parallelization - Reproducibility
+
+- Forking: `set.seed(<seed>, "L'Ecuyer-CMRG")`
+
+- Socket-parallelization: `parallel::clusterSetRNGStream(iseed = <seed>)` - after the socket cluster has been created (!)
+
+- {future.apply}: `future_lapply(future.seed = TRUE)`
+
+- {doFuture}:
+  ```r
+  library("doRNG")
+  registerDoRNG(<seed>)
+
+  # or
+  set.seed(<seed>, "L'Ecuyer-CMRG")
+  foreach(i = <list>) %dorng%
+  ```
+
+---
+
+### Parallelization - Reproducibility
+
+.info[
+  Not reproducible
+]
+
+```{r warning=FALSE}
+library("future.apply")
+
+plan(multisession, workers = 2)
+
+set.seed(42)
+r1 <- future_lapply(rep(3, 2), runif)
+set.seed(42)
+r2 <- future_lapply(rep(3, 2), runif)
+
+all.equal(r1, r2)
+```
+
+---
+
+### Parallelization - Reproducibility
+
+.info[
+  Reproducible
+]
+
+```{r warning=FALSE}
+plan(multisession, workers = 2)
+
+set.seed(42)
+r3 <- future_lapply(rep(3, 2), runif, future.seed = TRUE)
+set.seed(42)
+r4 <- future_lapply(rep(3, 2), runif, future.seed = TRUE)
+
+all.equal(r3, r4)
+```
+
+See https://pat-s.me/reproducibility-when-going-parallel for more examples.
 
 ---
 
@@ -859,6 +939,8 @@ bm_match = bench::mark(
   match(s,x)
 )
 ```
+
+{fastmatch} creates a hash table of matches in memory which speeds up lookups after the first iteration
 
 ---
 

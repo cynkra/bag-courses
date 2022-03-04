@@ -44,6 +44,6 @@ vignettes/*.pdf
 webfonts/
 favicon/
 *.ico
-*.css
 *.js
 logo-transparent.png
+*_files/
