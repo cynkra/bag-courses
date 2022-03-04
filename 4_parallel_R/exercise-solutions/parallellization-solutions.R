@@ -1,65 +1,75 @@
 vec <- c(2, 2, 2)
-# sequential
+
+# sequential -------------------------------------------------------------------
 system.time({
   for (i in vec) {
     Sys.sleep(i)
   }
 })
 
-# 2. foreach and doParallel
+# foreach and doParallel -------------------------------------------------------
+library(foreach)
+library(doParallel)
+registerDoParallel(3)
 system.time({
-  library(foreach)
-  library(doParallel)
-  registerDoParallel(3)
   foreach(i = vec) %dopar% {
     Sys.sleep(i)
   }
 })
 
-# 3. foreach and doParallel
+# foreach and doFuture ---------------------------------------------------------
+library(foreach)
+library(doFuture)
+plan(multisession, workers = 3)
 system.time({
-  library(foreach)
-  library(doFuture)
-  plan(multisession)
   foreach(i = vec) %dopar% {
     Sys.sleep(i)
   }
 })
+# clean parallel cluster
+plan(sequential)
 
-# 4. parLapply and PSOCK cluster
+# furrr ------------------------------------------------------------------------
+plan(multisession)
 system.time({
-  library(parallel)
-  cl <- makePSOCKcluster(getOption("cl.cores", 3))
-  parLapply(cl, vec, Sys.sleep)
-  stopCluster(cl)
+  furrr::future_walk(vec, Sys.sleep)
 })
+# clean parallel cluster
+plan(sequential)
 
-# 5. furrr
+# future.apply -----------------------------------------------------------------
+plan(multisession)
 system.time({
-  library(furrr)
-  plan(multisession)
-  future_walk(vec, Sys.sleep)
+  future.apply::future_lapply(vec, Sys.sleep)
 })
+# clean parallel cluster
+plan(sequential)
 
-# 6. future.apply
+# future() ---------------------------------------------------------------------
+library(future)
+plan(multisession)
 system.time({
-  library(future.apply)
-  plan(multisession)
-  future_lapply(vec, Sys.sleep)
-})
-
-# 7. future()
-system.time({
-  library(future)
-  plan(multisession)
   res <- lapply(vec, function(x) future(Sys.sleep(x), lazy = TRUE))
+})
+
+system.time({
   value(res)
 })
+# clean parallel cluster
+plan(sequential)
 
-# 8. future.callr
+# parLapply and PSOCK cluster --------------------------------------------------
+library(parallel)
+cl <- makePSOCKcluster(3)
 system.time({
-  library(future.apply)
-  library(future.callr)
-  plan(callr)
-  future_lapply(vec, Sys.sleep)
+  parLapply(cl, vec, Sys.sleep)
 })
+stopCluster(cl)
+
+# future.callr -----------------------------------------------------------------
+plan(future.callr::callr)
+system.time({
+  future.apply::future_lapply(vec, Sys.sleep)
+})
+# clean parallel cluster
+plan(sequential)
