@@ -103,6 +103,10 @@ htmltools::tagList(
   font-size: 85%;
 }
 
+.code08 .remark-code {
+  font-size: 0.8em;
+}
+
 .info {
   background-color: rgb(31 101 183);
   font-weight: 600;
@@ -115,6 +119,11 @@ htmltools::tagList(
 .code,
 code {
   font-size: 0.9em;
+}
+
+.code-small,
+remark-code {
+  font-size: 0.8em;
 }
 
 .remark-slide-number {
@@ -274,6 +283,23 @@ To link against such external libraries, R needs to be **installed from source**
 This is usually recommended for centrally managed R installations on servers or HPC clusters.
 
 More information: https://cran.r-project.org/doc/manuals/r-release/R-admin.html#Linear-algebra
+
+---
+
+### Unoffical R interpreters
+
+[Microsoft R Application Network (MRAN)](https://mran.microsoft.com/)
+
+- Available on all platforms
+- With optimized BLAS/LAPACK by default
+
+[fastR](https://github.com/oracle/fastr)
+
+- A high-performance implementation of the R programming language, built on GraalVM.
+- Speed up around 36x
+- Not all R packages are supported
+- Needs "GraalVM" (https://www.graalvm.org)
+
 
 ---
 
@@ -637,7 +663,7 @@ Available {future} backends:
 ### Parallelization - Exercises
 
 .info[
-  Duration: 30 mins
+  Duration: 20 mins
 ]
 
 The code on the next slide finishes in a little bit more than two seconds in parallel and in about six seconds sequentially.
@@ -692,6 +718,7 @@ Depending on the parallel framework used, the ways how to set this RNG kind diff
 - {future.apply}: `future_lapply(future.seed = TRUE)`
 
 - {doFuture}:
+.code08[
   ```r
   library("doRNG")
   registerDoRNG(<seed>)
@@ -700,6 +727,7 @@ Depending on the parallel framework used, the ways how to set this RNG kind diff
   set.seed(<seed>, "L'Ecuyer-CMRG")
   foreach(i = <list>) %dorng%
   ```
+  ]
 
 ---
 
@@ -709,6 +737,7 @@ Depending on the parallel framework used, the ways how to set this RNG kind diff
   Not reproducible
 ]
 
+.code08[
 ```{r warning=FALSE}
 library("future.apply")
 
@@ -721,6 +750,7 @@ r2 <- future_lapply(rep(3, 2), runif)
 
 all.equal(r1, r2)
 ```
+]
 
 ---
 
@@ -742,6 +772,47 @@ all.equal(r3, r4)
 ```
 
 See https://pat-s.me/reproducibility-when-going-parallel for more examples.
+
+---
+
+### Parallelization - Progress
+
+`print()`, `message()`, `cat()` do not work by default in parallel.
+The output is hold back until the process has finished.
+
+Three alternatives exists:
+
+1. Logging to a file (`cat(file = )`)
+
+1. Using a progress bar ({progressr} package)
+
+1. Using `system()`
+
+
+---
+
+### Parallelization - Progress
+
+.code08[
+```{r eval=FALSE}
+library(foreach); library(doFuture); library(progressr)
+handlers(global = TRUE)
+registerDoFuture()
+plan(multisession, workers = 2)
+
+my_fun <- function(x) {
+  p <- progressr::progressor(along = x)
+  foreach (kk = x) %dopar% {
+    Sys.sleep(2)
+    system(sprintf('echo "Iter %s"', kk)) # workaround
+    cat(sprintf("Iter %s", kk), # file logging
+      file = "log.txt", fill = TRUE, append = TRUE)
+    p(message = sprintf("Added %g", x[kk])) # progress bar
+  }
+}
+y = my_fun(1:10)
+```
+]
 
 ---
 
@@ -1106,6 +1177,7 @@ Helpful instructions at: https://arrow.apache.org/docs/r/articles/dataset.html
 
 - [Video: Barret Schloerke || Maximize computing resources using future_promise()](https://www.youtube.com/watch?v=3gtk8uRrrL4)
 - [{future} documentation and vignettes](https://future.futureverse.org/)
+- [{progressr}](https://progressr.futureverse.org/)
 
 **R Configuration**
 
@@ -1123,5 +1195,6 @@ Helpful instructions at: https://arrow.apache.org/docs/r/articles/dataset.html
 **BLAS/LAPACK**
 
 - [Benchmark of BLAS libraries in R](https://github.com/andre-wojtowicz/blas-benchmarks)
+- [MRAN LAPACK comparison](https://mran.microsoft.com/documents/rro/multithread)
 
 
