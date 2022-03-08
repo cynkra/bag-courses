@@ -527,8 +527,6 @@ foreach (i = vec) %dopar% {
 
 ---
 
----
-
 ### Parallelization - Exercises
 
 .info[
