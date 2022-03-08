@@ -549,25 +549,6 @@ run_tutorial(
 
 ---
 
-### Parallelization - Exercises
-
-```{r eval = FALSE}
-system.time({
-  vec = c(2, 2, 2)
-  for (i in vec) {
-    Sys.sleep(i)
-  }
-})
-```
-
-👉️ Inspect the time differences between the different parallel options.
-
-.small[
-(Solutions can be found in `exercises/parallelization-solutions.R`)
-]
-
----
-
 ### apply-parallelization - Available options
 
 **{parallel}** (built-in)
