@@ -533,14 +533,19 @@ foreach (i = vec) %dopar% {
   Duration: 10 mins
 ]
 
-The code on the next slide finishes in a little bit more than two seconds in parallel (when using 3 cores) and in about six seconds sequentially.
+Install {cynkralearn}:
 
-Rewrite the code using different parallel variations in R:
+```r
+remotes::install_github("cynkra/cynkralearn")
+```
 
-- {foreach} and {doFuture} using the `"multisession"` backend
-- {foreach} and {doFuture} using the `"future.callr"` backend
-
-(hint: do research how to init parallel backends via {future})
+```r
+library(learnr)
+run_tutorial(
+  name = "parallel-1",
+  package = "cynkralearn"
+)
+```
 
 ---
 
