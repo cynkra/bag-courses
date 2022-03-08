@@ -20,6 +20,7 @@ system.time({
 # foreach and doFuture ---------------------------------------------------------
 library(foreach)
 library(doFuture)
+registerDoFuture()
 plan(multisession, workers = 3)
 system.time({
   foreach(i = vec) %dopar% {
