@@ -23,6 +23,7 @@ copy_dm_to(con_duckdb, dm_pixarfilms(), set_key_constraints = FALSE, temporary =
 # Read table -------------------------------------------------------------------
 
 DBI::dbListTables(con_duckdb)
+DBI::dbListFields(con_duckdb, "pixar_films")
 df_pixar_films <- DBI::dbReadTable(con_duckdb, "pixar_films")
 df_pixar_films
 as_tibble(df_pixar_films)
