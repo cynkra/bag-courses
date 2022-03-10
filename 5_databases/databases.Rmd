@@ -1,0 +1,77 @@
+---
+title: "Databases"
+author: ["Kirill & Nicolas", "cynkra GmbH"]
+date: "March 15, 2022"
+output:
+  cynkradown::cynkra_slides:
+    nature:
+      highlightStyle: github
+      highlightLines: true
+      countIncrementalSlides: false
+    seal: true
+fontsize: 10pt
+lang: english
+font: frutiger
+wide: false
+colorlinks: false
+logo: true
+header-includes:
+  - \usepackage{parskip}
+---
+
+<style type="text/css">
+.pull-left {
+  margin-top: -25px;
+}
+.pull-right {
+  margin-top: -25px;
+}
+.remark-code {
+    font-size: 12px;
+}
+.font17 {
+    font-size: 17px;
+}
+.font14 {
+    font-size: 14px;
+}
+</style>
+
+# Introduction
+
+Organization of half-day R courses:
+
+- Intro courses:
+  * Tidyverse intro I
+  * Base R intro/Tidyverse intro II
+  * Data visualization I
+  * Data visualization II
+- Advanced courses:
+  * Advanced tidyverse
+  * R package creation
+  * Working with database systems
+  * Parallelization & efficient R programming
+  * Databases (this course)
+
+---
+
+# Course material
+
+Our course material currently is available from Github at
+
+https://github.com/cynkra/bag-courses
+
+Today we will be looking at the folder 5_databases`
+
+![how to download](cynkra-repo-dl.png)
+
+---
+
+# General remarks
+
+- We hope for these courses to be interactive: go ahead and ask if something is unclear!
+- You can also write into the chat, which I will try to monitor when Kirill is presenting.
+- We were asked to provide recordings of the courses for those of you who cannot join, so recording is activated.
+- Per course unit, we offer 4 hours of follow up time; approach us with questions (nicolas@cynkra.com)!
+
+---
