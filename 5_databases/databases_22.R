@@ -28,6 +28,15 @@ names(pixar_dm)
 pixar_dm %>%
   dm_get_tables()
 
+# Showcase: wrapping all tables in a data model:
+pixar_films_wrapped <-
+  pixar_dm %>%
+  dm_wrap_tbl(pixar_films) %>%
+  pull_tbl(pixar_films)
+
+pixar_films_wrapped
+pixar_films_wrapped$academy[[1]]
+
 # Primary keys ----
 
 any(duplicated(pixar_dm$pixar_films$film))
