@@ -31,11 +31,20 @@ pixar_dm %>%
 # Primary keys ----
 
 any(duplicated(pixar_dm$pixar_films$film))
-any(duplicated(pixar_dm$genres[c("film", "genre")]))
+check_key(pixar_dm$pixar_films, film)
+any(duplicated(pixar_dm$academy[c("film", "award_type")]))
+check_key(pixar_dm$academy, film, award_type)
+try(
+  check_key(pixar_dm$academy, film)
+)
 
 # Foreign keys ----
 
 all(pixar_dm$academy$film %in% pixar_dm$pixar_films$film)
+check_subset(pixar_dm$academy, film, pixar_dm$pixar_films, film)
+try(
+  check_subset(pixar_dm$pixar_films, film, pixar_dm$academy, film)
+)
 
 # Constraints ----
 
