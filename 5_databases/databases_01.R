@@ -132,7 +132,7 @@ pixar_films
 # 5. Have a missing name (`film` column) or `run_time`
 # 6. Were released after and including year 2020 with name not missing
 # 7. Are a first sequel (the name ends with "2")
-#     - Hint: Bring the data into the R session
+#     - Hint: Bring the data into the R session before filtering
 
 # `count()`, `summarize()`, `group_by()`, `ungroup()` --------------------------
 
@@ -141,4 +141,6 @@ pixar_films
 # 1. How many films are stored in the table?
 # 2. How many films released after 2005 are stored in the table?
 # 3. What is the total run time of all films?
+#     - Hint: Use `summarize(sum(...))`, watch out for the warning
 # 4. What is the total run time of all films, per rating?
+#     - Hint: Use `group_by()`
