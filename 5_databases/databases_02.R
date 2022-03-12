@@ -18,6 +18,7 @@ slide_viewer <- function(path) {
 # Connection -------------------------------------------------------------------
 
 con_duckdb <- DBI::dbConnect(duckdb::duckdb())
+copy_dm_to(con_duckdb, dm_pixarfilms(), set_key_constraints = FALSE, temporary = FALSE)
 
 # Lazy tables ------------------------------------------------------------------
 
@@ -65,13 +66,34 @@ pixar_films %>%
   arrange(release_date) %>%
   show_query()
 
-films_two_per_year <-
+df_films_two_per_year <-
   pixar_films %>%
   add_count(year(release_date)) %>%
   filter(n > 1) %>%
   arrange(release_date) %>%
   collect()
-films_two_per_year
+df_films_two_per_year
+
+# Caveat: lazy tables are not data frames --------------------------------------
+
+# Bad:
+pixar_films[c("film", "film_rating")]
+
+# Good:
+pixar_films %>%
+  select(film, film_rating)
+
+# Bad:
+try(
+  pixar_films[1:3, ]
+)
+
+# Still bad:
+df_pixar_films <-
+  pixar_films %>%
+  collect()
+df_pixar_films[1:3, ]
+
 
 # Caveat: order ----------------------------------------------------------------
 
@@ -84,7 +106,7 @@ try(
 )
 
 # Better:
-pixar_films_sqlite %>%
+pixar_films %>%
   filter(between(row_number(), 1, 3))
 
 # Best, use `order_by` argument or `dbplyr::window_order()`
@@ -168,12 +190,14 @@ pixar_films %>%
 # Not all functions supported:
 try(
   pixar_films %>%
-    filter(grepl("^Toy", film))
+    filter(grepl("^Toy", film)) %>%
+    print()
 )
 
 try(
   pixar_films %>%
-    filter(str_detect(film, "^Toy"))
+    filter(str_detect(film, "^Toy")) %>%
+    print()
 )
 
 # Unknown functions are escaped:
@@ -204,6 +228,31 @@ pixar_films %>%
 
 pixar_films %>%
   mutate(number = as.integer(number))
+
+# Caveat: lazy tables recompute every time -------------------------------------
+
+films_two_per_year <-
+  pixar_films %>%
+  add_count(year(release_date)) %>%
+  filter(n > 1)
+
+films_two_per_year %>%
+  show_query()
+
+films_two_per_year %>%
+  arrange(release_date) %>%
+  show_query()
+
+# `compute()` materializes result, creates a temporary table on the database
+films_two_per_year_mat <-
+  films_two_per_year %>%
+  compute(unique_indexes = list(c("film")))
+
+films_two_per_year_mat
+films_two_per_year_mat %>%
+  arrange(release_date) %>%
+  show_query()
+
 
 # Exercises --------------------------------------------------------------------
 
