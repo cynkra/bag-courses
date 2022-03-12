@@ -99,20 +99,15 @@ Extract -- Transform -- Load -- Consume
 - Let the database do the heavy lifting
 - Subtle issues to watch out for
 - Basic ETL for one table
+]
 
+.pull-right[
 ## Multiple tables
 
 - Joins
 - The {dm} package
 - A bit of theory
+- Playing the whole game
 ]
 
-.pull-right[
-
-## Putting it all together
-
-- A mini ETL workflow: create a database ready for consumption
-- Joining, nesting, packing
-- Bring your own data + questions
-
-]
+## Bonus: Bring your own data + questions
