@@ -41,6 +41,10 @@ pixar_films
 pixar_films %>%
   collect()
 
+# View the first 1000 rows:
+pixar_films %>%
+  view()
+
 # Downsizing on the database ---------------------------------------------------
 
 # Projection (column selection)
