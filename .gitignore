@@ -46,3 +46,6 @@ favicon/
 *.ico
 *.js
 *_files/
+
+*.duckdb
+*.duckdb.wal

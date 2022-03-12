@@ -98,6 +98,7 @@ Extract -- Transform -- Load -- Consume
 - Read whole tables
 - Let the database do the heavy lifting
 - Subtle issues to watch out for
+- Basic ETL for one table
 
 ## Relational data models
 
