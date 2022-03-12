@@ -1,6 +1,3 @@
-# install.packages(c("tidyverse", "dm", "DiagrammeR", "RSQLite", "duckdb", "progress", "pixarfilms", "nycflights13"), type = "binary")
-# pak::pak(c("tidyverse", "dm", "DiagrammeR", "RSQLite", "duckdb", "progress", "pixarfilms", "nycflights13"))
-
 # attach relevant packages
 library(tidyverse)
 
@@ -12,44 +9,19 @@ slide_viewer <- function(path) {
 }
 # slide_viewer("5_databases/databases.html")
 
-### Reading whole tables from the database #####################################
+### Downsizing on the database #################################################
 
 # Connection -------------------------------------------------------------------
 
 con_duckdb <- DBI::dbConnect(duckdb::duckdb())
 dm::copy_dm_to(con_duckdb, dm::dm_pixarfilms(), set_key_constraints = FALSE, temporary = FALSE)
 
-# Read table -------------------------------------------------------------------
-
-DBI::dbListTables(con_duckdb)
-DBI::dbListFields(con_duckdb, "pixar_films")
-df_pixar_films <- DBI::dbReadTable(con_duckdb, "pixar_films")
-df_pixar_films
-as_tibble(df_pixar_films)
-
-# Execute queries --------------------------------------------------------------
-
-DBI::dbGetQuery(con_duckdb, "SELECT * FROM pixar_films")
-DBI::dbGetQuery(con_duckdb, "SELECT * FROM pixar_films WHERE release_date >= '2010-01-01'")
-DBI::dbGetQuery(con_duckdb, r"(SELECT * FROM "pixar_films" WHERE "release_date" >= '2020-01-01')")
-
 # Lazy tables ------------------------------------------------------------------
 
 pixar_films <- tbl(con_duckdb, "pixar_films")
-pixar_films
 
-df_pixar_films <-
-  pixar_films %>%
-  collect()
-df_pixar_films
+# Projection (column selection)  -----------------------------------------------
 
-# View the first 1000 rows:
-pixar_films %>%
-  view()
-
-# Downsizing on the database ---------------------------------------------------
-
-# Projection (column selection)
 pixar_films %>%
   select(1:3)
 
@@ -69,7 +41,8 @@ df_pixar_films_3
 pixar_films %>%
   collect()
 
-# Subsetting
+# Filtering (row selection)  ---------------------------------------------------
+
 pixar_films %>%
   filter(release_date >= "2020-01-01")
 
@@ -89,13 +62,14 @@ df_pixar_films_202x
 pixar_films %>%
   collect()
 
-# Aggregation
+# Aggregation ------------------------------------------------------------------
+
 pixar_films %>%
   group_by(film_rating) %>%
   summarize(n = n()) %>%
   ungroup()
 
-# Aggregation (shortcut)
+# Shortcut
 pixar_films %>%
   count(film_rating)
 
