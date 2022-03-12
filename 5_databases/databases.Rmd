@@ -8,6 +8,7 @@ output:
       highlightStyle: github
       highlightLines: true
       countIncrementalSlides: false
+      ratio: "16:9"
     seal: true
 fontsize: 10pt
 lang: english
@@ -61,7 +62,7 @@ Our course material currently is available from Github at
 
 https://github.com/cynkra/bag-courses
 
-Today we will be looking at the folder 5_databases`
+Today we will be looking at the folder `5_databases`
 
 ![how to download](cynkra-repo-dl.png)
 
