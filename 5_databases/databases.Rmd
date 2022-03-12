@@ -93,18 +93,18 @@ Playing the whole game!
 Extract -- Transform -- Load -- Consume
 
 .pull-left[
-## Consume
+## One table
 
 - Read whole tables
 - Let the database do the heavy lifting
 - Subtle issues to watch out for
 - Basic ETL for one table
 
-## Relational data models
+## Multiple tables
 
+- Joins
 - The {dm} package
 - A bit of theory
-- Load, consume, extract
 ]
 
 .pull-right[
