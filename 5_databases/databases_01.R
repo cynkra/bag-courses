@@ -134,7 +134,7 @@ pixar_films
 # 7. Are a first sequel (the name ends with "2")
 #     - Hint: Bring the data into the R session
 
-# `count()`, `group_by()`, `summarize()`, `ungroup()` --------------------------
+# `count()`, `summarize()`, `group_by()`, `ungroup()` --------------------------
 
 pixar_films
 
@@ -142,60 +142,3 @@ pixar_films
 # 2. How many films released after 2005 are stored in the table?
 # 3. What is the total run time of all films?
 # 4. What is the total run time of all films, per rating?
-
-
-
-
-
-# Transformation
-pixar_films %>%
-  mutate(release_year = year(release_date))
-
-# Computations happens on the database!
-pixar_films %>%
-  mutate(release_year = year(release_date)) %>%
-  show_query()
-
-# Immutable data: original data unchanged
-pixar_films %>%
-  collect()
-
-# Complex aggregation with transformation
-pixar_films %>%
-  count(year(release_date))
-
-pixar_films %>%
-  add_count(year(release_date)) %>%
-  filter(n > 1) %>%
-  arrange(release_date)
-
-# Computations happens on the database (and you don't want to write that SQL!)
-pixar_films %>%
-  add_count(year(release_date)) %>%
-  filter(n > 1) %>%
-  arrange(release_date) %>%
-  show_query()
-
-films_two_per_year <-
-  pixar_films %>%
-  add_count(year(release_date)) %>%
-  filter(n > 1) %>%
-  arrange(release_date) %>%
-  collect()
-films_two_per_year
-
-# `slice()` --------------------------------------------------------------------
-
-pixar_films
-
-# 1.  Return the 2 first rows using `slice()` then using `slice_head()`
-# 2.  Return the 2 last rows using `slice()` then using `slice_tail()`
-# 3.  Return the rows of the 2 shortest movies using `slice_min()`
-# 4.  Return the rows of the 15%  longest movies using `slice_max()` and the `prop` argument
-
-# `arrange()` ------------------------------------------------------------------
-
-pixar_films
-
-# 1.  Arrange `pixar_films` by name but starting with missing values (Hint: sort using `!is.na()` and break the ties with `film`)
-# 2.  Arrange `pixar_films` to have the shortest film with a "PG" rating on top (Hint: use `film_rating != "PG"`)
