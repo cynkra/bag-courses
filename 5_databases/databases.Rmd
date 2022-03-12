@@ -76,3 +76,42 @@ Today we will be looking at the folder `5_databases`
 - Per course unit, we offer 4 hours of follow up time; approach us with questions (nicolas@cynkra.com)!
 
 ---
+
+# Goals for today
+
+Playing the whole game!
+
+- Extract
+- Transform
+- Load
+- **Consume**
+
+---
+
+# Schedule
+
+Extract -- Transform -- Load -- Consume
+
+.pull-left[
+## Consume
+
+- Read whole tables
+- Let the database do the heavy lifting
+- Subtle issues to watch out for
+
+## Relational data models
+
+- The {dm} package
+- A bit of theory
+- Load, consume, extract
+]
+
+.pull-right[
+
+## Putting it all together
+
+- A mini ETL workflow: create a database ready for consumption
+- Joining, nesting, packing
+- Bring your own data + questions
+
+]
