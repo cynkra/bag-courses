@@ -3,7 +3,6 @@
 
 # attach relevant packages
 library(tidyverse)
-library(dm)
 
 # display chosen presentation (it might take a few seconds to appear)
 slide_viewer <- function(path) {
@@ -13,12 +12,12 @@ slide_viewer <- function(path) {
 }
 # slide_viewer("5_databases/databases.html")
 
-### Reading tables from the database ###########################################
+### Reading whole tables from the database #####################################
 
 # Connection -------------------------------------------------------------------
 
 con_duckdb <- DBI::dbConnect(duckdb::duckdb())
-copy_dm_to(con_duckdb, dm_pixarfilms(), set_key_constraints = FALSE, temporary = FALSE)
+dm::copy_dm_to(con_duckdb, dm::dm_pixarfilms(), set_key_constraints = FALSE, temporary = FALSE)
 
 # Read table -------------------------------------------------------------------
 
