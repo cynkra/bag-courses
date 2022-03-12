@@ -44,6 +44,16 @@ df_pixar_films <-
   collect()
 df_pixar_films[1:3, ]
 
+# Bad:
+try(
+  bind_rows(pixar_films, pixar_films)
+)
+
+# Good:
+union_all(pixar_films, pixar_films)
+
+union_all(pixar_films, pixar_films) %>%
+  arrange(release_date)
 
 # Caveat: order ----------------------------------------------------------------
 
