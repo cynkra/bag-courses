@@ -62,3 +62,4 @@ dbGetQuery(con_duckdb, sql, params = list(as.Date("2020-01-01")))
 
 # Reading tables: Exercises ----------------------------------------------------
 
+# FIXME

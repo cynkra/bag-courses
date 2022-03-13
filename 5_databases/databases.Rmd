@@ -35,6 +35,23 @@ logo: true
 }
 </style>
 
+
+```{r databases-0, include = FALSE}
+knitr::opts_chunk$set(cache = TRUE)
+
+library(tidyverse)
+library(DBI)
+library(dm)
+
+options(width = 160)
+
+options(pillar.bold = TRUE)
+options(cli.num_colors = 256)
+
+fansi::set_knit_hooks(knitr::knit_hooks, c("output", "message", "warning", "error"))
+```
+
+
 # Introduction
 
 Organization of half-day R courses:
@@ -162,9 +179,13 @@ library(DBI)
 
 First step when accessing the database.
 
-```{r databases-2}
+```{r databases-2, results='hide', message=FALSE}
 con_duckdb <- dbConnect(duckdb::duckdb())
 con_duckdb
+```
+
+```
+## <duckdb_connection 0faa0 driver=<duckdb_driver 22170 dbdir=':memory:' read_only=FALSE>>
 ```
 
 insert: duckdb logo, other database logos
@@ -276,25 +297,38 @@ dbGetQuery(con_duckdb, sql)
 
 ---
 
-# Quoting
+# Further pointers
 
 insert: bunny
+
+.pull-left[
+## Quoting
 
 ```{r databases-12}
 dbQuoteIdentifier(con_duckdb, "academy")
 dbQuoteLiteral(con_duckdb, "Toy Story")
 dbQuoteLiteral(con_duckdb, as.Date("2020-01-01"))
 ```
+]
 
----
-
-# Parameterized queries
-
-insert: bunny
+.pull-right[
+## Parameterized queries
 
 ```{r databases-13}
-sql <- "SELECT count(*) FROM pixar_films WHERE release_date >= ?"
-dbGetQuery(con_duckdb, sql, params = list(as.Date("2020-01-01")))
+sql <- "
+SELECT count(*) FROM pixar_films
+WHERE release_date >= ?
+"
+dbGetQuery(con_duckdb, sql,
+  params = list(as.Date("2020-01-01"))
+)
 ```
+]
 
 ---
+
+.pull-left[
+]
+
+.pull-right[
+]
