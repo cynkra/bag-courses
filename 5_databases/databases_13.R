@@ -51,8 +51,8 @@ fs::dir_info() %>%
   head(1)
 
 con <- dbConnect(duckdb::duckdb(dbdir = db_path, read_only = TRUE))
-pixar_films <- tbl(con, "pixar_films")
-pixar_films
+my_pixar_films <- tbl(con, "pixar_films")
+my_pixar_films
 
 # Exercises --------------------------------------------------------------------
 

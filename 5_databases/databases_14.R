@@ -35,17 +35,6 @@ pixar_films %>%
 
 # Bad:
 try(
-  pixar_films[1:3, ]
-)
-
-# Still bad:
-df_pixar_films <-
-  pixar_films %>%
-  collect()
-df_pixar_films[1:3, ]
-
-# Bad:
-try(
   bind_rows(pixar_films, pixar_films)
 )
 
@@ -54,6 +43,17 @@ union_all(pixar_films, pixar_films)
 
 union_all(pixar_films, pixar_films) %>%
   arrange(release_date)
+
+# Bad:
+try(
+  pixar_films[1:3, ]
+)
+
+# Still bad:
+df_pixar_films <-
+  pixar_films %>%
+  collect()
+df_pixar_films[1:3, ]
 
 # Caveat: order ----------------------------------------------------------------
 
@@ -138,11 +138,6 @@ pixar_films %>%
   filter(run_time < 120L) %>%
   show_query()
 
-# Aggregation functions:
-pixar_films %>%
-  summarize(sum(run_time)) %>%
-  show_query()
-
 # Not all functions supported:
 try(
   pixar_films %>%
@@ -156,7 +151,7 @@ try(
     print()
 )
 
-# Unknown functions are escaped:
+# Unknown functions and operators are passed on verbatim:
 pixar_films %>%
   filter(film %LIKE% "Toy%")
 
@@ -174,6 +169,15 @@ try(
     collect() %>%
     summarize(MAX(run_time))
 )
+
+# Aggregation functions don't support na.rm = FALSE:
+pixar_films %>%
+  summarize(sum(run_time)) %>%
+  show_query()
+
+pixar_films %>%
+  summarize(SUM(run_time)) %>%
+  show_query()
 
 # SQL escaping:
 pixar_films %>%
