@@ -179,7 +179,7 @@ library(DBI)
 
 First step when accessing the database.
 
-```{r databases-2, results='hide', message=FALSE}
+```{r databases-2, results='hide', message=FALSE, cache=FALSE}
 con_duckdb <- dbConnect(duckdb::duckdb())
 con_duckdb
 ```
@@ -198,7 +198,7 @@ background-position: 100% 100%
 
 Normally done in a preparatory step.
 
-```{r databases-3}
+```{r databases-3, cache=FALSE}
 dm::copy_dm_to(
   con_duckdb,
   dm::dm_pixarfilms(),
