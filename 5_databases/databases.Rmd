@@ -16,8 +16,6 @@ font: frutiger
 wide: false
 colorlinks: false
 logo: true
-header-includes:
-  - \usepackage{parskip}
 ---
 
 <style type="text/css">
@@ -58,11 +56,15 @@ Organization of half-day R courses:
 
 # Course material
 
-Our course material currently is available from Github at
+Our course material currently is available from GitHub at
 
 https://github.com/cynkra/bag-courses
 
 Today we will be looking at the folder `5_databases`
+
+---
+
+# Download course material
 
 ![how to download](cynkra-repo-dl.png)
 
@@ -90,7 +92,7 @@ Playing the whole game!
 
 # Schedule
 
-Extract -- Transform -- Load -- Consume
+Extract ⇨ Transform ⇨ Load ⇨ Consume
 
 .pull-left[
 ## One table
@@ -111,3 +113,189 @@ Extract -- Transform -- Load -- Consume
 ]
 
 ## Bonus: Bring your own data + questions
+
+---
+
+# Schedule
+
+Extract ⇨ Transform ⇨ Load ⇨ Consume
+
+.pull-left[
+## One table
+
+- **Read whole tables**
+- Let the database do the heavy lifting
+- Subtle issues to watch out for
+- Basic ETL for one table
+]
+
+.pull-right[
+## Multiple tables
+
+- Joins
+- The {dm} package
+- A bit of theory
+- Playing the whole game
+]
+
+## Bonus: Bring your own data + questions
+
+---
+
+# Read whole tables
+
+- {DBI} package
+- Connect
+- Discover
+- Read
+- Query
+
+Script: `databases_11.R`
+
+```{r}
+library(tidyverse)
+library(DBI)
+```
+
+---
+
+# Connect to the database
+
+First step when accessing the database.
+
+```{r}
+con_duckdb <- dbConnect(duckdb::duckdb())
+con_duckdb
+```
+
+insert: duckdb logo, other database logos
+
+---
+
+insert: major boring shit
+
+---
+
+# Prepare database
+
+Normally done in a preparatory step.
+
+insert: bunny
+
+```{r}
+dm::copy_dm_to(
+  con_duckdb,
+  dm::dm_pixarfilms(),
+  set_key_constraints = FALSE,
+  temporary = FALSE
+)
+```
+
+---
+
+# Discover tables
+
+Where is my data?
+
+```{r}
+dbListTables(con_duckdb)
+dbListFields(con_duckdb, "pixar_films")
+```
+
+Caveat: schemas, catalogs, ...
+
+```sql
+SELECT * FROM INFORMATION_SCHEMA.TABLES
+```
+
+---
+
+# Read tables
+
+Read entire tables into your local session, if you can afford it.
+
+```{r}
+df_pixar_films <- dbReadTable(con_duckdb, "pixar_films")
+df_pixar_films
+```
+
+---
+
+# Read tables
+
+Use `as_tibble()` to convert to a tibble for better display
+and more robust operation.
+
+```{r}
+df_pixar_films <- dbReadTable(con_duckdb, "pixar_films")
+as_tibble(df_pixar_films)
+```
+
+---
+
+# Execute queries
+
+Write SQL code to define what data you want to see.
+
+```{r}
+dbGetQuery(con_duckdb, "SELECT * FROM pixar_films")
+```
+
+---
+
+# Execute queries
+
+Write complex SQL code to define what data you want to see.
+
+```{r}
+sql <- "
+SELECT * FROM pixar_films
+WHERE release_date >= '2020-01-01'
+"
+```
+
+```{r}
+dbGetQuery(con_duckdb, sql)
+```
+
+---
+
+# Execute queries
+
+R 4.0 or later: use new-style string literals for mixing quotes.
+
+```{r eval = FALSE}
+sql <- r"(
+SELECT * FROM "pixar_films"
+WHERE "release_date" >= '2020-01-01'
+)"
+```
+
+```{r}
+dbGetQuery(con_duckdb, sql)
+```
+
+---
+
+# Quoting
+
+insert: bunny
+
+```{r}
+dbQuoteIdentifier(con_duckdb, "academy")
+dbQuoteLiteral(con_duckdb, "Toy Story")
+dbQuoteLiteral(con_duckdb, as.Date("2020-01-01"))
+```
+
+---
+
+# Parameterized queries
+
+insert: bunny
+
+```{r}
+sql <- "SELECT count(*) FROM pixar_films WHERE release_date >= ?"
+dbGetQuery(con_duckdb, sql, params = list(as.Date("2020-01-01")))
+```
+
+---
