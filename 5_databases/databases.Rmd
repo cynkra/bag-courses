@@ -37,13 +37,13 @@ logo: true
 
 
 ```{r databases-1, include = FALSE}
-knitr::opts_chunk$set(cache = TRUE)
+knitr::opts_chunk$set(cache = TRUE, comment = "")
 
 library(tidyverse)
 library(DBI)
 library(dm)
 
-options(width = 62)
+options(width = 59)
 
 options(pillar.bold = TRUE)
 options(cli.num_colors = 256)
@@ -214,7 +214,7 @@ con_duckdb
 ```
 
 ```
-## <duckdb_connection 0faa0 driver=<duckdb_driver 22170 dbdir=':memory:' read_only=FALSE>>
+<duckdb_connection 0faa0 driver=<duckdb_driver 22170 dbdir=':memory:' read_only=FALSE>>
 ```
 
 ---
@@ -969,3 +969,109 @@ library(tidyverse)
 ]
 
 ---
+
+# Extract: Raw data
+
+From arbitrary source: CSV, Excel, web API, other database, ...
+
+```{r}
+pixar_films_raw <- pixarfilms::pixar_films
+pixar_films_raw
+```
+
+---
+
+background-image: url("images/magic-hat-and-wand-nath-r.svg")
+background-size: 25%
+background-position: 100% 100%
+
+# Transform: Derived data
+
+- Fix type of `number` column
+- Extract `franchise` and `sequel` columns
+
+```{r echo = FALSE}
+pixar_films_clean <-
+  pixar_films_raw %>%
+  separate(film, into = c("franchise", "sequel"),
+    sep = " (?=[0-9]+$)", fill = "right", remove = FALSE
+  ) %>%
+  mutate(across(c(number, sequel), as.integer)) %>%
+  group_by(franchise) %>%
+  mutate(sequel = if_else(is.na(sequel) & n() > 1, 1L, sequel)) %>%
+  ungroup()
+old <- options(width = 100)
+```
+
+```{r}
+pixar_films_clean
+```
+
+```{r echo = FALSE}
+options(old)
+```
+
+
+---
+
+# Create target database
+
+Depending on workflow, often an existing database is used.
+
+```{r}
+db_path <- fs::path_abs("pixar.duckdb")
+db_path
+```
+
+```{r message = FALSE}
+fs::file_delete(db_path)
+con <- dbConnect(duckdb::duckdb(dbdir = db_path))
+con
+```
+
+```
+<duckdb_connection b1490 driver=<duckdb_driver b5870 dbdir='/Users/kirill/git/cynkra/bag/bag-courses/5_databases/pixar.duckdb' read_only=FALSE>>
+```
+
+---
+
+# Load: Write table to the database
+
+```{r}
+dbWriteTable(con, "pixar_films", pixar_films_clean)
+dbExecute(con, "CREATE UNIQUE INDEX pixarfilms_pk ON pixar_films (film)")
+nrow(dbReadTable(con, "pixar_films"))
+dbDisconnect(con)
+```
+
+---
+
+# Consume: share the file, open it
+
+.pull-left[
+```{r}
+fs::dir_info() %>%
+  arrange(desc(birth_time)) %>%
+  head(2)
+```
+]
+
+.pull-right[
+```{r}
+con <- dbConnect(duckdb::duckdb(dbdir = db_path, read_only = TRUE))
+pixar_films <- tbl(con, "pixar_films")
+pixar_films
+```
+]
+
+---
+
+background-image: url("images/13-frame.webp")
+background-size: 40%
+background-position: 100% 100%
+
+# Exercises
+
+1. Adapt the ETL workflow to convert the `run_time` column to a duration.
+   - Hint: Use `mutate()` with `hms::hms(minutes = ...)` .
+2. Re-run the workflow.

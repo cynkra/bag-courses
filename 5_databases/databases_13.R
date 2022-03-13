@@ -1,5 +1,6 @@
 # attach relevant packages
 library(tidyverse)
+library(DBI)
 
 # display chosen presentation (it might take a few seconds to appear)
 slide_viewer <- function(path) {
@@ -10,14 +11,6 @@ slide_viewer <- function(path) {
 # slide_viewer("5_databases/databases.html")
 
 ### Extract, Transform, Load ###################################################
-
-# Create target database -------------------------------------------------------
-
-db_path <- fs::path_abs("pixar.duckdb")
-db_path
-fs::file_delete(db_path)
-con <- DBI::dbConnect(duckdb::duckdb(dbdir = db_path))
-con
 
 # Extract: Raw data ------------------------------------------------------------
 
@@ -37,11 +30,19 @@ pixar_films_clean <-
   ungroup()
 pixar_films_clean
 
+# Create target database -------------------------------------------------------
+
+db_path <- fs::path_abs("pixar.duckdb")
+db_path
+fs::file_delete(db_path)
+con <- dbConnect(duckdb::duckdb(dbdir = db_path))
+con
+
 # Load: Write table to the database --------------------------------------------
 
-DBI::dbWriteTable(con, "pixar_films", pixar_films_clean)
-DBI::dbExecute(con, "CREATE UNIQUE INDEX pixarfilms_pk ON pixar_films (film)")
-DBI::dbDisconnect(con)
+dbWriteTable(con, "pixar_films", pixar_films_clean)
+dbExecute(con, "CREATE UNIQUE INDEX pixarfilms_pk ON pixar_films (film)")
+dbDisconnect(con)
 
 # Consume: share the file, open it ---------------------------------------------
 
@@ -49,7 +50,7 @@ fs::dir_info() %>%
   arrange(desc(birth_time)) %>%
   head(1)
 
-con <- DBI::dbConnect(duckdb::duckdb(dbdir = db_path, read_only = TRUE))
+con <- dbConnect(duckdb::duckdb(dbdir = db_path, read_only = TRUE))
 pixar_films <- tbl(con, "pixar_films")
 pixar_films
 
