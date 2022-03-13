@@ -43,7 +43,7 @@ library(tidyverse)
 library(DBI)
 library(dm)
 
-options(width = 160)
+options(width = 62)
 
 options(pillar.bold = TRUE)
 options(cli.num_colors = 256)
@@ -759,6 +759,7 @@ With `mutate()`, like with data frames.
 .pull-left[
 ```{r databases-37 }
 pixar_films %>%
+  select(film, release_date) %>% 
   mutate(release_year = year(release_date))
 ```
 ]
@@ -768,6 +769,7 @@ pixar_films %>%
 
 ```{r databases-38 }
 pixar_films %>%
+  select(film, release_date) %>% 
   mutate(release_year = year(release_date)) %>%
   show_query()
 ```
@@ -781,6 +783,7 @@ pixar_films %>%
 ```{r databases-39 }
 df_pixar_films_with_release_year <-
   pixar_films %>%
+  select(film, release_date) %>% 
   mutate(release_year = year(release_date)) %>%
   collect()
 df_pixar_films_with_release_year
@@ -858,6 +861,7 @@ With `add_count()`, like with data frames.
 pixar_films %>%
   add_count(release_year = year(release_date)) %>%
   filter(n > 1) %>%
+  select(film, release_year, n) %>% 
   arrange(release_date)
 ```
 ]
@@ -870,6 +874,7 @@ pixar_films %>%
   add_count(release_year = year(release_date)) %>%
   filter(n > 1) %>%
   arrange(release_date) %>% 
+  select(film, release_year, n) %>% 
   show_query()
 ```
 ]
@@ -882,10 +887,15 @@ background-position: 100% 100%
 
 # Computing on the database: Exercises
 
+.pull-left[
 1. Add new columns `release_year` and `release_month`.
 2. Use the new columns to compute the number of months since January 1970
    for each film
 3. Compute the overall median run time, and the median run time per film rating
 4. For each film except the last, compute how many days have passed until the next film.
     - Hint: Use `lag(..., order_by = ...)`
-4. Find the maximum number of days between releases of two G and two PG films.
+]
+
+.pull-right[
+5. Find the maximum number of days between releases of two G and two PG films.
+]
