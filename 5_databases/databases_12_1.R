@@ -118,8 +118,7 @@ pixar_films
 # 3. Had a rating of "N/A" or "Not Rated"
 # 4. Were released after and including year 2020
 # 5. Have a missing name (`film` column) or `run_time`
-# 6. Were released after and including year 2020 with name not missing
-# 7. Are a first sequel (the name ends with "2")
+# 6. Are a first sequel (the name ends with "2")
 #     - Hint: Bring the data into the R session before filtering
 
 # `count()`, `summarize()`, `group_by()`, `ungroup()` --------------------------

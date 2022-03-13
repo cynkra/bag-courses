@@ -400,8 +400,13 @@ Extract ⇨ Transform ⇨ Load ⇨ Consume
 
 ---
 
+background-image: url("images/12.webp")
+background-size: 40%
+background-position: 100% 100%
+
 # Downsizing on the database
 
+.pull-left[
 - {dbplyr} package (part of the tidyverse)
 - Lazy tables
 - `collect()`
@@ -414,7 +419,30 @@ Script: `databases_12_1.R`
 ```{r databases-17 }
 library(tidyverse)
 ```
+]
 
+---
+
+background-image: url("images/12-frame.webp")
+background-size: 40%
+background-position: 100% 100%
+
+# Downsizing on the database
+
+.pull-left[
+- {dbplyr} package (part of the tidyverse)
+- Lazy tables
+- `collect()`
+- `select()`
+- `filter()`
+- `group_by()`, `summarize()`, `ungroup()`, `count()`
+
+Script: `databases_12_1.R`
+
+```{r databases-18 }
+library(tidyverse)
+```
+]
 
 ---
 
@@ -422,7 +450,7 @@ library(tidyverse)
 
 A pointer to a SQL table. The data is still on the database!
 
-```{r databases-18, cache = FALSE}
+```{r databases-19, cache = FALSE}
 pixar_films <- tbl(con_duckdb, "pixar_films")
 pixar_films
 ```
@@ -431,7 +459,7 @@ pixar_films
 
 # Read the whole table
 
-```{r databases-19 }
+```{r databases-20 }
 df_pixar_films <-
   pixar_films %>%
   collect()
@@ -445,7 +473,7 @@ df_pixar_films
 With `select()`, like with data frames.
 
 .pull-left[
-```{r databases-20 }
+```{r databases-21 }
 pixar_films %>%
   select(1:3)
 ```
@@ -454,7 +482,7 @@ pixar_films %>%
 .pull-right[
 ## Under the hood
 
-```{r databases-21 }
+```{r databases-22 }
 pixar_films %>%
   select(1:3) %>%
   show_query()
@@ -466,7 +494,7 @@ pixar_films %>%
 # Select columns and read
 
 .pull-left[
-```{r databases-22 }
+```{r databases-23 }
 df_pixar_films_3 <-
   pixar_films %>%
   select(1:3) %>%
@@ -478,7 +506,7 @@ df_pixar_films_3
 .pull-right[
 ## Data on the database not affected
 
-```{r databases-23 }
+```{r databases-24 }
 pixar_films %>%
   collect()
 ```
@@ -491,7 +519,7 @@ pixar_films %>%
 With `filter()`, like with data frames.
 
 .pull-left[
-```{r databases-24 }
+```{r databases-25 }
 pixar_films %>%
   filter(release_date >= "2020-01-01")
 ```
@@ -500,7 +528,7 @@ pixar_films %>%
 .pull-right[
 ## Under the hood
 
-```{r databases-25 }
+```{r databases-26 }
 pixar_films %>%
   filter(release_date >= "2020-01-01") %>%
   show_query()
@@ -512,7 +540,7 @@ pixar_films %>%
 # Select rows and read
 
 .pull-left[
-```{r databases-26 }
+```{r databases-27 }
 df_pixar_films_202x <-
   pixar_films %>%
   filter(release_date >= "2020-01-01") %>%
@@ -524,7 +552,7 @@ df_pixar_films_202x
 .pull-right[
 ## Data on the database not affected
 
-```{r databases-27 }
+```{r databases-28 }
 pixar_films %>%
   collect()
 ```
@@ -537,7 +565,7 @@ pixar_films %>%
 With `group_by()` + `summarize()` + `ungroup()`, like with data frames.
 
 .pull-left[
-```{r databases-28 }
+```{r databases-29 }
 pixar_films %>%
   group_by(film_rating) %>%
   summarize(n = n()) %>%
@@ -548,7 +576,7 @@ pixar_films %>%
 .pull-right[
 ## Under the hood
 
-```{r databases-29 }
+```{r databases-30 }
 pixar_films %>%
   group_by(film_rating) %>%
   summarize(n = n()) %>%
@@ -564,7 +592,7 @@ pixar_films %>%
 With `count()`, like with data frames.
 
 .pull-left[
-```{r databases-30 }
+```{r databases-31 }
 pixar_films %>%
   #
   #
@@ -575,7 +603,7 @@ pixar_films %>%
 .pull-right[
 ## Under the hood
 
-```{r databases-31 }
+```{r databases-32 }
 pixar_films %>%
   #
   #
@@ -589,7 +617,7 @@ pixar_films %>%
 # Aggregate and read
 
 .pull-left[
-```{r databases-32 }
+```{r databases-33 }
 df_pixar_films_by_rating <-
   pixar_films %>%
   count(film_rating) %>%
@@ -601,13 +629,17 @@ df_pixar_films_by_rating
 .pull-right[
 ## Data on the database not affected
 
-```{r databases-33 }
+```{r databases-34 }
 pixar_films %>%
   collect()
 ```
 ]
 
 ---
+
+background-image: url("images/12-frame.webp")
+background-size: 40%
+background-position: 100% 100%
 
 # Downsizing on the database: Exercises 1
 
@@ -618,19 +650,28 @@ pixar_films %>%
 
 ---
 
+background-image: url("images/12-frame.webp")
+background-size: 40%
+background-position: 100% 100%
+
 # Downsizing on the database: Exercises 2
 
+.pull-left[
 Find all films that
 1. Are rated "PG"
 2. Had a run time below 95
 3. Had a rating of "N/A" or "Not Rated"
 4. Were released after and including year 2020
 5. Have a missing name (`film` column) or `run_time`
-6. Were released after and including year 2020 with name not missing
-7. Are a first sequel (the name ends with "2")
+6. Are a first sequel (the name ends with "2")
     - Hint: Bring the data into the R session before filtering
+]
 
 ---
+
+background-image: url("images/12-frame.webp")
+background-size: 40%
+background-position: 100% 100%
 
 # Downsizing on the database: Exercises 3
 
