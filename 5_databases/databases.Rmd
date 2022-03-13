@@ -10,7 +10,6 @@ output:
       countIncrementalSlides: false
       ratio: "16:9"
     seal: true
-fontsize: 10pt
 lang: english
 font: frutiger
 wide: false
@@ -26,7 +25,7 @@ logo: true
   margin-top: -25px;
 }
 .remark-code {
-    font-size: 12px;
+    font-size: 17px;
 }
 .font17 {
     font-size: 17px;
