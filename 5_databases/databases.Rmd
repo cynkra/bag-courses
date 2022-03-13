@@ -181,7 +181,6 @@ library(DBI)
 
 ---
 
-
 background-image: url("images/11-frame.webp")
 background-size: contain
 background-position: 100% 100%
@@ -359,13 +358,19 @@ dbGetQuery(con_duckdb, sql,
 
 ---
 
+background-image: url("images/11-frame.webp")
+background-size: contain
+background-position: 100% 100%
+
 # Read whole tables: Exercises
 
+.pull-left[
 1. List all columns from the `box_office` table.
 2. Read the `academy` table.
 3. Read all records from the `academy` table that correspond to awards won
     - Hint: Use the query `"SELECT * FROM academy WHERE status = 'Won'"`
 4. Use quoting and/or query parameters to stabilize the previous query.
+]
 
 ---
 
