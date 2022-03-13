@@ -382,7 +382,7 @@ Extract ⇨ Transform ⇨ Load ⇨ Consume
 ## One table
 
 - Read whole tables
-- **Let the database do the heavy lifting**
+- **Let the database do the heavy lifting 1/2**
 - Basic ETL for one table
 - Subtle issues to watch out for
 ]
@@ -684,8 +684,70 @@ background-position: 100% 100%
 
 ---
 
+# Schedule
+
+Extract ⇨ Transform ⇨ Load ⇨ Consume
+
 .pull-left[
+## One table
+
+- Read whole tables
+- **Let the database do the heavy lifting 2/2**
+- Basic ETL for one table
+- Subtle issues to watch out for
 ]
 
 .pull-right[
+## Multiple tables
+
+- Joins
+- The {dm} package
+- A bit of theory
+- Playing the whole game
 ]
+
+## Bonus: Bring your own data + questions
+
+---
+
+background-image: url("images/12_2.webp")
+background-size: 40%
+background-position: 100% 100%
+
+# Computing on the database
+
+.pull-left[
+- {dbplyr} package (part of the tidyverse)
+- `mutate()`
+- `arrange()`
+- Grouped `summarize()` / `mutate()`
+
+Script: `databases_12_2.R`
+
+```{r databases-35 }
+library(tidyverse)
+```
+]
+
+---
+
+background-image: url("images/12_2-frame.webp")
+background-size: 40%
+background-position: 100% 100%
+
+# Computing on the database
+
+.pull-left[
+- {dbplyr} package (part of the tidyverse)
+- `mutate()`
+- `arrange()`
+- Grouped `summarize()` / `mutate()`
+
+Script: `databases_12_2.R`
+
+```{r databases-36 }
+library(tidyverse)
+```
+]
+
+---
