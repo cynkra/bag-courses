@@ -307,6 +307,10 @@ dbQuoteIdentifier(con_duckdb, "academy")
 dbQuoteLiteral(con_duckdb, "Toy Story")
 dbQuoteLiteral(con_duckdb, as.Date("2020-01-01"))
 ```
+
+```{r databases-12a, eval = FALSE}
+glue::glue_sql(...)
+```
 ]
 
 .pull-right[

@@ -56,10 +56,18 @@ dbQuoteIdentifier(con_duckdb, "academy")
 dbQuoteLiteral(con_duckdb, "Toy Story")
 dbQuoteLiteral(con_duckdb, as.Date("2020-01-01"))
 
+# Paste queries with glue_sql()
+
 # Parameterized queries
 sql <- "SELECT count(*) FROM pixar_films WHERE release_date >= ?"
 dbGetQuery(con_duckdb, sql, params = list(as.Date("2020-01-01")))
 
 # Reading tables: Exercises ----------------------------------------------------
 
-# FIXME
+con_duckdb
+
+# 1. List all columns from the `box_office` table.
+# 2. Read the `academy` table.
+# 3. Read all records from the `academy` table that correspond to awards won
+#     - Hint: Use the query "SELECT * FROM academy WHERE status = 'Won'"
+# 4. Use quoting and/or query parameters to stabilize the previous query.
