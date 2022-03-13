@@ -15,7 +15,9 @@ slide_viewer <- function(path) {
 
 db_path <- fs::path_abs("pixar.duckdb")
 db_path
+fs::file_delete(db_path)
 con <- DBI::dbConnect(duckdb::duckdb(dbdir = db_path))
+con
 
 # Extract: Raw data ------------------------------------------------------------
 
@@ -37,7 +39,7 @@ pixar_films_clean
 
 # Load: Write table to the database --------------------------------------------
 
-DBI::dbWriteTable(con, "pixar_films", pixar_films_clean, overwrite = TRUE)
+DBI::dbWriteTable(con, "pixar_films", pixar_films_clean)
 DBI::dbExecute(con, "CREATE UNIQUE INDEX pixarfilms_pk ON pixar_films (film)")
 DBI::dbDisconnect(con)
 

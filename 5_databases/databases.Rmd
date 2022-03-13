@@ -165,7 +165,7 @@ background-position: 100% 100%
 # Read whole tables
 
 .pull-left[
-- {DBI} package
+- {DBI} and {duckdb} package
 - Connect
 - Discover
 - Read
@@ -899,3 +899,73 @@ background-position: 100% 100%
 .pull-right[
 5. Find the maximum number of days between releases of two G and two PG films.
 ]
+
+---
+
+# Schedule
+
+Extract ⇨ Transform ⇨ Load ⇨ Consume
+
+.pull-left[
+## One table
+
+- Read whole tables
+- Let the database do the heavy lifting
+- **Basic ETL for one table**
+- Subtle issues to watch out for
+]
+
+.pull-right[
+## Multiple tables
+
+- Joins
+- The {dm} package
+- A bit of theory
+- Playing the whole game
+]
+
+## Bonus: Bring your own data + questions
+
+---
+
+background-image: url("images/13.webp")
+background-size: 40%
+background-position: 100% 100%
+
+# Extract, Transform, Load
+
+.pull-left[
+- Obtain raw data
+- Prepare database table
+- Write it to a new database
+- Consume
+
+Script: `databases_13.R`
+
+```{r databases-47 }
+library(tidyverse)
+```
+]
+
+---
+
+background-image: url("images/13-frame.webp")
+background-size: 40%
+background-position: 100% 100%
+
+# Extract, Transform, Load
+
+.pull-left[
+- Obtain raw data
+- Prepare database table
+- Write it to a new database
+- Consume
+
+Script: `databases_13.R`
+
+```{r databases-48 }
+library(tidyverse)
+```
+]
+
+---
