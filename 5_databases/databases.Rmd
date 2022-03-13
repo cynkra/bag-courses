@@ -412,7 +412,7 @@ background-position: 100% 100%
 - `collect()`
 - `select()`
 - `filter()`
-- `group_by()`, `summarize()`, `ungroup()`, `count()`
+- `count()`
 
 Script: `databases_12_1.R`
 
@@ -751,3 +751,141 @@ library(tidyverse)
 ]
 
 ---
+
+# Transform
+
+With `mutate()`, like with data frames.
+
+.pull-left[
+```{r databases-37 }
+pixar_films %>%
+  mutate(release_year = year(release_date))
+```
+]
+
+.pull-right[
+## Under the hood
+
+```{r databases-38 }
+pixar_films %>%
+  mutate(release_year = year(release_date)) %>%
+  show_query()
+```
+]
+
+---
+
+# Transform and read
+
+.pull-left[
+```{r databases-39 }
+df_pixar_films_with_release_year <-
+  pixar_films %>%
+  mutate(release_year = year(release_date)) %>%
+  collect()
+df_pixar_films_with_release_year
+```
+]
+
+.pull-right[
+## Data on the database not affected
+
+```{r databases-40 }
+pixar_films %>%
+  collect()
+```
+]
+
+---
+
+# Aggregate (complex)
+
+With `group_by()` + `summarize()` + `ungroup()`, like with data frames.
+
+.pull-left[
+```{r databases-41 }
+pixar_films %>%
+  group_by(film_rating) %>%
+  summarize(mean_run_time = mean(run_time)) %>%
+  ungroup()
+```
+]
+
+.pull-right[
+## Under the hood
+
+```{r databases-42 }
+pixar_films %>%
+  group_by(film_rating) %>%
+  summarize(mean_run_time = mean(run_time)) %>%
+  ungroup() %>% 
+  show_query()
+```
+]
+
+---
+
+# Transform and aggregate
+
+With `count()`, like with data frames.
+
+.pull-left[
+```{r databases-43 }
+pixar_films %>%
+  count(release_year = year(release_date))
+```
+]
+
+.pull-right[
+## Under the hood
+
+```{r databases-44 }
+pixar_films %>%
+  mutate(release_year = year(release_date)) %>%
+  count(release_year) %>%
+  show_query()
+```
+]
+
+---
+
+# In-place aggregate (window functions)
+
+With `add_count()`, like with data frames.
+
+.pull-left[
+```{r databases-45 }
+pixar_films %>%
+  add_count(release_year = year(release_date)) %>%
+  filter(n > 1) %>%
+  arrange(release_date)
+```
+]
+
+.pull-right[
+## Under the hood
+
+```{r databases-46 }
+pixar_films %>%
+  add_count(release_year = year(release_date)) %>%
+  filter(n > 1) %>%
+  arrange(release_date) %>% 
+  show_query()
+```
+]
+
+---
+
+background-image: url("images/12_2-frame.webp")
+background-size: 40%
+background-position: 100% 100%
+
+# Computing on the database: Exercises
+
+1. Add new columns `release_year` and `release_month`.
+2. Use the new columns to compute the number of months since January 1970
+   for each film
+3. Compute the overall median run time, and the median run time per film rating
+4. For each film except the last, compute how many days have passed until the next film.
+    - Hint: Use `lag(..., order_by = ...)`
+4. Find the maximum number of days between releases of two G and two PG films.
