@@ -159,6 +159,7 @@ Extract ⇨ Transform ⇨ Load ⇨ Consume
 ---
 
 background-image: url("images/11.webp")
+background-size: contain
 background-position: 100% 100%
 
 # Read whole tables
@@ -180,11 +181,35 @@ library(DBI)
 
 ---
 
+
+background-image: url("images/11-frame.webp")
+background-size: contain
+background-position: 100% 100%
+
+# Read whole tables
+
+.pull-left[
+- {DBI} package
+- Connect
+- Discover
+- Read
+- Query
+
+Script: `databases_11.R`
+
+```{r databases-3 }
+library(tidyverse)
+library(DBI)
+```
+]
+
+---
+
 # Connect to the database
 
 First step when accessing the database.
 
-```{r databases-3, results='hide', message=FALSE, cache=FALSE}
+```{r databases-4, results='hide', message=FALSE, cache=FALSE}
 con_duckdb <- dbConnect(duckdb::duckdb())
 con_duckdb
 ```
@@ -203,7 +228,7 @@ background-position: 100% 100%
 
 Normally done in a preparatory step.
 
-```{r databases-4, cache=FALSE}
+```{r databases-5, cache=FALSE}
 dm::copy_dm_to(
   con_duckdb,
   dm::dm_pixarfilms(),
@@ -218,7 +243,7 @@ dm::copy_dm_to(
 
 Where is my data?
 
-```{r databases-5 }
+```{r databases-6 }
 dbListTables(con_duckdb)
 dbListFields(con_duckdb, "pixar_films")
 ```
@@ -235,7 +260,7 @@ SELECT * FROM INFORMATION_SCHEMA.TABLES
 
 Read entire tables into your local session, if you can afford it.
 
-```{r databases-6 }
+```{r databases-7 }
 df_pixar_films <- dbReadTable(con_duckdb, "pixar_films")
 df_pixar_films
 ```
@@ -247,7 +272,7 @@ df_pixar_films
 Use `as_tibble()` to convert to a tibble for better display
 and more robust operation.
 
-```{r databases-7 }
+```{r databases-8 }
 df_pixar_films <- dbReadTable(con_duckdb, "pixar_films")
 as_tibble(df_pixar_films)
 ```
@@ -258,7 +283,7 @@ as_tibble(df_pixar_films)
 
 Write SQL code to define what data you want to see.
 
-```{r databases-8 }
+```{r databases-9 }
 dbGetQuery(con_duckdb, "SELECT * FROM pixar_films")
 ```
 
@@ -268,14 +293,14 @@ dbGetQuery(con_duckdb, "SELECT * FROM pixar_films")
 
 Write complex SQL code to define what data you want to see.
 
-```{r databases-9 }
+```{r databases-10 }
 sql <- "
 SELECT * FROM pixar_films
 WHERE release_date >= '2020-01-01'
 "
 ```
 
-```{r databases-10 }
+```{r databases-11 }
 dbGetQuery(con_duckdb, sql)
 ```
 
@@ -285,14 +310,14 @@ dbGetQuery(con_duckdb, sql)
 
 R 4.0 or later: use new-style string literals for mixing quotes.
 
-```{r databases-11, eval = FALSE}
+```{r databases-12, eval = FALSE}
 sql <- r"(
 SELECT * FROM "pixar_films"
 WHERE "release_date" >= '2020-01-01'
 )"
 ```
 
-```{r databases-12 }
+```{r databases-13 }
 dbGetQuery(con_duckdb, sql)
 ```
 
@@ -307,13 +332,13 @@ background-position: 100% 100%
 .pull-left[
 ## Quoting
 
-```{r databases-13 }
+```{r databases-14 }
 dbQuoteIdentifier(con_duckdb, "academy")
 dbQuoteLiteral(con_duckdb, "Toy Story")
 dbQuoteLiteral(con_duckdb, as.Date("2020-01-01"))
 ```
 
-```{r databases-14, eval = FALSE}
+```{r databases-15, eval = FALSE}
 glue::glue_sql(...)
 ```
 ]
@@ -321,7 +346,7 @@ glue::glue_sql(...)
 .pull-right[
 ## Parameterized queries
 
-```{r databases-15 }
+```{r databases-16 }
 sql <- "
 SELECT count(*) FROM pixar_films
 WHERE release_date >= ?
@@ -381,7 +406,7 @@ Extract ⇨ Transform ⇨ Load ⇨ Consume
 
 Script: `databases_12_1.R`
 
-```{r databases-16 }
+```{r databases-17 }
 library(tidyverse)
 ```
 
@@ -392,7 +417,7 @@ library(tidyverse)
 
 A pointer to a SQL table. The data is still on the database!
 
-```{r databases-17, cache = FALSE}
+```{r databases-18, cache = FALSE}
 pixar_films <- tbl(con_duckdb, "pixar_films")
 pixar_films
 ```
@@ -401,7 +426,7 @@ pixar_films
 
 # Read the whole table
 
-```{r databases-18 }
+```{r databases-19 }
 df_pixar_films <-
   pixar_films %>%
   collect()
@@ -415,7 +440,7 @@ df_pixar_films
 With `select()`, like with data frames.
 
 .pull-left[
-```{r databases-19 }
+```{r databases-20 }
 pixar_films %>%
   select(1:3)
 ```
@@ -424,7 +449,7 @@ pixar_films %>%
 .pull-right[
 ## Under the hood
 
-```{r databases-20 }
+```{r databases-21 }
 pixar_films %>%
   select(1:3) %>%
   show_query()
@@ -436,7 +461,7 @@ pixar_films %>%
 # Select columns and read
 
 .pull-left[
-```{r databases-21 }
+```{r databases-22 }
 df_pixar_films_3 <-
   pixar_films %>%
   select(1:3) %>%
@@ -448,7 +473,7 @@ df_pixar_films_3
 .pull-right[
 ## Data on the database not affected
 
-```{r databases-22 }
+```{r databases-23 }
 pixar_films %>%
   collect()
 ```
@@ -461,7 +486,7 @@ pixar_films %>%
 With `filter()`, like with data frames.
 
 .pull-left[
-```{r databases-23 }
+```{r databases-24 }
 pixar_films %>%
   filter(release_date >= "2020-01-01")
 ```
@@ -470,7 +495,7 @@ pixar_films %>%
 .pull-right[
 ## Under the hood
 
-```{r databases-24 }
+```{r databases-25 }
 pixar_films %>%
   filter(release_date >= "2020-01-01") %>%
   show_query()
@@ -482,7 +507,7 @@ pixar_films %>%
 # Select rows and read
 
 .pull-left[
-```{r databases-25 }
+```{r databases-26 }
 df_pixar_films_202x <-
   pixar_films %>%
   filter(release_date >= "2020-01-01") %>%
@@ -494,7 +519,7 @@ df_pixar_films_202x
 .pull-right[
 ## Data on the database not affected
 
-```{r databases-26 }
+```{r databases-27 }
 pixar_films %>%
   collect()
 ```
@@ -507,7 +532,7 @@ pixar_films %>%
 With `group_by()` + `summarize()` + `ungroup()`, like with data frames.
 
 .pull-left[
-```{r databases-27 }
+```{r databases-28 }
 pixar_films %>%
   group_by(film_rating) %>%
   summarize(n = n()) %>%
@@ -518,7 +543,7 @@ pixar_films %>%
 .pull-right[
 ## Under the hood
 
-```{r databases-28 }
+```{r databases-29 }
 pixar_films %>%
   group_by(film_rating) %>%
   summarize(n = n()) %>%
@@ -534,7 +559,7 @@ pixar_films %>%
 With `count()`, like with data frames.
 
 .pull-left[
-```{r databases-29 }
+```{r databases-30 }
 pixar_films %>%
   #
   #
@@ -545,7 +570,7 @@ pixar_films %>%
 .pull-right[
 ## Under the hood
 
-```{r databases-30 }
+```{r databases-31 }
 pixar_films %>%
   #
   #
@@ -559,7 +584,7 @@ pixar_films %>%
 # Aggregate and read
 
 .pull-left[
-```{r databases-31 }
+```{r databases-32 }
 df_pixar_films_by_rating <-
   pixar_films %>%
   count(film_rating) %>%
@@ -571,7 +596,7 @@ df_pixar_films_by_rating
 .pull-right[
 ## Data on the database not affected
 
-```{r databases-32 }
+```{r databases-33 }
 pixar_films %>%
   collect()
 ```
