@@ -90,7 +90,20 @@ try(
 pixarfilms::academy %>%
   left_join(pixar_films, by = "film", copy = TRUE)
 
-# FIXME: Mount data frames into DuckDB
+# DuckDB only: register data frames as local tables ----------------------------
+
+# Register data frame as table in DuckDB
+duckdb::duckdb_register(
+  con_duckdb,
+  "academy_small",
+  pixarfilms::academy[1:3, ]
+)
+academy_small <- tbl(con_duckdb, "academy_small")
+academy_small
+academy_small %>%
+  left_join(pixar_films, by = "film")
+
+# Also works for Arrow datasets via duckdb::duckdb_register_arrow()
 
 # ETL, revisited ---------------------------------------------------------------
 
