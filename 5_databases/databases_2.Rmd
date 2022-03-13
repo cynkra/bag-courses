@@ -1,0 +1,1672 @@
+---
+title: "Databases"
+author: ["Kirill & Nicolas", "cynkra GmbH"]
+date: "March 15, 2022"
+output:
+  cynkradown::cynkra_slides:
+    nature:
+      highlightStyle: github
+      highlightLines: true
+      countIncrementalSlides: false
+      ratio: "16:9"
+    seal: true
+lang: english
+font: frutiger
+wide: false
+colorlinks: false
+logo: true
+---
+
+<style type="text/css">
+.pull-left {
+  margin-top: -25px;
+}
+.pull-right {
+  margin-top: -25px;
+}
+.remark-code {
+    font-size: 14px;
+}
+.font17 {
+    font-size: 17px;
+}
+.font14 {
+    font-size: 14px;
+}
+</style>
+
+
+```{r databases-1, include = FALSE}
+knitr::opts_chunk$set(cache = TRUE, comment = "")
+
+library(tidyverse)
+library(DBI)
+library(dm)
+
+options(width = 68)
+
+options(pillar.bold = TRUE)
+options(cli.num_colors = 256)
+
+fansi::set_knit_hooks(knitr::knit_hooks, c("output", "message", "warning", "error"))
+```
+
+
+# Introduction
+
+Organization of half-day R courses:
+
+- Intro courses:
+  * Tidyverse intro I
+  * Base R intro/Tidyverse intro II
+  * Data visualization I
+  * Data visualization II
+- Advanced courses:
+  * Advanced tidyverse
+  * R package creation
+  * Working with database systems
+  * Parallelization & efficient R programming
+  * Databases (this course)
+
+---
+
+# Course material
+
+Our course material currently is available from GitHub at
+
+https://github.com/cynkra/bag-courses
+
+Today we will be looking at the folder `5_databases`
+
+---
+
+# Download course material
+
+![how to download](cynkra-repo-dl.png)
+
+---
+
+# General remarks
+
+- We hope for these courses to be interactive: go ahead and ask if something is unclear!
+- You can also write into the chat, which I will try to monitor when Kirill is presenting.
+- We were asked to provide recordings of the courses for those of you who cannot join, so recording is activated.
+- Per course unit, we offer 4 hours of follow up time; approach us with questions (nicolas@cynkra.com)!
+
+---
+
+# Goals for today
+
+Playing the whole game!
+
+- Extract
+- Transform
+- Load
+- **Consume**
+
+---
+
+# Schedule
+
+Extract ⇨ Transform ⇨ Load ⇨ Consume
+
+.pull-left[
+## One table
+
+- Read whole tables
+- Let the database do the heavy lifting
+- Basic ETL for one table
+- Subtle issues to watch out for
+]
+
+.pull-right[
+## Multiple tables
+
+- Joins
+- The {dm} package
+- A bit of theory
+- Playing the whole game
+]
+
+## Bonus: Bring your own data + questions
+
+---
+
+# Schedule
+
+Extract ⇨ Transform ⇨ Load ⇨ Consume
+
+.pull-left[
+## One table
+
+- **Read whole tables**
+- Let the database do the heavy lifting
+- Basic ETL for one table
+- Subtle issues to watch out for
+]
+
+.pull-right[
+## Multiple tables
+
+- Joins
+- The {dm} package
+- A bit of theory
+- Playing the whole game
+]
+
+## Bonus: Bring your own data + questions
+
+---
+
+background-image: url("images/11.webp")
+background-size: contain
+background-position: 100% 100%
+
+# Read whole tables
+
+.pull-left[
+- {DBI} and {duckdb} package
+- Connect
+- Discover
+- Read
+- Query
+
+Script: `databases_11.R`
+
+```{r databases-2 }
+library(tidyverse)
+library(DBI)
+```
+]
+
+---
+
+background-image: url("images/11-frame.webp")
+background-size: contain
+background-position: 100% 100%
+
+# Read whole tables
+
+.pull-left[
+- {DBI} package
+- Connect
+- Discover
+- Read
+- Query
+
+Script: `databases_11.R`
+
+```{r databases-3 }
+library(tidyverse)
+library(DBI)
+```
+]
+
+---
+
+# Connect to the database
+
+First step when accessing the database.
+
+```{r databases-4, results='hide', message=FALSE, cache=FALSE}
+con_duckdb <- dbConnect(duckdb::duckdb())
+con_duckdb
+```
+
+```
+<duckdb_connection 0faa0 driver=<duckdb_driver 22170 dbdir=':memory:' read_only=FALSE>>
+```
+
+---
+
+background-image: url("images/magic-hat-and-wand-nath-r.svg")
+background-size: 25%
+background-position: 100% 100%
+
+# Prepare database
+
+Normally done in a preparatory step.
+
+```{r databases-5, cache=FALSE}
+dm::copy_dm_to(
+  con_duckdb,
+  dm::dm_pixarfilms(),
+  set_key_constraints = FALSE,
+  temporary = FALSE
+)
+```
+
+---
+
+# Discover tables
+
+Where is my data?
+
+```{r databases-6 }
+dbListTables(con_duckdb)
+dbListFields(con_duckdb, "pixar_films")
+```
+
+Caveat: schemas, catalogs, ...
+
+```sql
+SELECT * FROM INFORMATION_SCHEMA.TABLES
+```
+
+---
+
+# Read tables
+
+Read entire tables into your local session, if you can afford it.
+
+```{r databases-7 }
+df_pixar_films <- dbReadTable(con_duckdb, "pixar_films")
+df_pixar_films
+```
+
+---
+
+# Read tables
+
+Use `as_tibble()` to convert to a tibble for better display
+and more robust operation.
+
+```{r databases-8 }
+df_pixar_films <- dbReadTable(con_duckdb, "pixar_films")
+as_tibble(df_pixar_films)
+```
+
+---
+
+# Execute queries
+
+Write SQL code to define what data you want to see.
+
+```{r databases-9 }
+dbGetQuery(con_duckdb, "SELECT * FROM pixar_films")
+```
+
+---
+
+# Execute queries
+
+Write complex SQL code to define what data you want to see.
+
+```{r databases-10 }
+sql <- "
+SELECT * FROM pixar_films
+WHERE release_date >= '2020-01-01'
+"
+```
+
+```{r databases-11 }
+dbGetQuery(con_duckdb, sql)
+```
+
+---
+
+# Execute queries
+
+R 4.0 or later: use new-style string literals for mixing quotes.
+
+```{r databases-12, eval = FALSE}
+sql <- r"(
+SELECT * FROM "pixar_films"
+WHERE "release_date" >= '2020-01-01'
+)"
+```
+
+```{r databases-13 }
+dbGetQuery(con_duckdb, sql)
+```
+
+---
+
+background-image: url("images/magic-hat-and-wand-nath-r.svg")
+background-size: 25%
+background-position: 100% 100%
+
+# Further pointers
+
+.pull-left[
+## Quoting
+
+```{r databases-14 }
+dbQuoteIdentifier(con_duckdb, "academy")
+dbQuoteLiteral(con_duckdb, "Toy Story")
+dbQuoteLiteral(con_duckdb, as.Date("2020-01-01"))
+```
+
+```{r databases-15, eval = FALSE}
+glue::glue_sql(...)
+```
+]
+
+.pull-right[
+## Parameterized queries
+
+```{r databases-16 }
+sql <- "
+SELECT count(*) FROM pixar_films
+WHERE release_date >= ?
+"
+dbGetQuery(con_duckdb, sql,
+  params = list(as.Date("2020-01-01"))
+)
+```
+]
+
+---
+
+background-image: url("images/11-frame.webp")
+background-size: contain
+background-position: 100% 100%
+
+# Read whole tables: Exercises
+
+.pull-left[
+1. List all columns from the `box_office` table.
+2. Read the `academy` table.
+3. Read all records from the `academy` table that correspond to awards won
+    - Hint: Use the query `"SELECT * FROM academy WHERE status = 'Won'"`
+4. Use quoting and/or query parameters to stabilize the previous query.
+]
+
+---
+
+# Schedule
+
+Extract ⇨ Transform ⇨ Load ⇨ Consume
+
+.pull-left[
+## One table
+
+- Read whole tables
+- **Let the database do the heavy lifting 1/2**
+- Basic ETL for one table
+- Subtle issues to watch out for
+]
+
+.pull-right[
+## Multiple tables
+
+- Joins
+- The {dm} package
+- A bit of theory
+- Playing the whole game
+]
+
+## Bonus: Bring your own data + questions
+
+---
+
+background-image: url("images/12.webp")
+background-size: 40%
+background-position: 100% 100%
+
+# Downsizing on the database
+
+.pull-left[
+- {dbplyr} package (part of the tidyverse)
+- Lazy tables
+- `collect()`
+- `select()`
+- `filter()`
+- `count()`
+
+Script: `databases_12_1.R`
+
+```{r databases-17 }
+library(tidyverse)
+```
+]
+
+---
+
+background-image: url("images/12-frame.webp")
+background-size: 40%
+background-position: 100% 100%
+
+# Downsizing on the database
+
+.pull-left[
+- {dbplyr} package (part of the tidyverse)
+- Lazy tables
+- `collect()`
+- `select()`
+- `filter()`
+- `group_by()`, `summarize()`, `ungroup()`, `count()`
+
+Script: `databases_12_1.R`
+
+```{r databases-18 }
+library(tidyverse)
+```
+]
+
+---
+
+# Lazy tables
+
+A pointer to a SQL table. The data is still on the database!
+
+```{r databases-19, cache = FALSE}
+pixar_films <- tbl(con_duckdb, "pixar_films")
+pixar_films
+```
+
+---
+
+# Read the whole table
+
+```{r databases-20 }
+df_pixar_films <-
+  pixar_films %>%
+  collect()
+df_pixar_films
+```
+
+---
+
+# Select columns
+
+With `select()`, like with data frames.
+
+.pull-left[
+```{r databases-21 }
+pixar_films %>%
+  select(1:3)
+```
+]
+
+.pull-right[
+## Under the hood
+
+```{r databases-22 }
+pixar_films %>%
+  select(1:3) %>%
+  show_query()
+```
+]
+
+---
+
+# Select columns and read
+
+.pull-left[
+```{r databases-23 }
+df_pixar_films_3 <-
+  pixar_films %>%
+  select(1:3) %>%
+  collect()
+df_pixar_films_3
+```
+]
+
+.pull-right[
+## Data on the database not affected
+
+```{r databases-24 }
+pixar_films %>%
+  collect()
+```
+]
+
+---
+
+# Select rows
+
+With `filter()`, like with data frames.
+
+.pull-left[
+```{r databases-25 }
+pixar_films %>%
+  filter(release_date >= "2020-01-01")
+```
+]
+
+.pull-right[
+## Under the hood
+
+```{r databases-26 }
+pixar_films %>%
+  filter(release_date >= "2020-01-01") %>%
+  show_query()
+```
+]
+
+---
+
+# Select rows and read
+
+.pull-left[
+```{r databases-27 }
+df_pixar_films_202x <-
+  pixar_films %>%
+  filter(release_date >= "2020-01-01") %>%
+  collect()
+df_pixar_films_202x
+```
+]
+
+.pull-right[
+## Data on the database not affected
+
+```{r databases-28 }
+pixar_films %>%
+  collect()
+```
+]
+
+---
+
+# Aggregate
+
+With `group_by()` + `summarize()` + `ungroup()`, like with data frames.
+
+.pull-left[
+```{r databases-29 }
+pixar_films %>%
+  group_by(film_rating) %>%
+  summarize(n = n()) %>%
+  ungroup()
+```
+]
+
+.pull-right[
+## Under the hood
+
+```{r databases-30 }
+pixar_films %>%
+  group_by(film_rating) %>%
+  summarize(n = n()) %>%
+  ungroup() %>%
+  show_query()
+```
+]
+
+---
+
+# Aggregate
+
+With `count()`, like with data frames.
+
+.pull-left[
+```{r databases-31 }
+pixar_films %>%
+  #
+  #
+  count(film_rating)
+```
+]
+
+.pull-right[
+## Under the hood
+
+```{r databases-32 }
+pixar_films %>%
+  #
+  #
+  count(film_rating) %>%
+  show_query()
+```
+]
+
+---
+
+# Aggregate and read
+
+.pull-left[
+```{r databases-33 }
+df_pixar_films_by_rating <-
+  pixar_films %>%
+  count(film_rating) %>%
+  collect()
+df_pixar_films_by_rating
+```
+]
+
+.pull-right[
+## Data on the database not affected
+
+```{r databases-34 }
+pixar_films %>%
+  collect()
+```
+]
+
+---
+
+background-image: url("images/12-frame.webp")
+background-size: 40%
+background-position: 100% 100%
+
+# Downsizing on the database: Exercises 1
+
+*  Find several ways to select the 3 first columns
+*  What happens if you include the name of a variable multiple times in a `select()` call?
+*  Select all columns that contain underscores (use `contains()`)
+*  Use `all_of()` to select 2 columns of your choice
+
+---
+
+background-image: url("images/12-frame.webp")
+background-size: 40%
+background-position: 100% 100%
+
+# Downsizing on the database: Exercises 2
+
+.pull-left[
+Find all films that
+1. Are rated "PG"
+2. Had a run time below 95
+3. Had a rating of "N/A" or "Not Rated"
+4. Were released after and including year 2020
+5. Have a missing name (`film` column) or `run_time`
+6. Are a first sequel (the name ends with "2")
+    - Hint: Bring the data into the R session before filtering
+]
+
+---
+
+background-image: url("images/12-frame.webp")
+background-size: 40%
+background-position: 100% 100%
+
+# Downsizing on the database: Exercises 3
+
+1. How many films are stored in the table?
+2. How many films released after 2005 are stored in the table?
+3. What is the total run time of all films?
+    - Hint: Use `summarize(sum(...))`, watch out for the warning
+4. What is the total run time of all films, per rating?
+    - Hint: Use `group_by()`
+
+---
+
+# Schedule
+
+Extract ⇨ Transform ⇨ Load ⇨ Consume
+
+.pull-left[
+## One table
+
+- Read whole tables
+- **Let the database do the heavy lifting 2/2**
+- Basic ETL for one table
+- Subtle issues to watch out for
+]
+
+.pull-right[
+## Multiple tables
+
+- Joins
+- The {dm} package
+- A bit of theory
+- Playing the whole game
+]
+
+## Bonus: Bring your own data + questions
+
+---
+
+background-image: url("images/12_2.webp")
+background-size: 40%
+background-position: 100% 100%
+
+# Computing on the database
+
+.pull-left[
+- {dbplyr} package (part of the tidyverse)
+- `mutate()`
+- `arrange()`
+- Grouped `summarize()` / `mutate()`
+
+Script: `databases_12_2.R`
+
+```{r databases-35 }
+library(tidyverse)
+```
+]
+
+---
+
+background-image: url("images/12_2-frame.webp")
+background-size: 40%
+background-position: 100% 100%
+
+# Computing on the database
+
+.pull-left[
+- {dbplyr} package (part of the tidyverse)
+- `mutate()`
+- `arrange()`
+- Grouped `summarize()` / `mutate()`
+
+Script: `databases_12_2.R`
+
+```{r databases-36 }
+library(tidyverse)
+```
+]
+
+---
+
+# Transform
+
+With `mutate()`, like with data frames.
+
+.pull-left[
+```{r databases-37 }
+pixar_films %>%
+  select(film, release_date) %>% 
+  mutate(release_year = year(release_date))
+```
+]
+
+.pull-right[
+## Under the hood
+
+```{r databases-38 }
+pixar_films %>%
+  select(film, release_date) %>% 
+  mutate(release_year = year(release_date)) %>%
+  show_query()
+```
+]
+
+---
+
+# Transform and read
+
+.pull-left[
+```{r databases-39 }
+df_pixar_films_with_release_year <-
+  pixar_films %>%
+  select(film, release_date) %>% 
+  mutate(release_year = year(release_date)) %>%
+  collect()
+df_pixar_films_with_release_year
+```
+]
+
+.pull-right[
+## Data on the database not affected
+
+```{r databases-40 }
+pixar_films %>%
+  collect()
+```
+]
+
+---
+
+# Aggregate (complex)
+
+With `group_by()` + `summarize()` + `ungroup()`, like with data frames.
+
+.pull-left[
+```{r databases-41 }
+pixar_films %>%
+  group_by(film_rating) %>%
+  summarize(mean_run_time = mean(run_time)) %>%
+  ungroup()
+```
+]
+
+.pull-right[
+## Under the hood
+
+```{r databases-42 }
+pixar_films %>%
+  group_by(film_rating) %>%
+  summarize(mean_run_time = mean(run_time)) %>%
+  ungroup() %>% 
+  show_query()
+```
+]
+
+---
+
+# Transform and aggregate
+
+With `count()`, like with data frames.
+
+.pull-left[
+```{r databases-43 }
+pixar_films %>%
+  count(release_year = year(release_date))
+```
+]
+
+.pull-right[
+## Under the hood
+
+```{r databases-44 }
+pixar_films %>%
+  mutate(release_year = year(release_date)) %>%
+  count(release_year) %>%
+  show_query()
+```
+]
+
+---
+
+# In-place aggregate (window functions)
+
+With `add_count()`, like with data frames.
+
+.pull-left[
+```{r databases-45 }
+pixar_films %>%
+  add_count(release_year = year(release_date)) %>%
+  filter(n > 1) %>%
+  select(film, release_year, n) %>% 
+  arrange(release_date)
+```
+]
+
+.pull-right[
+## Under the hood
+
+```{r databases-46 }
+pixar_films %>%
+  add_count(release_year = year(release_date)) %>%
+  filter(n > 1) %>%
+  arrange(release_date) %>% 
+  select(film, release_year, n) %>% 
+  show_query()
+```
+]
+
+---
+
+background-image: url("images/12_2-frame.webp")
+background-size: 40%
+background-position: 100% 100%
+
+# Computing on the database: Exercises
+
+.pull-left[
+1. Add new columns `release_year` and `release_month`.
+2. Use the new columns to compute the number of months since January 1970
+   for each film
+3. Compute the overall median run time, and the median run time per film rating
+4. For each film except the last, compute how many days have passed until the next film.
+    - Hint: Use `lag(..., order_by = ...)`
+]
+
+.pull-right[
+5. Find the maximum number of days between releases of two G and two PG films.
+]
+
+---
+
+# Schedule
+
+Extract ⇨ Transform ⇨ Load ⇨ Consume
+
+.pull-left[
+## One table
+
+- Read whole tables
+- Let the database do the heavy lifting
+- **Basic ETL for one table**
+- Subtle issues to watch out for
+]
+
+.pull-right[
+## Multiple tables
+
+- Joins
+- The {dm} package
+- A bit of theory
+- Playing the whole game
+]
+
+## Bonus: Bring your own data + questions
+
+---
+
+background-image: url("images/13.webp")
+background-size: 40%
+background-position: 100% 100%
+
+# Extract, Transform, Load
+
+.pull-left[
+- Obtain raw data
+- Prepare database table
+- Write it to a new database
+- Consume
+
+Script: `databases_13.R`
+
+```{r databases-47 }
+library(tidyverse)
+```
+]
+
+---
+
+background-image: url("images/13-frame.webp")
+background-size: 40%
+background-position: 100% 100%
+
+# Extract, Transform, Load
+
+.pull-left[
+- Obtain raw data
+- Prepare database table
+- Write it to a new database
+- Consume
+
+Script: `databases_13.R`
+
+```{r databases-48 }
+library(tidyverse)
+```
+]
+
+---
+
+# Extract: Raw data
+
+From arbitrary source: CSV, Excel, web API, other database, ...
+
+```{r databases-49 }
+pixar_films_raw <- pixarfilms::pixar_films
+pixar_films_raw
+```
+
+---
+
+background-image: url("images/magic-hat-and-wand-nath-r.svg")
+background-size: 25%
+background-position: 100% 100%
+
+# Transform: Derived data
+
+- Fix type of `number` column
+- Extract `franchise` and `sequel` columns
+
+```{r databases-50, echo = FALSE}
+pixar_films_clean <-
+  pixar_films_raw %>%
+  separate(film, into = c("franchise", "sequel"),
+    sep = " (?=[0-9]+$)", fill = "right", remove = FALSE
+  ) %>%
+  mutate(across(c(number, sequel), as.integer)) %>%
+  group_by(franchise) %>%
+  mutate(sequel = if_else(is.na(sequel) & n() > 1, 1L, sequel)) %>%
+  ungroup()
+old <- options(width = 100)
+```
+
+```{r databases-51 }
+pixar_films_clean
+```
+
+```{r databases-52, echo = FALSE}
+options(old)
+```
+
+
+---
+
+# Create target database
+
+Depending on workflow, often an existing database is used.
+
+```{r databases-53 }
+db_path <- fs::path_abs("pixar.duckdb")
+db_path
+```
+
+```{r databases-54, message = FALSE}
+fs::file_delete(db_path)
+con <- dbConnect(duckdb::duckdb(dbdir = db_path))
+con
+```
+
+```
+<duckdb_connection b1490 driver=<duckdb_driver b5870 dbdir='/Users/kirill/git/cynkra/bag/bag-courses/5_databases/pixar.duckdb' read_only=FALSE>>
+```
+
+---
+
+# Load: Write table to the database
+
+```{r databases-55 }
+dbWriteTable(con, "pixar_films", pixar_films_clean)
+dbExecute(con, "CREATE UNIQUE INDEX pixarfilms_pk ON pixar_films (film)")
+nrow(dbReadTable(con, "pixar_films"))
+dbDisconnect(con)
+```
+
+---
+
+# Consume: share the file, open it
+
+.pull-left[
+```{r databases-56 }
+fs::dir_info() %>%
+  arrange(desc(birth_time)) %>%
+  head(2)
+```
+]
+
+.pull-right[
+```{r databases-57 }
+con <- dbConnect(duckdb::duckdb(dbdir = db_path, read_only = TRUE))
+my_pixar_films <- tbl(con, "pixar_films")
+my_pixar_films
+```
+]
+
+---
+
+background-image: url("images/13-frame.webp")
+background-size: 40%
+background-position: 100% 100%
+
+# Exercises
+
+1. Adapt the ETL workflow to convert the `run_time` column to a duration.
+   - Hint: Use `mutate()` with `hms::hms(minutes = ...)` .
+2. Re-run the workflow.
+
+---
+
+# Schedule
+
+Extract ⇨ Transform ⇨ Load ⇨ Consume
+
+.pull-left[
+## One table
+
+- Read whole tables
+- Let the database do the heavy lifting
+- Basic ETL for one table
+- **Subtle issues to watch out for**
+]
+
+.pull-right[
+## Multiple tables
+
+- Joins
+- The {dm} package
+- A bit of theory
+- Playing the whole game
+]
+
+## Bonus: Bring your own data + questions
+
+---
+
+background-image: url("images/14.webp")
+background-size: 40%
+background-position: 100% 100%
+
+# Caveats
+
+.pull-left[
+- Lazy tables vs. data frames/tibbles
+- Order
+- Logical/Boolean data type
+- Imperfect translation
+- Materialization
+
+Script: `databases_14.R`
+
+```{r databases-58 }
+library(tidyverse)
+```
+]
+
+---
+
+background-image: url("images/14-frame.webp")
+background-size: 40%
+background-position: 100% 100%
+
+# Caveats
+
+.pull-left[
+- Differences between database backends
+- Lazy tables vs. data frames/tibbles
+- Order
+- Logical/Boolean data type
+- Imperfect translation
+- Materialization
+
+Script: `databases_14.R`
+
+```{r databases-59 }
+library(tidyverse)
+```
+]
+
+---
+
+background-image: url("images/magic-hat-and-wand-nath-r.svg")
+background-size: 25%
+background-position: 100% 100%
+
+# Prepare SQLite database
+
+Very similar to DuckDB, subtle differences.
+
+```{r databases-60, cache=FALSE}
+con_sqlite <- DBI::dbConnect(RSQLite::SQLite(), extended_types = TRUE)
+dm::copy_dm_to(
+  con_sqlite,
+  dm::dm_pixarfilms(),
+  set_key_constraints = FALSE,
+  temporary = FALSE
+)
+```
+
+---
+
+# SQLite table
+
+```{r databases-61, cache = FALSE}
+pixar_films_sqlite <- tbl(con_sqlite, "pixar_films")
+pixar_films_sqlite
+```
+
+---
+
+# Lazy tables are not data frames
+
+The bracket operators `[` and `[[` don't work.
+
+.pull-left[
+## Bad
+
+```{r databases-62 }
+pixar_films[c("film", "film_rating")]
+```
+]
+
+.pull-right[
+
+## Good
+
+```{r databases-63 }
+pixar_films %>%
+  select(film, film_rating)
+```
+]
+
+---
+
+# Lazy tables are not data frames
+
+Concatenation requires `union_all()`.
+
+.pull-left[
+## Bad
+
+```{r databases-64 }
+try(
+  bind_rows(pixar_films, pixar_films)
+)
+```
+]
+
+.pull-right[
+
+## Good
+
+```{r databases-65 }
+union_all(pixar_films, pixar_films) %>%
+  arrange(release_date)
+```
+]
+
+---
+
+# Lazy tables are not data frames
+
+The bracket operator `[` doesn't work for row subsetting.
+
+.pull-left[
+## Bad
+
+```{r databases-66 }
+try(
+  pixar_films[1:3, ]
+)
+```
+]
+
+.pull-right[
+## Still bad
+
+```{r databases-67 }
+df_pixar_films <-
+  pixar_films %>%
+  collect()
+df_pixar_films[1:3, ]
+```
+]
+
+---
+
+# Lazy tables are set-oriented
+
+No intrinsic order, `slice()` doesn't work.
+
+.pull-left[
+## Bad
+
+```{r databases-68 }
+try(
+  pixar_films %>%
+    slice(1:3)
+)
+```
+]
+
+.pull-right[
+## Better
+
+```{r databases-69 }
+pixar_films %>%
+  filter(between(row_number(), 1, 3))
+```
+]
+
+---
+
+# Lazy tables are set-oriented
+
+Introduce row numbering via `row_number()` (based on a specific order) as a replacement for `slice()`.
+
+.pull-left[
+```{r databases-70 }
+pixar_films %>%
+  filter(between(row_number(release_date), 1, 3))
+```
+]
+
+.pull-right[
+```{r databases-71 }
+pixar_films %>%
+  dbplyr::window_order(release_date) %>%
+  filter(between(row_number(), 1, 3))
+```
+]
+
+---
+
+# Lazy tables are set-oriented
+
+Use the `order_by` argument or `dbplyr::window_order()` (but not `arrange()`) to set the order in `cumsum()`, `lag()` etc..
+
+.pull-left[
+## Bad
+
+```{r databases-72 }
+try(
+  pixar_films %>%
+    group_by(film_rating) %>%
+    mutate(total_run_time = cumsum(run_time)) %>%
+    ungroup()
+)
+```
+]
+
+.pull-right[
+
+## Good
+
+```{r databases-73 }
+pixar_films %>%
+  group_by(film_rating) %>%
+  dbplyr::window_order(release_date) %>%
+  mutate(total_run_time = cumsum(run_time)) %>%
+  ungroup()
+```
+]
+
+---
+
+# Lazy tables are set-oriented
+
+Use `arrange()` to fix the order, but only at the end of a query!
+
+.pull-left[
+## Bad
+
+```{r databases-74 }
+pixar_films %>%
+  arrange(film) %>%
+  mutate(run_time_hr = run_time / 60) %>%
+  filter(run_time_hr < 2)
+```
+]
+
+.pull-right[
+
+## Good
+
+```{r databases-75 }
+pixar_films %>%
+  mutate(run_time_hr = run_time / 60) %>%
+  filter(run_time_hr < 2) %>%
+  arrange(film)
+```
+]
+
+---
+
+# Sort order of missing values
+
+`NA` sort last in data frames, but first on databases.
+
+.pull-left[
+```{r databases-76 }
+pixar_films %>%
+  arrange(run_time)
+```
+]
+
+.pull-right[
+```{r databases-77 }
+pixar_films %>%
+  arrange(is.na(run_time), run_time)
+```
+]
+
+---
+
+# Logical/Boolean data type
+
+Support differs across databases.
+
+.pull-left[
+## DuckDB
+
+```{r databases-78 }
+pixar_films %>%
+  count(film_rating == "PG")
+```
+]
+
+.pull-right[
+## SQLite
+```{r databases-79 }
+pixar_films_sqlite %>%
+  count(film_rating == "PG")
+```
+]
+
+---
+
+# Logical/Boolean data type
+
+Use `if_else()` or `case_when()` if in doubt.
+
+.pull-left[
+## SQLite
+```{r databases-80 }
+pixar_films_sqlite %>%
+  count(film_rating == "PG")
+```
+]
+
+.pull-right[
+## SQL Server (universal)
+
+```{r databases-81 }
+pixar_films_sqlite %>%
+  count(if_else(film_rating == "PG", 1L, 0L))
+```
+]
+
+---
+
+# Imperfect translations
+
+Numeric values always use a decimal point.
+
+.pull-left[
+## Numeric
+
+```{r databases-82 }
+pixar_films %>%
+  filter(run_time < 120) %>%
+  show_query()
+```
+]
+
+.pull-right[
+## Integer
+
+```{r databases-83 }
+pixar_films %>%
+  filter(run_time < 120L) %>%
+  show_query()
+```
+]
+
+---
+
+# Imperfect translations
+
+Not all R functions are supported.
+
+.pull-left[
+```{r databases-84 }
+try(
+  pixar_films %>%
+    filter(grepl("^Toy", film)) %>%
+    print()
+)
+```
+]
+
+.pull-right[
+```{r databases-85 }
+try(
+  pixar_films %>%
+    filter(str_detect(film, "^Toy")) %>%
+    print()
+)
+```
+]
+
+---
+
+# Imperfect translations
+
+Unknown functions and operators are passed on verbatim.
+
+.pull-left[
+## Lazy table
+
+```{r databases-86 }
+pixar_films %>%
+  filter(film %LIKE% "Toy%")
+```
+]
+
+.pull-right[
+## Data frame
+
+```{r databases-87 }
+try(
+  pixar_films %>%
+    collect() %>%
+    filter(film %LIKE% "Toy%")
+)
+```
+]
+
+---
+
+# Imperfect translations
+
+Unknown functions and operators are passed on verbatim.
+
+.pull-left[
+## Lazy table
+
+```{r databases-88 }
+pixar_films %>%
+  summarize(MAX(run_time))
+```
+]
+
+.pull-right[
+## Data frame
+
+```{r databases-89 }
+try(
+  pixar_films %>%
+    collect() %>%
+    summarize(MAX(run_time))
+)
+```
+]
+
+---
+
+# Imperfect translations
+
+Aggregation functions don't support `na.rm = FALSE` (the default in R).
+
+.pull-left[
+## Warning
+
+```{r databases-90 }
+pixar_films %>%
+  summarize(total_run_time = sum(run_time)) %>%
+  show_query()
+```
+]
+
+.pull-right[
+## Hackaround
+
+```{r databases-91 }
+pixar_films %>%
+  summarize(total_run_time = SUM(run_time)) %>%
+  show_query()
+```
+]
+
+---
+
+# Imperfect translations
+
+Escape hatch: `sql()` to pass through arbitrary SQL.
+
+.pull-left[
+## Fine-grained
+
+```{r databases-92 }
+pixar_films %>%
+  mutate(number = CAST(number %AS% sql("integer")))
+```
+]
+
+.pull-right[
+## Everything
+
+```{r databases-93 }
+pixar_films %>%
+  mutate(number = CAST(number %AS% sql("integer")))
+```
+]
+
+---
+
+# Imperfect translations
+
+On the up side: `sql()` is rarely needed.
+
+
+.pull-left[
+## Manual
+
+```{r databases-94 }
+pixar_films %>%
+  transmute(number = CAST(number %AS% sql("integer"))) %>%
+  show_query()
+```
+]
+
+.pull-right[
+## Translated
+
+```{r databases-95 }
+pixar_films %>%
+  transmute(number = as.integer(number)) %>% 
+  show_query()
+```
+]
+
+---
+
+# Lazy tables are recomputed on every access
+
+Saving to a variable doesn't help.
+
+.pull-left[
+```{r databases-96 }
+films_two_per_year <-
+  pixar_films %>%
+  transmute(film, y = year(release_date)) %>% 
+  add_count(y) %>%
+  filter(n > 1)
+
+films_two_per_year %>%
+  show_query()
+```
+]
+
+.pull-right[
+```{r databases-97 }
+films_two_per_year %>%
+  arrange(release_date) %>%
+  show_query()
+```
+]
+
+---
+
+# Materialize temporary results
+
+Remedy: materialize with `compute()`. Requires write access to the database (at least for temporary tables).
+
+.pull-left[
+```{r databases-98 }
+films_two_per_year_mat <-
+  films_two_per_year %>%
+  compute(unique_indexes = list(c("film")))
+
+films_two_per_year_mat
+```
+]
+
+.pull-right[
+```{r databases-99 }
+films_two_per_year_mat %>%
+  arrange(release_date) %>%
+  show_query()
+```
+]
+
+---
+
+background-image: url("images/14-frame.webp")
+background-size: 40%
+background-position: 100% 100%
+
+# Exercises
+
+1. Experiment.
