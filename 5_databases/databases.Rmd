@@ -974,7 +974,7 @@ library(tidyverse)
 
 From arbitrary source: CSV, Excel, web API, other database, ...
 
-```{r}
+```{r databases-49}
 pixar_films_raw <- pixarfilms::pixar_films
 pixar_films_raw
 ```
@@ -990,7 +990,7 @@ background-position: 100% 100%
 - Fix type of `number` column
 - Extract `franchise` and `sequel` columns
 
-```{r echo = FALSE}
+```{r databases-50, echo = FALSE}
 pixar_films_clean <-
   pixar_films_raw %>%
   separate(film, into = c("franchise", "sequel"),
@@ -1003,11 +1003,11 @@ pixar_films_clean <-
 old <- options(width = 100)
 ```
 
-```{r}
+```{r databases-51}
 pixar_films_clean
 ```
 
-```{r echo = FALSE}
+```{r databases-52, echo = FALSE}
 options(old)
 ```
 
@@ -1018,12 +1018,12 @@ options(old)
 
 Depending on workflow, often an existing database is used.
 
-```{r}
+```{r databases-53}
 db_path <- fs::path_abs("pixar.duckdb")
 db_path
 ```
 
-```{r message = FALSE}
+```{r databases-54, message = FALSE}
 fs::file_delete(db_path)
 con <- dbConnect(duckdb::duckdb(dbdir = db_path))
 con
@@ -1037,7 +1037,7 @@ con
 
 # Load: Write table to the database
 
-```{r}
+```{r databases-55}
 dbWriteTable(con, "pixar_films", pixar_films_clean)
 dbExecute(con, "CREATE UNIQUE INDEX pixarfilms_pk ON pixar_films (film)")
 nrow(dbReadTable(con, "pixar_films"))
@@ -1049,7 +1049,7 @@ dbDisconnect(con)
 # Consume: share the file, open it
 
 .pull-left[
-```{r}
+```{r databases-56}
 fs::dir_info() %>%
   arrange(desc(birth_time)) %>%
   head(2)
@@ -1057,7 +1057,7 @@ fs::dir_info() %>%
 ]
 
 .pull-right[
-```{r}
+```{r databases-57}
 con <- dbConnect(duckdb::duckdb(dbdir = db_path, read_only = TRUE))
 pixar_films <- tbl(con, "pixar_films")
 pixar_films
