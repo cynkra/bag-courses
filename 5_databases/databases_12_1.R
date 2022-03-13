@@ -19,6 +19,14 @@ dm::copy_dm_to(con_duckdb, dm::dm_pixarfilms(), set_key_constraints = FALSE, tem
 # Lazy tables ------------------------------------------------------------------
 
 pixar_films <- tbl(con_duckdb, "pixar_films")
+pixar_films
+
+# Get all data ----
+
+df_pixar_films <-
+  pixar_films %>%
+  collect()
+df_pixar_films
 
 # Projection (column selection)  -----------------------------------------------
 
