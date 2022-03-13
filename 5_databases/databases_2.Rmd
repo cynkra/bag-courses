@@ -51,12 +51,12 @@ options(cli.num_colors = 256)
 fansi::set_knit_hooks(knitr::knit_hooks, c("output", "message", "warning", "error"))
 ```
 
-```{r databases-2-2, results='hide', message=FALSE, cache = FALSE}
+```{r databases-2-2, results='hide', message=FALSE, cache = FALSE, include = FALSE}
 con_duckdb <- dbConnect(duckdb::duckdb())
 con_duckdb
 ```
 
-```{r databases-2-3, cache = FALSE}
+```{r databases-2-3, cache = FALSE, include = FALSE}
 dm::copy_dm_to(
   con_duckdb,
   dm::dm_pixarfilms(),
@@ -65,12 +65,12 @@ dm::copy_dm_to(
 )
 ```
 
-```{r databases-2-4, cache = FALSE}
+```{r databases-2-4, cache = FALSE, include = FALSE}
 pixar_films <- tbl(con_duckdb, "pixar_films")
 pixar_films
 ```
 
-```{r databases-2-5, cache = FALSE}
+```{r databases-2-5, cache = FALSE, include = FALSE}
 con_sqlite <- DBI::dbConnect(RSQLite::SQLite(), extended_types = TRUE)
 dm::copy_dm_to(
   con_sqlite,
@@ -80,7 +80,75 @@ dm::copy_dm_to(
 )
 ```
 
-```{r databases-2-6, cache = FALSE}
+```{r databases-2-6, cache = FALSE, include = FALSE}
 pixar_films_sqlite <- tbl(con_sqlite, "pixar_films")
 pixar_films_sqlite
 ```
+
+---
+
+# Schedule
+
+Extract ⇨ Transform ⇨ Load ⇨ Consume
+
+.pull-left[
+## One table
+
+- Read whole tables
+- Let the database do the heavy lifting
+- Basic ETL for one table
+- Subtle issues to watch out for
+]
+
+.pull-right[
+## Multiple tables
+
+- **Joins**
+- The {dm} package
+- A bit of theory
+- Playing the whole game
+]
+
+## Bonus: Bring your own data + questions
+
+---
+
+background-image: url("images/21.webp")
+background-size: 40%
+background-position: 100% 100%
+
+# Joins
+
+.pull-left[
+- Usage
+- Join sources
+- Mounting
+
+Script: `databases_21.R`
+
+```{r databases-2-7 }
+library(tidyverse)
+```
+]
+
+---
+
+background-image: url("images/21-frame.webp")
+background-size: 40%
+background-position: 100% 100%
+
+# Joins
+
+.pull-left[
+- Usage
+- Join sources
+- Mounting
+
+Script: `databases_21.R`
+
+```{r databases-2-8 }
+library(tidyverse)
+```
+]
+
+---

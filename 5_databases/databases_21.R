@@ -90,6 +90,8 @@ try(
 pixarfilms::academy %>%
   left_join(pixar_films, by = "film", copy = TRUE)
 
+# FIXME: Mount data frames into DuckDB
+
 # ETL, revisited ---------------------------------------------------------------
 
 db_path <- fs::path_abs("pixar.duckdb")
