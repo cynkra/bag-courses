@@ -115,8 +115,8 @@ Extract ⇨ Transform ⇨ Load ⇨ Consume
 
 - Read whole tables
 - Let the database do the heavy lifting
-- Subtle issues to watch out for
 - Basic ETL for one table
+- Subtle issues to watch out for
 ]
 
 .pull-right[
@@ -141,8 +141,8 @@ Extract ⇨ Transform ⇨ Load ⇨ Consume
 
 - **Read whole tables**
 - Let the database do the heavy lifting
-- Subtle issues to watch out for
 - Basic ETL for one table
+- Subtle issues to watch out for
 ]
 
 .pull-right[
@@ -383,8 +383,8 @@ Extract ⇨ Transform ⇨ Load ⇨ Consume
 
 - Read whole tables
 - **Let the database do the heavy lifting**
-- Subtle issues to watch out for
 - Basic ETL for one table
+- Subtle issues to watch out for
 ]
 
 .pull-right[
