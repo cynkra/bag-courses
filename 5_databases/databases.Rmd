@@ -1075,3 +1075,75 @@ background-position: 100% 100%
 1. Adapt the ETL workflow to convert the `run_time` column to a duration.
    - Hint: Use `mutate()` with `hms::hms(minutes = ...)` .
 2. Re-run the workflow.
+
+---
+
+# Schedule
+
+Extract ⇨ Transform ⇨ Load ⇨ Consume
+
+.pull-left[
+## One table
+
+- Read whole tables
+- Let the database do the heavy lifting
+- Basic ETL for one table
+- **Subtle issues to watch out for**
+]
+
+.pull-right[
+## Multiple tables
+
+- Joins
+- The {dm} package
+- A bit of theory
+- Playing the whole game
+]
+
+## Bonus: Bring your own data + questions
+
+---
+
+background-image: url("images/14.webp")
+background-size: 40%
+background-position: 100% 100%
+
+# Caveats
+
+.pull-left[
+- Lazy tables vs. data frames/tibbles
+- Order
+- Logical/Boolean data type
+- Imperfect translation
+- Materialization
+
+Script: `databases_14.R`
+
+```{r databases-353 }
+library(tidyverse)
+```
+]
+
+---
+
+background-image: url("images/14-frame.webp")
+background-size: 40%
+background-position: 100% 100%
+
+# Caveats
+
+.pull-left[
+- Lazy tables vs. data frames/tibbles
+- Order
+- Logical/Boolean data type
+- Imperfect translation
+- Materialization
+
+Script: `databases_14.R`
+
+```{r databases-354 }
+library(tidyverse)
+```
+]
+
+---
