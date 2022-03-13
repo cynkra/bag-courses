@@ -152,7 +152,7 @@ Extract ⇨ Transform ⇨ Load ⇨ Consume
 
 Script: `databases_11.R`
 
-```{r}
+```{r databases-1}
 library(tidyverse)
 library(DBI)
 ```
@@ -163,7 +163,7 @@ library(DBI)
 
 First step when accessing the database.
 
-```{r}
+```{r databases-2}
 con_duckdb <- dbConnect(duckdb::duckdb())
 con_duckdb
 ```
@@ -182,7 +182,7 @@ Normally done in a preparatory step.
 
 insert: bunny
 
-```{r}
+```{r databases-3}
 dm::copy_dm_to(
   con_duckdb,
   dm::dm_pixarfilms(),
@@ -197,7 +197,7 @@ dm::copy_dm_to(
 
 Where is my data?
 
-```{r}
+```{r databases-4}
 dbListTables(con_duckdb)
 dbListFields(con_duckdb, "pixar_films")
 ```
@@ -214,7 +214,7 @@ SELECT * FROM INFORMATION_SCHEMA.TABLES
 
 Read entire tables into your local session, if you can afford it.
 
-```{r}
+```{r databases-5}
 df_pixar_films <- dbReadTable(con_duckdb, "pixar_films")
 df_pixar_films
 ```
@@ -226,7 +226,7 @@ df_pixar_films
 Use `as_tibble()` to convert to a tibble for better display
 and more robust operation.
 
-```{r}
+```{r databases-6}
 df_pixar_films <- dbReadTable(con_duckdb, "pixar_films")
 as_tibble(df_pixar_films)
 ```
@@ -237,7 +237,7 @@ as_tibble(df_pixar_films)
 
 Write SQL code to define what data you want to see.
 
-```{r}
+```{r databases-7}
 dbGetQuery(con_duckdb, "SELECT * FROM pixar_films")
 ```
 
@@ -247,14 +247,14 @@ dbGetQuery(con_duckdb, "SELECT * FROM pixar_films")
 
 Write complex SQL code to define what data you want to see.
 
-```{r}
+```{r databases-8}
 sql <- "
 SELECT * FROM pixar_films
 WHERE release_date >= '2020-01-01'
 "
 ```
 
-```{r}
+```{r databases-9}
 dbGetQuery(con_duckdb, sql)
 ```
 
@@ -264,14 +264,14 @@ dbGetQuery(con_duckdb, sql)
 
 R 4.0 or later: use new-style string literals for mixing quotes.
 
-```{r eval = FALSE}
+```{r databases-10, eval = FALSE}
 sql <- r"(
 SELECT * FROM "pixar_films"
 WHERE "release_date" >= '2020-01-01'
 )"
 ```
 
-```{r}
+```{r databases-11}
 dbGetQuery(con_duckdb, sql)
 ```
 
@@ -281,7 +281,7 @@ dbGetQuery(con_duckdb, sql)
 
 insert: bunny
 
-```{r}
+```{r databases-12}
 dbQuoteIdentifier(con_duckdb, "academy")
 dbQuoteLiteral(con_duckdb, "Toy Story")
 dbQuoteLiteral(con_duckdb, as.Date("2020-01-01"))
@@ -293,7 +293,7 @@ dbQuoteLiteral(con_duckdb, as.Date("2020-01-01"))
 
 insert: bunny
 
-```{r}
+```{r databases-13}
 sql <- "SELECT count(*) FROM pixar_films WHERE release_date >= ?"
 dbGetQuery(con_duckdb, sql, params = list(as.Date("2020-01-01")))
 ```
