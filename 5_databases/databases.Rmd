@@ -188,12 +188,6 @@ con_duckdb
 ## <duckdb_connection 0faa0 driver=<duckdb_driver 22170 dbdir=':memory:' read_only=FALSE>>
 ```
 
-insert: duckdb logo, other database logos
-
----
-
-insert: major boring shit
-
 ---
 
 background-image: url("images/magic-hat-and-wand-nath-r.svg")
