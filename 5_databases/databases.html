@@ -182,12 +182,6 @@ con_duckdb
 ## &lt;duckdb_connection 0faa0 driver=&lt;duckdb_driver 22170 dbdir=&#39;:memory:&#39; read_only=FALSE&gt;&gt;
 ```
 
-insert: duckdb logo, other database logos
-
----
-
-insert: major boring shit
-
 ---
 
 background-image: url(&quot;data:image/png;base64,#images/magic-hat-and-wand-nath-r.svg&quot;)
@@ -432,6 +426,11 @@ dbQuoteLiteral(con_duckdb, as.Date(&quot;2020-01-01&quot;))
 ```
 ## &lt;SQL&gt; &#39;2020-01-01&#39;::date
 ```
+
+
+```r
+glue::glue_sql(...)
+```
 ]
 
 .pull-right[
@@ -453,6 +452,495 @@ dbGetQuery(con_duckdb, sql,
 ## 1            6
 ```
 ]
+
+---
+
+# Read whole tables: Exercises
+
+1. List all columns from the `box_office` table.
+2. Read the `academy` table.
+3. Read all records from the `academy` table that correspond to awards won
+    - Hint: Use the query `&quot;SELECT * FROM academy WHERE status = &#39;Won&#39;&quot;`
+4. Use quoting and/or query parameters to stabilize the previous query.
+
+---
+
+# Schedule
+
+Extract ⇨ Transform ⇨ Load ⇨ Consume
+
+.pull-left[
+## One table
+
+- Read whole tables
+- **Let the database do the heavy lifting**
+- Subtle issues to watch out for
+- Basic ETL for one table
+]
+
+.pull-right[
+## Multiple tables
+
+- Joins
+- The {dm} package
+- A bit of theory
+- Playing the whole game
+]
+
+## Bonus: Bring your own data + questions
+
+---
+
+# Downsizing on the database
+
+- {dbplyr} package (part of the tidyverse)
+- Lazy tables
+- `collect()`
+- `select()`
+- `filter()`
+- `group_by()`, `summarize()`, `ungroup()`, `count()`
+
+Script: `databases_12_1.R`
+
+
+```r
+library(tidyverse)
+```
+
+
+---
+
+# Lazy tables
+
+A pointer to a SQL table. The data is still on the database!
+
+
+```r
+pixar_films &lt;- tbl(con_duckdb, &quot;pixar_films&quot;)
+pixar_films
+```
+
+&lt;PRE class=&quot;fansi fansi-output&quot;&gt;&lt;CODE&gt;## &lt;span style=&#39;color: #949494;&#39;&gt;# Source:   table&amp;lt;pixar_films&amp;gt; [?? x 5]&lt;/span&gt;
+## &lt;span style=&#39;color: #949494;&#39;&gt;# Database: duckdb_connection&lt;/span&gt;
+##    &lt;span style=&#39;font-weight: bold;&#39;&gt;number&lt;/span&gt; &lt;span style=&#39;font-weight: bold;&#39;&gt;film&lt;/span&gt;            &lt;span style=&#39;font-weight: bold;&#39;&gt;release_date&lt;/span&gt; &lt;span style=&#39;font-weight: bold;&#39;&gt;run_time&lt;/span&gt; &lt;span style=&#39;font-weight: bold;&#39;&gt;film_rating&lt;/span&gt;
+##    &lt;span style=&#39;color: #949494; font-style: italic;&#39;&gt;&amp;lt;chr&amp;gt;&lt;/span&gt;  &lt;span style=&#39;color: #949494; font-style: italic;&#39;&gt;&amp;lt;chr&amp;gt;&lt;/span&gt;           &lt;span style=&#39;color: #949494; font-style: italic;&#39;&gt;&amp;lt;date&amp;gt;&lt;/span&gt;          &lt;span style=&#39;color: #949494; font-style: italic;&#39;&gt;&amp;lt;dbl&amp;gt;&lt;/span&gt; &lt;span style=&#39;color: #949494; font-style: italic;&#39;&gt;&amp;lt;chr&amp;gt;&lt;/span&gt;      
+## &lt;span style=&#39;color: #BCBCBC;&#39;&gt; 1&lt;/span&gt; 1      Toy Story       1995-11-22         81 G          
+## &lt;span style=&#39;color: #BCBCBC;&#39;&gt; 2&lt;/span&gt; 2      A Bug&amp;#039;s Life    1998-11-25         95 G          
+## &lt;span style=&#39;color: #BCBCBC;&#39;&gt; 3&lt;/span&gt; 3      Toy Story 2     1999-11-24         92 G          
+## &lt;span style=&#39;color: #BCBCBC;&#39;&gt; 4&lt;/span&gt; 4      Monsters, Inc.  2001-11-02         92 G          
+## &lt;span style=&#39;color: #BCBCBC;&#39;&gt; 5&lt;/span&gt; 5      Finding Nemo    2003-05-30        100 G          
+## &lt;span style=&#39;color: #BCBCBC;&#39;&gt; 6&lt;/span&gt; 6      The Incredibles 2004-11-05        115 PG         
+## &lt;span style=&#39;color: #BCBCBC;&#39;&gt; 7&lt;/span&gt; 7      Cars            2006-06-09        117 G          
+## &lt;span style=&#39;color: #BCBCBC;&#39;&gt; 8&lt;/span&gt; 8      Ratatouille     2007-06-29        111 G          
+## &lt;span style=&#39;color: #BCBCBC;&#39;&gt; 9&lt;/span&gt; 9      WALL-E          2008-06-27         98 G          
+## &lt;span style=&#39;color: #BCBCBC;&#39;&gt;10&lt;/span&gt; 10     Up              2009-05-29         96 PG         
+## &lt;span style=&#39;color: #949494;&#39;&gt;# … with more rows&lt;/span&gt;
+&lt;/CODE&gt;&lt;/PRE&gt;
+
+---
+
+# Read the whole table
+
+
+```r
+df_pixar_films &lt;-
+  pixar_films %&gt;%
+  collect()
+df_pixar_films
+```
+
+&lt;PRE class=&quot;fansi fansi-output&quot;&gt;&lt;CODE&gt;## &lt;span style=&#39;color: #949494;&#39;&gt;# A tibble: 27 × 5&lt;/span&gt;
+##    &lt;span style=&#39;font-weight: bold;&#39;&gt;number&lt;/span&gt; &lt;span style=&#39;font-weight: bold;&#39;&gt;film&lt;/span&gt;            &lt;span style=&#39;font-weight: bold;&#39;&gt;release_date&lt;/span&gt; &lt;span style=&#39;font-weight: bold;&#39;&gt;run_time&lt;/span&gt; &lt;span style=&#39;font-weight: bold;&#39;&gt;film_rating&lt;/span&gt;
+##    &lt;span style=&#39;color: #949494; font-style: italic;&#39;&gt;&amp;lt;chr&amp;gt;&lt;/span&gt;  &lt;span style=&#39;color: #949494; font-style: italic;&#39;&gt;&amp;lt;chr&amp;gt;&lt;/span&gt;           &lt;span style=&#39;color: #949494; font-style: italic;&#39;&gt;&amp;lt;date&amp;gt;&lt;/span&gt;          &lt;span style=&#39;color: #949494; font-style: italic;&#39;&gt;&amp;lt;dbl&amp;gt;&lt;/span&gt; &lt;span style=&#39;color: #949494; font-style: italic;&#39;&gt;&amp;lt;chr&amp;gt;&lt;/span&gt;      
+## &lt;span style=&#39;color: #BCBCBC;&#39;&gt; 1&lt;/span&gt; 1      Toy Story       1995-11-22         81 G          
+## &lt;span style=&#39;color: #BCBCBC;&#39;&gt; 2&lt;/span&gt; 2      A Bug&amp;#039;s Life    1998-11-25         95 G          
+## &lt;span style=&#39;color: #BCBCBC;&#39;&gt; 3&lt;/span&gt; 3      Toy Story 2     1999-11-24         92 G          
+## &lt;span style=&#39;color: #BCBCBC;&#39;&gt; 4&lt;/span&gt; 4      Monsters, Inc.  2001-11-02         92 G          
+## &lt;span style=&#39;color: #BCBCBC;&#39;&gt; 5&lt;/span&gt; 5      Finding Nemo    2003-05-30        100 G          
+## &lt;span style=&#39;color: #BCBCBC;&#39;&gt; 6&lt;/span&gt; 6      The Incredibles 2004-11-05        115 PG         
+## &lt;span style=&#39;color: #BCBCBC;&#39;&gt; 7&lt;/span&gt; 7      Cars            2006-06-09        117 G          
+## &lt;span style=&#39;color: #BCBCBC;&#39;&gt; 8&lt;/span&gt; 8      Ratatouille     2007-06-29        111 G          
+## &lt;span style=&#39;color: #BCBCBC;&#39;&gt; 9&lt;/span&gt; 9      WALL-E          2008-06-27         98 G          
+## &lt;span style=&#39;color: #BCBCBC;&#39;&gt;10&lt;/span&gt; 10     Up              2009-05-29         96 PG         
+## &lt;span style=&#39;color: #949494;&#39;&gt;# … with 17 more rows&lt;/span&gt;
+&lt;/CODE&gt;&lt;/PRE&gt;
+
+---
+
+# Select columns
+
+With `select()`, like with data frames.
+
+.pull-left[
+
+```r
+pixar_films %&gt;%
+  select(1:3)
+```
+
+&lt;PRE class=&quot;fansi fansi-output&quot;&gt;&lt;CODE&gt;## &lt;span style=&#39;color: #949494;&#39;&gt;# Source:   lazy query [?? x 3]&lt;/span&gt;
+## &lt;span style=&#39;color: #949494;&#39;&gt;# Database: duckdb_connection&lt;/span&gt;
+##    &lt;span style=&#39;font-weight: bold;&#39;&gt;number&lt;/span&gt; &lt;span style=&#39;font-weight: bold;&#39;&gt;film&lt;/span&gt;            &lt;span style=&#39;font-weight: bold;&#39;&gt;release_date&lt;/span&gt;
+##    &lt;span style=&#39;color: #949494; font-style: italic;&#39;&gt;&amp;lt;chr&amp;gt;&lt;/span&gt;  &lt;span style=&#39;color: #949494; font-style: italic;&#39;&gt;&amp;lt;chr&amp;gt;&lt;/span&gt;           &lt;span style=&#39;color: #949494; font-style: italic;&#39;&gt;&amp;lt;date&amp;gt;&lt;/span&gt;      
+## &lt;span style=&#39;color: #BCBCBC;&#39;&gt; 1&lt;/span&gt; 1      Toy Story       1995-11-22  
+## &lt;span style=&#39;color: #BCBCBC;&#39;&gt; 2&lt;/span&gt; 2      A Bug&amp;#039;s Life    1998-11-25  
+## &lt;span style=&#39;color: #BCBCBC;&#39;&gt; 3&lt;/span&gt; 3      Toy Story 2     1999-11-24  
+## &lt;span style=&#39;color: #BCBCBC;&#39;&gt; 4&lt;/span&gt; 4      Monsters, Inc.  2001-11-02  
+## &lt;span style=&#39;color: #BCBCBC;&#39;&gt; 5&lt;/span&gt; 5      Finding Nemo    2003-05-30  
+## &lt;span style=&#39;color: #BCBCBC;&#39;&gt; 6&lt;/span&gt; 6      The Incredibles 2004-11-05  
+## &lt;span style=&#39;color: #BCBCBC;&#39;&gt; 7&lt;/span&gt; 7      Cars            2006-06-09  
+## &lt;span style=&#39;color: #BCBCBC;&#39;&gt; 8&lt;/span&gt; 8      Ratatouille     2007-06-29  
+## &lt;span style=&#39;color: #BCBCBC;&#39;&gt; 9&lt;/span&gt; 9      WALL-E          2008-06-27  
+## &lt;span style=&#39;color: #BCBCBC;&#39;&gt;10&lt;/span&gt; 10     Up              2009-05-29  
+## &lt;span style=&#39;color: #949494;&#39;&gt;# … with more rows&lt;/span&gt;
+&lt;/CODE&gt;&lt;/PRE&gt;
+]
+
+.pull-right[
+## Under the hood
+
+
+```r
+pixar_films %&gt;%
+  select(1:3) %&gt;%
+  show_query()
+```
+
+```
+## &lt;SQL&gt;
+## SELECT &quot;number&quot;, &quot;film&quot;, &quot;release_date&quot;
+## FROM &quot;pixar_films&quot;
+```
+]
+
+---
+
+# Select columns and read
+
+.pull-left[
+
+```r
+df_pixar_films_3 &lt;-
+  pixar_films %&gt;%
+  select(1:3) %&gt;%
+  collect()
+df_pixar_films_3
+```
+
+&lt;PRE class=&quot;fansi fansi-output&quot;&gt;&lt;CODE&gt;## &lt;span style=&#39;color: #949494;&#39;&gt;# A tibble: 27 × 3&lt;/span&gt;
+##    &lt;span style=&#39;font-weight: bold;&#39;&gt;number&lt;/span&gt; &lt;span style=&#39;font-weight: bold;&#39;&gt;film&lt;/span&gt;            &lt;span style=&#39;font-weight: bold;&#39;&gt;release_date&lt;/span&gt;
+##    &lt;span style=&#39;color: #949494; font-style: italic;&#39;&gt;&amp;lt;chr&amp;gt;&lt;/span&gt;  &lt;span style=&#39;color: #949494; font-style: italic;&#39;&gt;&amp;lt;chr&amp;gt;&lt;/span&gt;           &lt;span style=&#39;color: #949494; font-style: italic;&#39;&gt;&amp;lt;date&amp;gt;&lt;/span&gt;      
+## &lt;span style=&#39;color: #BCBCBC;&#39;&gt; 1&lt;/span&gt; 1      Toy Story       1995-11-22  
+## &lt;span style=&#39;color: #BCBCBC;&#39;&gt; 2&lt;/span&gt; 2      A Bug&amp;#039;s Life    1998-11-25  
+## &lt;span style=&#39;color: #BCBCBC;&#39;&gt; 3&lt;/span&gt; 3      Toy Story 2     1999-11-24  
+## &lt;span style=&#39;color: #BCBCBC;&#39;&gt; 4&lt;/span&gt; 4      Monsters, Inc.  2001-11-02  
+## &lt;span style=&#39;color: #BCBCBC;&#39;&gt; 5&lt;/span&gt; 5      Finding Nemo    2003-05-30  
+## &lt;span style=&#39;color: #BCBCBC;&#39;&gt; 6&lt;/span&gt; 6      The Incredibles 2004-11-05  
+## &lt;span style=&#39;color: #BCBCBC;&#39;&gt; 7&lt;/span&gt; 7      Cars            2006-06-09  
+## &lt;span style=&#39;color: #BCBCBC;&#39;&gt; 8&lt;/span&gt; 8      Ratatouille     2007-06-29  
+## &lt;span style=&#39;color: #BCBCBC;&#39;&gt; 9&lt;/span&gt; 9      WALL-E          2008-06-27  
+## &lt;span style=&#39;color: #BCBCBC;&#39;&gt;10&lt;/span&gt; 10     Up              2009-05-29  
+## &lt;span style=&#39;color: #949494;&#39;&gt;# … with 17 more rows&lt;/span&gt;
+&lt;/CODE&gt;&lt;/PRE&gt;
+]
+
+.pull-right[
+## Data on the database not affected
+
+
+```r
+pixar_films %&gt;%
+  collect()
+```
+
+&lt;PRE class=&quot;fansi fansi-output&quot;&gt;&lt;CODE&gt;## &lt;span style=&#39;color: #949494;&#39;&gt;# A tibble: 27 × 5&lt;/span&gt;
+##    &lt;span style=&#39;font-weight: bold;&#39;&gt;number&lt;/span&gt; &lt;span style=&#39;font-weight: bold;&#39;&gt;film&lt;/span&gt;            &lt;span style=&#39;font-weight: bold;&#39;&gt;release_date&lt;/span&gt; &lt;span style=&#39;font-weight: bold;&#39;&gt;run_time&lt;/span&gt; &lt;span style=&#39;font-weight: bold;&#39;&gt;film_rating&lt;/span&gt;
+##    &lt;span style=&#39;color: #949494; font-style: italic;&#39;&gt;&amp;lt;chr&amp;gt;&lt;/span&gt;  &lt;span style=&#39;color: #949494; font-style: italic;&#39;&gt;&amp;lt;chr&amp;gt;&lt;/span&gt;           &lt;span style=&#39;color: #949494; font-style: italic;&#39;&gt;&amp;lt;date&amp;gt;&lt;/span&gt;          &lt;span style=&#39;color: #949494; font-style: italic;&#39;&gt;&amp;lt;dbl&amp;gt;&lt;/span&gt; &lt;span style=&#39;color: #949494; font-style: italic;&#39;&gt;&amp;lt;chr&amp;gt;&lt;/span&gt;      
+## &lt;span style=&#39;color: #BCBCBC;&#39;&gt; 1&lt;/span&gt; 1      Toy Story       1995-11-22         81 G          
+## &lt;span style=&#39;color: #BCBCBC;&#39;&gt; 2&lt;/span&gt; 2      A Bug&amp;#039;s Life    1998-11-25         95 G          
+## &lt;span style=&#39;color: #BCBCBC;&#39;&gt; 3&lt;/span&gt; 3      Toy Story 2     1999-11-24         92 G          
+## &lt;span style=&#39;color: #BCBCBC;&#39;&gt; 4&lt;/span&gt; 4      Monsters, Inc.  2001-11-02         92 G          
+## &lt;span style=&#39;color: #BCBCBC;&#39;&gt; 5&lt;/span&gt; 5      Finding Nemo    2003-05-30        100 G          
+## &lt;span style=&#39;color: #BCBCBC;&#39;&gt; 6&lt;/span&gt; 6      The Incredibles 2004-11-05        115 PG         
+## &lt;span style=&#39;color: #BCBCBC;&#39;&gt; 7&lt;/span&gt; 7      Cars            2006-06-09        117 G          
+## &lt;span style=&#39;color: #BCBCBC;&#39;&gt; 8&lt;/span&gt; 8      Ratatouille     2007-06-29        111 G          
+## &lt;span style=&#39;color: #BCBCBC;&#39;&gt; 9&lt;/span&gt; 9      WALL-E          2008-06-27         98 G          
+## &lt;span style=&#39;color: #BCBCBC;&#39;&gt;10&lt;/span&gt; 10     Up              2009-05-29         96 PG         
+## &lt;span style=&#39;color: #949494;&#39;&gt;# … with 17 more rows&lt;/span&gt;
+&lt;/CODE&gt;&lt;/PRE&gt;
+]
+
+---
+
+# Select rows
+
+With `filter()`, like with data frames.
+
+.pull-left[
+
+```r
+pixar_films %&gt;%
+  filter(release_date &gt;= &quot;2020-01-01&quot;)
+```
+
+&lt;PRE class=&quot;fansi fansi-output&quot;&gt;&lt;CODE&gt;## &lt;span style=&#39;color: #949494;&#39;&gt;# Source:   lazy query [?? x 5]&lt;/span&gt;
+## &lt;span style=&#39;color: #949494;&#39;&gt;# Database: duckdb_connection&lt;/span&gt;
+##   &lt;span style=&#39;font-weight: bold;&#39;&gt;number&lt;/span&gt; &lt;span style=&#39;font-weight: bold;&#39;&gt;film&lt;/span&gt;        &lt;span style=&#39;font-weight: bold;&#39;&gt;release_date&lt;/span&gt; &lt;span style=&#39;font-weight: bold;&#39;&gt;run_time&lt;/span&gt; &lt;span style=&#39;font-weight: bold;&#39;&gt;film_rating&lt;/span&gt;
+##   &lt;span style=&#39;color: #949494; font-style: italic;&#39;&gt;&amp;lt;chr&amp;gt;&lt;/span&gt;  &lt;span style=&#39;color: #949494; font-style: italic;&#39;&gt;&amp;lt;chr&amp;gt;&lt;/span&gt;       &lt;span style=&#39;color: #949494; font-style: italic;&#39;&gt;&amp;lt;date&amp;gt;&lt;/span&gt;          &lt;span style=&#39;color: #949494; font-style: italic;&#39;&gt;&amp;lt;dbl&amp;gt;&lt;/span&gt; &lt;span style=&#39;color: #949494; font-style: italic;&#39;&gt;&amp;lt;chr&amp;gt;&lt;/span&gt;      
+## &lt;span style=&#39;color: #BCBCBC;&#39;&gt;1&lt;/span&gt; 22     Onward      2020-03-06        102 PG         
+## &lt;span style=&#39;color: #BCBCBC;&#39;&gt;2&lt;/span&gt; 23     Soul        2020-12-25        100 PG         
+## &lt;span style=&#39;color: #BCBCBC;&#39;&gt;3&lt;/span&gt; 24     Luca        2021-06-18        151 N/A        
+## &lt;span style=&#39;color: #BCBCBC;&#39;&gt;4&lt;/span&gt; 25     Turning Red 2022-03-11         &lt;span style=&#39;color: #BB0000;&#39;&gt;NA&lt;/span&gt; N/A        
+## &lt;span style=&#39;color: #BCBCBC;&#39;&gt;5&lt;/span&gt; 26     Lightyear   2022-06-17         &lt;span style=&#39;color: #BB0000;&#39;&gt;NA&lt;/span&gt; N/A        
+## &lt;span style=&#39;color: #BCBCBC;&#39;&gt;6&lt;/span&gt; 27     &lt;span style=&#39;color: #BB0000;&#39;&gt;NA&lt;/span&gt;          2023-06-16        155 Not Rated
+&lt;/CODE&gt;&lt;/PRE&gt;
+]
+
+.pull-right[
+## Under the hood
+
+
+```r
+pixar_films %&gt;%
+  filter(release_date &gt;= &quot;2020-01-01&quot;) %&gt;%
+  show_query()
+```
+
+```
+## &lt;SQL&gt;
+## SELECT *
+## FROM &quot;pixar_films&quot;
+## WHERE (&quot;release_date&quot; &gt;= &#39;2020-01-01&#39;)
+```
+]
+
+---
+
+# Select rows and read
+
+.pull-left[
+
+```r
+df_pixar_films_202x &lt;-
+  pixar_films %&gt;%
+  filter(release_date &gt;= &quot;2020-01-01&quot;) %&gt;%
+  collect()
+df_pixar_films_202x
+```
+
+&lt;PRE class=&quot;fansi fansi-output&quot;&gt;&lt;CODE&gt;## &lt;span style=&#39;color: #949494;&#39;&gt;# A tibble: 6 × 5&lt;/span&gt;
+##   &lt;span style=&#39;font-weight: bold;&#39;&gt;number&lt;/span&gt; &lt;span style=&#39;font-weight: bold;&#39;&gt;film&lt;/span&gt;        &lt;span style=&#39;font-weight: bold;&#39;&gt;release_date&lt;/span&gt; &lt;span style=&#39;font-weight: bold;&#39;&gt;run_time&lt;/span&gt; &lt;span style=&#39;font-weight: bold;&#39;&gt;film_rating&lt;/span&gt;
+##   &lt;span style=&#39;color: #949494; font-style: italic;&#39;&gt;&amp;lt;chr&amp;gt;&lt;/span&gt;  &lt;span style=&#39;color: #949494; font-style: italic;&#39;&gt;&amp;lt;chr&amp;gt;&lt;/span&gt;       &lt;span style=&#39;color: #949494; font-style: italic;&#39;&gt;&amp;lt;date&amp;gt;&lt;/span&gt;          &lt;span style=&#39;color: #949494; font-style: italic;&#39;&gt;&amp;lt;dbl&amp;gt;&lt;/span&gt; &lt;span style=&#39;color: #949494; font-style: italic;&#39;&gt;&amp;lt;chr&amp;gt;&lt;/span&gt;      
+## &lt;span style=&#39;color: #BCBCBC;&#39;&gt;1&lt;/span&gt; 22     Onward      2020-03-06        102 PG         
+## &lt;span style=&#39;color: #BCBCBC;&#39;&gt;2&lt;/span&gt; 23     Soul        2020-12-25        100 PG         
+## &lt;span style=&#39;color: #BCBCBC;&#39;&gt;3&lt;/span&gt; 24     Luca        2021-06-18        151 N/A        
+## &lt;span style=&#39;color: #BCBCBC;&#39;&gt;4&lt;/span&gt; 25     Turning Red 2022-03-11         &lt;span style=&#39;color: #BB0000;&#39;&gt;NA&lt;/span&gt; N/A        
+## &lt;span style=&#39;color: #BCBCBC;&#39;&gt;5&lt;/span&gt; 26     Lightyear   2022-06-17         &lt;span style=&#39;color: #BB0000;&#39;&gt;NA&lt;/span&gt; N/A        
+## &lt;span style=&#39;color: #BCBCBC;&#39;&gt;6&lt;/span&gt; 27     &lt;span style=&#39;color: #BB0000;&#39;&gt;NA&lt;/span&gt;          2023-06-16        155 Not Rated
+&lt;/CODE&gt;&lt;/PRE&gt;
+]
+
+.pull-right[
+## Data on the database not affected
+
+
+```r
+pixar_films %&gt;%
+  collect()
+```
+
+&lt;PRE class=&quot;fansi fansi-output&quot;&gt;&lt;CODE&gt;## &lt;span style=&#39;color: #949494;&#39;&gt;# A tibble: 27 × 5&lt;/span&gt;
+##    &lt;span style=&#39;font-weight: bold;&#39;&gt;number&lt;/span&gt; &lt;span style=&#39;font-weight: bold;&#39;&gt;film&lt;/span&gt;            &lt;span style=&#39;font-weight: bold;&#39;&gt;release_date&lt;/span&gt; &lt;span style=&#39;font-weight: bold;&#39;&gt;run_time&lt;/span&gt; &lt;span style=&#39;font-weight: bold;&#39;&gt;film_rating&lt;/span&gt;
+##    &lt;span style=&#39;color: #949494; font-style: italic;&#39;&gt;&amp;lt;chr&amp;gt;&lt;/span&gt;  &lt;span style=&#39;color: #949494; font-style: italic;&#39;&gt;&amp;lt;chr&amp;gt;&lt;/span&gt;           &lt;span style=&#39;color: #949494; font-style: italic;&#39;&gt;&amp;lt;date&amp;gt;&lt;/span&gt;          &lt;span style=&#39;color: #949494; font-style: italic;&#39;&gt;&amp;lt;dbl&amp;gt;&lt;/span&gt; &lt;span style=&#39;color: #949494; font-style: italic;&#39;&gt;&amp;lt;chr&amp;gt;&lt;/span&gt;      
+## &lt;span style=&#39;color: #BCBCBC;&#39;&gt; 1&lt;/span&gt; 1      Toy Story       1995-11-22         81 G          
+## &lt;span style=&#39;color: #BCBCBC;&#39;&gt; 2&lt;/span&gt; 2      A Bug&amp;#039;s Life    1998-11-25         95 G          
+## &lt;span style=&#39;color: #BCBCBC;&#39;&gt; 3&lt;/span&gt; 3      Toy Story 2     1999-11-24         92 G          
+## &lt;span style=&#39;color: #BCBCBC;&#39;&gt; 4&lt;/span&gt; 4      Monsters, Inc.  2001-11-02         92 G          
+## &lt;span style=&#39;color: #BCBCBC;&#39;&gt; 5&lt;/span&gt; 5      Finding Nemo    2003-05-30        100 G          
+## &lt;span style=&#39;color: #BCBCBC;&#39;&gt; 6&lt;/span&gt; 6      The Incredibles 2004-11-05        115 PG         
+## &lt;span style=&#39;color: #BCBCBC;&#39;&gt; 7&lt;/span&gt; 7      Cars            2006-06-09        117 G          
+## &lt;span style=&#39;color: #BCBCBC;&#39;&gt; 8&lt;/span&gt; 8      Ratatouille     2007-06-29        111 G          
+## &lt;span style=&#39;color: #BCBCBC;&#39;&gt; 9&lt;/span&gt; 9      WALL-E          2008-06-27         98 G          
+## &lt;span style=&#39;color: #BCBCBC;&#39;&gt;10&lt;/span&gt; 10     Up              2009-05-29         96 PG         
+## &lt;span style=&#39;color: #949494;&#39;&gt;# … with 17 more rows&lt;/span&gt;
+&lt;/CODE&gt;&lt;/PRE&gt;
+]
+
+---
+
+# Aggregate
+
+With `group_by()` + `summarize()` + `ungroup()`, like with data frames.
+
+.pull-left[
+
+```r
+pixar_films %&gt;%
+  group_by(film_rating) %&gt;%
+  summarize(n = n()) %&gt;%
+  ungroup()
+```
+
+&lt;PRE class=&quot;fansi fansi-output&quot;&gt;&lt;CODE&gt;## &lt;span style=&#39;color: #949494;&#39;&gt;# Source:   lazy query [?? x 2]&lt;/span&gt;
+## &lt;span style=&#39;color: #949494;&#39;&gt;# Database: duckdb_connection&lt;/span&gt;
+##   &lt;span style=&#39;font-weight: bold;&#39;&gt;film_rating&lt;/span&gt;     &lt;span style=&#39;font-weight: bold;&#39;&gt;n&lt;/span&gt;
+##   &lt;span style=&#39;color: #949494; font-style: italic;&#39;&gt;&amp;lt;chr&amp;gt;&lt;/span&gt;       &lt;span style=&#39;color: #949494; font-style: italic;&#39;&gt;&amp;lt;dbl&amp;gt;&lt;/span&gt;
+## &lt;span style=&#39;color: #BCBCBC;&#39;&gt;1&lt;/span&gt; G              13
+## &lt;span style=&#39;color: #BCBCBC;&#39;&gt;2&lt;/span&gt; PG             10
+## &lt;span style=&#39;color: #BCBCBC;&#39;&gt;3&lt;/span&gt; N/A             3
+## &lt;span style=&#39;color: #BCBCBC;&#39;&gt;4&lt;/span&gt; Not Rated       1
+&lt;/CODE&gt;&lt;/PRE&gt;
+]
+
+.pull-right[
+## Under the hood
+
+
+```r
+pixar_films %&gt;%
+  group_by(film_rating) %&gt;%
+  summarize(n = n()) %&gt;%
+  ungroup() %&gt;%
+  show_query()
+```
+
+```
+## &lt;SQL&gt;
+## SELECT &quot;film_rating&quot;, COUNT(*) AS &quot;n&quot;
+## FROM &quot;pixar_films&quot;
+## GROUP BY &quot;film_rating&quot;
+```
+]
+
+---
+
+# Aggregate
+
+With `count()`, like with data frames.
+
+.pull-left[
+
+```r
+pixar_films %&gt;%
+  #
+  #
+  count(film_rating)
+```
+
+&lt;PRE class=&quot;fansi fansi-output&quot;&gt;&lt;CODE&gt;## &lt;span style=&#39;color: #949494;&#39;&gt;# Source:   lazy query [?? x 2]&lt;/span&gt;
+## &lt;span style=&#39;color: #949494;&#39;&gt;# Database: duckdb_connection&lt;/span&gt;
+##   &lt;span style=&#39;font-weight: bold;&#39;&gt;film_rating&lt;/span&gt;     &lt;span style=&#39;font-weight: bold;&#39;&gt;n&lt;/span&gt;
+##   &lt;span style=&#39;color: #949494; font-style: italic;&#39;&gt;&amp;lt;chr&amp;gt;&lt;/span&gt;       &lt;span style=&#39;color: #949494; font-style: italic;&#39;&gt;&amp;lt;dbl&amp;gt;&lt;/span&gt;
+## &lt;span style=&#39;color: #BCBCBC;&#39;&gt;1&lt;/span&gt; G              13
+## &lt;span style=&#39;color: #BCBCBC;&#39;&gt;2&lt;/span&gt; PG             10
+## &lt;span style=&#39;color: #BCBCBC;&#39;&gt;3&lt;/span&gt; N/A             3
+## &lt;span style=&#39;color: #BCBCBC;&#39;&gt;4&lt;/span&gt; Not Rated       1
+&lt;/CODE&gt;&lt;/PRE&gt;
+]
+
+.pull-right[
+## Under the hood
+
+
+```r
+pixar_films %&gt;%
+  #
+  #
+  count(film_rating) %&gt;%
+  show_query()
+```
+
+```
+## &lt;SQL&gt;
+## SELECT &quot;film_rating&quot;, COUNT(*) AS &quot;n&quot;
+## FROM &quot;pixar_films&quot;
+## GROUP BY &quot;film_rating&quot;
+```
+]
+
+---
+
+# Aggregate and read
+
+.pull-left[
+
+```r
+df_pixar_films_by_rating &lt;-
+  pixar_films %&gt;%
+  count(film_rating) %&gt;%
+  collect()
+df_pixar_films_by_rating
+```
+
+&lt;PRE class=&quot;fansi fansi-output&quot;&gt;&lt;CODE&gt;## &lt;span style=&#39;color: #949494;&#39;&gt;# A tibble: 4 × 2&lt;/span&gt;
+##   &lt;span style=&#39;font-weight: bold;&#39;&gt;film_rating&lt;/span&gt;     &lt;span style=&#39;font-weight: bold;&#39;&gt;n&lt;/span&gt;
+##   &lt;span style=&#39;color: #949494; font-style: italic;&#39;&gt;&amp;lt;chr&amp;gt;&lt;/span&gt;       &lt;span style=&#39;color: #949494; font-style: italic;&#39;&gt;&amp;lt;dbl&amp;gt;&lt;/span&gt;
+## &lt;span style=&#39;color: #BCBCBC;&#39;&gt;1&lt;/span&gt; G              13
+## &lt;span style=&#39;color: #BCBCBC;&#39;&gt;2&lt;/span&gt; PG             10
+## &lt;span style=&#39;color: #BCBCBC;&#39;&gt;3&lt;/span&gt; N/A             3
+## &lt;span style=&#39;color: #BCBCBC;&#39;&gt;4&lt;/span&gt; Not Rated       1
+&lt;/CODE&gt;&lt;/PRE&gt;
+]
+
+.pull-right[
+## Data on the database not affected
+
+
+```r
+pixar_films %&gt;%
+  collect()
+```
+
+&lt;PRE class=&quot;fansi fansi-output&quot;&gt;&lt;CODE&gt;## &lt;span style=&#39;color: #949494;&#39;&gt;# A tibble: 27 × 5&lt;/span&gt;
+##    &lt;span style=&#39;font-weight: bold;&#39;&gt;number&lt;/span&gt; &lt;span style=&#39;font-weight: bold;&#39;&gt;film&lt;/span&gt;            &lt;span style=&#39;font-weight: bold;&#39;&gt;release_date&lt;/span&gt; &lt;span style=&#39;font-weight: bold;&#39;&gt;run_time&lt;/span&gt; &lt;span style=&#39;font-weight: bold;&#39;&gt;film_rating&lt;/span&gt;
+##    &lt;span style=&#39;color: #949494; font-style: italic;&#39;&gt;&amp;lt;chr&amp;gt;&lt;/span&gt;  &lt;span style=&#39;color: #949494; font-style: italic;&#39;&gt;&amp;lt;chr&amp;gt;&lt;/span&gt;           &lt;span style=&#39;color: #949494; font-style: italic;&#39;&gt;&amp;lt;date&amp;gt;&lt;/span&gt;          &lt;span style=&#39;color: #949494; font-style: italic;&#39;&gt;&amp;lt;dbl&amp;gt;&lt;/span&gt; &lt;span style=&#39;color: #949494; font-style: italic;&#39;&gt;&amp;lt;chr&amp;gt;&lt;/span&gt;      
+## &lt;span style=&#39;color: #BCBCBC;&#39;&gt; 1&lt;/span&gt; 1      Toy Story       1995-11-22         81 G          
+## &lt;span style=&#39;color: #BCBCBC;&#39;&gt; 2&lt;/span&gt; 2      A Bug&amp;#039;s Life    1998-11-25         95 G          
+## &lt;span style=&#39;color: #BCBCBC;&#39;&gt; 3&lt;/span&gt; 3      Toy Story 2     1999-11-24         92 G          
+## &lt;span style=&#39;color: #BCBCBC;&#39;&gt; 4&lt;/span&gt; 4      Monsters, Inc.  2001-11-02         92 G          
+## &lt;span style=&#39;color: #BCBCBC;&#39;&gt; 5&lt;/span&gt; 5      Finding Nemo    2003-05-30        100 G          
+## &lt;span style=&#39;color: #BCBCBC;&#39;&gt; 6&lt;/span&gt; 6      The Incredibles 2004-11-05        115 PG         
+## &lt;span style=&#39;color: #BCBCBC;&#39;&gt; 7&lt;/span&gt; 7      Cars            2006-06-09        117 G          
+## &lt;span style=&#39;color: #BCBCBC;&#39;&gt; 8&lt;/span&gt; 8      Ratatouille     2007-06-29        111 G          
+## &lt;span style=&#39;color: #BCBCBC;&#39;&gt; 9&lt;/span&gt; 9      WALL-E          2008-06-27         98 G          
+## &lt;span style=&#39;color: #BCBCBC;&#39;&gt;10&lt;/span&gt; 10     Up              2009-05-29         96 PG         
+## &lt;span style=&#39;color: #949494;&#39;&gt;# … with 17 more rows&lt;/span&gt;
+&lt;/CODE&gt;&lt;/PRE&gt;
+]
+
+---
+
+# Downsizing on the database: Exercises 1
+
+*  Find several ways to select the 3 first columns
+*  What happens if you include the name of a variable multiple times in a `select()` call?
+*  Select all columns that contain underscores (use `contains()`)
+*  Use `all_of()` to select 2 columns of your choice
+
+---
+
+# Downsizing on the database: Exercises 2
+
+Find all films that
+1. Are rated &quot;PG&quot;
+2. Had a run time below 95
+3. Had a rating of &quot;N/A&quot; or &quot;Not Rated&quot;
+4. Were released after and including year 2020
+5. Have a missing name (`film` column) or `run_time`
+6. Were released after and including year 2020 with name not missing
+7. Are a first sequel (the name ends with &quot;2&quot;)
+    - Hint: Bring the data into the R session before filtering
+
+---
+
+# Downsizing on the database: Exercises 3
+
+1. How many films are stored in the table?
+2. How many films released after 2005 are stored in the table?
+3. What is the total run time of all films?
+    - Hint: Use `summarize(sum(...))`, watch out for the warning
+4. What is the total run time of all films, per rating?
+    - Hint: Use `group_by()`
 
 ---
 
