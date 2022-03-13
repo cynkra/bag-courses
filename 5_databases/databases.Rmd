@@ -158,8 +158,12 @@ Extract ⇨ Transform ⇨ Load ⇨ Consume
 
 ---
 
+background-image: url("images/11.webp")
+background-position: 100% 100%
+
 # Read whole tables
 
+.pull-left[
 - {DBI} package
 - Connect
 - Discover
@@ -172,6 +176,7 @@ Script: `databases_11.R`
 library(tidyverse)
 library(DBI)
 ```
+]
 
 ---
 
