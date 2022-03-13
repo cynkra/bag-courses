@@ -196,11 +196,13 @@ insert: major boring shit
 
 ---
 
+background-image: url("images/magic-hat-and-wand-nath-r.svg")
+background-size: 25%
+background-position: 100% 100%
+
 # Prepare database
 
 Normally done in a preparatory step.
-
-insert: bunny
 
 ```{r databases-3}
 dm::copy_dm_to(
@@ -297,9 +299,11 @@ dbGetQuery(con_duckdb, sql)
 
 ---
 
-# Further pointers
+background-image: url("images/magic-hat-and-wand-nath-r.svg")
+background-size: 25%
+background-position: 100% 100%
 
-insert: bunny
+# Further pointers
 
 .pull-left[
 ## Quoting
