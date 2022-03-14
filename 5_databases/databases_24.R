@@ -124,4 +124,9 @@ ggplot(box_office_vs_awards, aes(x = box_office_mln, y = n_awards_won)) +
   geom_point() +
   facet_wrap(vars(rating))
 
-# FIXME: Exercises
+
+# Exercises --------------------------------------------------------------------
+
+dm_pixarfilms_small()
+
+# 1. Experiment.

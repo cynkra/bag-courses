@@ -37,4 +37,9 @@ pixar_films_wrapped <-
 pixar_films_wrapped
 pixar_films_wrapped$academy[1:2]
 
-# FIXME: Exercises
+
+# Exercises --------------------------------------------------------------------
+
+pixar_dm
+
+# 1. Experiment.
