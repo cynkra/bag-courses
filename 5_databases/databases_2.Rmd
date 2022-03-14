@@ -498,3 +498,197 @@ background-position: 100% 100%
    Compute as much as possible on the database.
    - Hint: "Long form" or "wide form"?
 ]
+
+---
+
+# Schedule
+
+Extract ⇨ Transform ⇨ Load ⇨ Consume
+
+.pull-left[
+## One table
+
+- Read whole tables
+- Let the database do the heavy lifting
+- Basic ETL for one table
+- Subtle issues to watch out for
+]
+
+.pull-right[
+## Multiple tables
+
+- Joins
+- **The {dm} package**
+- A bit of theory
+- Playing the whole game
+]
+
+## Bonus: Bring your own data + questions
+
+---
+
+background-image: url("images/22.webp")
+background-size: 40%
+background-position: 100% 100%
+
+# Data models
+
+.pull-left[
+- Compound object for multiple tables
+- Features
+
+Script: `databases_22.R`
+
+```{r databases-2-33 }
+library(tidyverse)
+```
+]
+
+---
+
+background-image: url("images/22-frame.webp")
+background-size: 40%
+background-position: 100% 100%
+
+# Data models
+
+.pull-left[
+- Compound object for multiple tables
+- Features
+
+Script: `databases_22.R`
+
+```{r databases-2-34 }
+library(tidyverse)
+```
+]
+
+---
+
+# Schedule
+
+Extract ⇨ Transform ⇨ Load ⇨ Consume
+
+.pull-left[
+## One table
+
+- Read whole tables
+- Let the database do the heavy lifting
+- Basic ETL for one table
+- Subtle issues to watch out for
+]
+
+.pull-right[
+## Multiple tables
+
+- Joins
+- The {dm} package
+- **A bit of theory**
+- Playing the whole game
+]
+
+## Bonus: Bring your own data + questions
+
+---
+
+background-image: url("images/23.webp")
+background-size: 40%
+background-position: 100% 100%
+
+# Data models
+
+.pull-left[
+- Keys, relationships, constraints
+- Zooming
+
+Script: `databases_23.R`
+
+```{r databases-2-35 }
+library(tidyverse)
+```
+]
+
+---
+
+background-image: url("images/23-frame.webp")
+background-size: 40%
+background-position: 100% 100%
+
+# Data models
+
+.pull-left[
+- Keys, relationships, constraints
+- Zooming
+
+Script: `databases_23.R`
+
+```{r databases-2-36 }
+library(tidyverse)
+```
+]
+
+---
+
+# Schedule
+
+Extract ⇨ Transform ⇨ Load ⇨ Consume
+
+.pull-left[
+## One table
+
+- Read whole tables
+- Let the database do the heavy lifting
+- Basic ETL for one table
+- Subtle issues to watch out for
+]
+
+.pull-right[
+## Multiple tables
+
+- Joins
+- The {dm} package
+- A bit of theory
+- **Playing the whole game**
+]
+
+## Bonus: Bring your own data + questions
+
+---
+
+background-image: url("images/24.webp")
+background-size: 40%
+background-position: 100% 100%
+
+# The whole game
+
+.pull-left[
+- Build a local data model
+- Copy it to the database
+- Consume it
+
+Script: `databases_24.R`
+
+```{r databases-2-37 }
+library(tidyverse)
+```
+]
+
+---
+
+background-image: url("images/24-frame.webp")
+background-size: 40%
+background-position: 100% 100%
+
+# The whole game
+
+.pull-left[
+- Build a local data model
+- Copy it to the database
+- Consume it
+
+Script: `databases_24.R`
+
+```{r databases-2-38 }
+library(tidyverse)
+```
+]
