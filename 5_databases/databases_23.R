@@ -42,7 +42,13 @@ pixar_dm %>%
 dm_pixarfilms(consistent = TRUE) %>%
   dm_examine_constraints()
 
+dm_nycflights13() %>%
+  dm_examine_constraints()
+
 # Joins ----
+
+pixar_dm %>%
+  dm_zoom_to(academy)
 
 # With zooming:
 pixar_dm %>%
@@ -52,6 +58,10 @@ pixar_dm %>%
 # With flattening:
 pixar_dm %>%
   dm_flatten_to_tbl(academy)
+
+dm_nycflights13() %>%
+  dm_select(weather, -year, -month, -day, -hour) %>%
+  dm_flatten_to_tbl(flights)
 
 # Joining is easy, leave the tables separate for as long as possible!
 

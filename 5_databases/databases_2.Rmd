@@ -572,12 +572,12 @@ library(dm)
 .pull-left[
 Store multiple tables in an object.
 
-```{r}
+```{r databases-2-35}
 pixar_dm <- dm_pixarfilms()
 pixar_dm
 ```
 
-```{r results="hide"}
+```{r databases-2-36, results="hide"}
 pixar_dm %>%
   dm_draw()
 ```
@@ -693,27 +693,27 @@ pixar_dm %>%
 
 Use like a named list.
 
-```{r echo = FALSE}
+```{r databases-2-37, echo = FALSE}
 old <- options(width = 120)
 ```
 
 
-```{r}
+```{r databases-2-38}
 names(pixar_dm)
 ```
 
-```{r echo = FALSE}
+```{r databases-2-39, echo = FALSE}
 options(old)
 ```
 
 .pull-left[
-```{r}
+```{r databases-2-40}
 pixar_dm$pixar_films
 ```
 ]
 
 .pull-right[
-```{r}
+```{r databases-2-41}
 pixar_dm$academy
 ```
 ]
@@ -725,7 +725,7 @@ pixar_dm$academy
 One of the many operations supported by {dm}.
 
 .pull-left[
-```{r}
+```{r databases-2-42}
 pixar_films_wrapped <-
   pixar_dm %>%
   dm_wrap_tbl(pixar_films) %>%
@@ -736,7 +736,7 @@ pixar_films_wrapped
 ]
 
 .pull-right[
-```{r}
+```{r databases-2-43}
 pixar_films_wrapped$academy[1:2]
 ```
 ]
@@ -781,7 +781,7 @@ background-position: 100% 100%
 
 Script: `databases_23.R`
 
-```{r databases-2-35 }
+```{r databases-2-44 }
 library(tidyverse)
 library(dm)
 ```
@@ -801,11 +801,118 @@ background-position: 100% 100%
 
 Script: `databases_23.R`
 
-```{r databases-2-36 }
+```{r databases-2-45 }
 library(tidyverse)
 library(dm)
 ```
 ]
+
+---
+
+# Primary keys
+
+Column(s) that uniquely identify rows in a table.
+
+.pull-left[
+```{r databases-2-46}
+any(duplicated(pixar_dm$pixar_films$film))
+check_key(pixar_dm$pixar_films, film)
+```
+]
+
+.pull-right[
+```{r databases-2-47}
+any(duplicated(pixar_dm$academy[c("film", "award_type")]))
+check_key(pixar_dm$academy, film, award_type)
+try(
+  check_key(pixar_dm$academy, film)
+)
+```
+]
+
+---
+
+# Foreign keys
+
+Column(s) that point to a primary key in another table.
+
+```{r databases-2-48}
+all(pixar_dm$academy$film %in% pixar_dm$pixar_films$film)
+check_subset(pixar_dm$academy, film, pixar_dm$pixar_films, film)
+try(
+  check_subset(pixar_dm$pixar_films, film, pixar_dm$academy, film)
+)
+```
+
+---
+
+# Constraints
+
+Properties of primary and foreign keys can be checked.
+
+```{r databases-2-49}
+pixar_dm %>%
+  dm_examine_constraints()
+
+dm_pixarfilms(consistent = TRUE) %>%
+  dm_examine_constraints()
+```
+
+---
+
+# Constraints
+
+An example from another dataset.
+
+```{r databases-2-50}
+dm_nycflights13() %>%
+  dm_examine_constraints()
+```
+
+---
+
+# Zooming
+
+Focusing on one table in a dm object.
+Allows applying data transformations on that table inside a dm object.
+
+.pull-left[
+```{r databases-2-51}
+pixar_dm %>%
+  dm_zoom_to(academy)
+```
+]
+
+.pull-right[
+```{r databases-2-52}
+pixar_dm %>%
+  dm_zoom_to(academy) %>%
+  left_join(pixar_films, select = c(film, release_date))
+```
+]
+
+---
+
+# Flattening
+
+Join a table to all related tables.
+
+```{r databases-2-53}
+pixar_dm %>%
+  dm_flatten_to_tbl(academy)
+```
+
+---
+
+# Flattening
+
+A larger example with a different dataset.
+
+```{r databases-2-54}
+dm_nycflights13() %>%
+  dm_select(weather, -year, -month, -day, -hour) %>%
+  dm_flatten_to_tbl(flights)
+```
 
 ---
 
@@ -848,7 +955,7 @@ background-position: 100% 100%
 
 Script: `databases_24.R`
 
-```{r databases-2-37 }
+```{r databases-2-55 }
 library(tidyverse)
 library(dm)
 ```
@@ -869,7 +976,7 @@ background-position: 100% 100%
 
 Script: `databases_24.R`
 
-```{r databases-2-38 }
+```{r databases-2-56 }
 library(tidyverse)
 library(dm)
 ```
