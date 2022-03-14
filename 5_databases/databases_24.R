@@ -24,6 +24,7 @@ pixar_films_clean <-
   group_by(franchise) %>%
   mutate(sequel = if_else(is.na(sequel) & n() > 1, 1L, sequel)) %>%
   ungroup()
+pixar_films_clean
 
 # Build base dm object
 base_dm <- dm(
@@ -72,6 +73,7 @@ DBI::dbDisconnect(con)
 
 con <- DBI::dbConnect(duckdb::duckdb(dbdir = db_path))
 pixar_dm_learned <- dm_from_src(con)
+pixar_dm_learned
 
 pixar_dm_learned %>%
   dm_draw()
@@ -91,6 +93,8 @@ dm_pixarfilms_small <- function() {
     dm_add_fk(academy, film, pixar_films) %>%
     dm_add_fk(box_office, film, pixar_films)
 }
+
+dm_pixarfilms_small()
 
 dm_pixarfilms_small() %>%
   dm_draw()
