@@ -1,14 +1,6 @@
 # attach relevant packages
 library(tidyverse)
 
-# display chosen presentation (it might take a few seconds to appear)
-slide_viewer <- function(path) {
-  tmp <- tempfile(fileext = ".html")
-  file.copy(path, tmp)
-  rstudioapi::viewer(tmp)
-}
-# slide_viewer("5_databases/databases.html")
-
 ### Joins ######################################################################
 
 # Connection -------------------------------------------------------------------
@@ -26,132 +18,6 @@ academy <- tbl(con_duckdb, "academy")
 
 pixar_films_sqlite <- tbl(con_sqlite, "pixar_films")
 academy_sqlite <- tbl(con_sqlite, "academy")
-
-academy
-academy %>%
-  count(status)
-
-# Left join ------
-
-academy %>%
-  left_join(pixar_films)
-
-academy %>%
-  left_join(pixar_films, by = "film")
-
-academy %>%
-  left_join(pixar_films, by = "film") %>%
-  show_query()
-
-# Join with prior computation ------
-
-academy_won <-
-  academy %>%
-  filter(status == "Won") %>%
-  count(film, name = "n_won")
-academy_won
-
-pixar_films %>%
-  left_join(academy_won, by = "film")
-
-pixar_films %>%
-  left_join(academy_won, by = "film") %>%
-  arrange(release_date)
-
-pixar_films %>%
-  left_join(academy_won, by = "film") %>%
-  mutate(n_won = coalesce(n_won, 0L)) %>%
-  arrange(release_date)
-
-pixar_films %>%
-  left_join(academy_won, by = "film") %>%
-  mutate(n_won = coalesce(n_won, 0L)) %>%
-  arrange(release_date) %>%
-  show_query()
-
-# Caveat: tables must be on the same source ------------------------------------
-
-try(
-  academy %>%
-    left_join(pixar_films_sqlite, by = "film")
-)
-
-academy %>%
-  left_join(pixar_films_sqlite, by = "film", copy = TRUE)
-
-academy %>%
-  left_join(pixar_films_sqlite, by = "film", copy = TRUE) %>%
-  show_query()
-
-try(
-  pixarfilms::academy %>%
-    left_join(pixar_films, by = "film")
-)
-
-pixarfilms::academy %>%
-  left_join(pixar_films, by = "film", copy = TRUE)
-
-# DuckDB only: register data frames as local tables ----------------------------
-
-# Register data frame as table in DuckDB
-duckdb::duckdb_register(
-  con_duckdb,
-  "academy_small",
-  pixarfilms::academy[1:3, ]
-)
-academy_small <- tbl(con_duckdb, "academy_small")
-academy_small
-academy_small %>%
-  left_join(pixar_films, by = "film")
-
-# Also works for Arrow datasets via duckdb::duckdb_register_arrow()
-
-# Performance
-nrow(nycflights13::flights)
-
-system.time(
-  nycflights13::flights %>%
-    count(year, month, day)
-)
-
-system.time(duckdb::duckdb_register(
-  con_duckdb,
-  "flights",
-  nycflights13::flights
-))
-
-flights_register <- tbl(con_duckdb, "flights")
-flights_register %>%
-  count()
-
-system.time(
-  flights_register %>%
-    count(year, month, day) %>%
-    collect()
-)
-
-system.time(
-  flights_copy <- copy_to(con_duckdb, nycflights13::flights)
-)
-
-flights_copy %>%
-  count()
-
-system.time(
-  flights_copy %>%
-    count(year, month, day) %>%
-    collect()
-)
-
-
-# ETL, revisited ---------------------------------------------------------------
-
-db_path <- fs::path_abs("pixar.duckdb")
-con <- DBI::dbConnect(duckdb::duckdb(dbdir = db_path))
-DBI::dbWriteTable(con, "academy", pixarfilms::academy, overwrite = TRUE)
-DBI::dbExecute(con, "CREATE UNIQUE INDEX academy_pk ON academy (film, award_type)")
-DBI::dbExecute(con, "CREATE INDEX academy_fk ON academy (film)")
-DBI::dbDisconnect(con)
 
 
 # Exercises --------------------------------------------------------------------
@@ -184,18 +50,25 @@ duckdb::duckdb_register(
   pivot_wider(collect(academy), names_from = award_type, values_from = status)
 )
 
-left_join(pixar_films, tbl(con_duckdb, "academy_wide"), by = "film")
+academy_wide <- tbl(con_duckdb, "academy_wide")
+left_join(pixar_films, academy_wide, by = "film")
 
 # 4. Plot a bar chart with the number of awards won and nominated per year.
 #    Compute as much as possible on the database.
 #    - Hint: "Long form" or "wide form"?
 
-left_join(pixar_films,
-  filter(academy, status %in% c("Nominated", "Won")),
-  by = "film"
-) %>%
-  mutate(year = year(release_date)) %>%
-  group_by(year, status) %>%
-  count() %>%
-  collect() %>%
-  pivot_wider(names_from = status, values_from = n)
+academy_won_nominated <-
+  academy %>%
+  filter(status %in% c("Nominated", "Won")) %>%
+  select(film, status)
+
+per_year_won_nominated <-
+  pixar_films %>%
+  transmute(film, year = year(release_date)) %>%
+  inner_join(academy_won_nominated, by = "film") %>%
+  count(year, status) %>%
+  collect()
+per_year_won_nominated
+
+ggplot(per_year_won_nominated, aes(x = year, y = n, fill = status)) +
+  geom_col()

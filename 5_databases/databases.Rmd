@@ -900,7 +900,7 @@ background-position: 100% 100%
    for each film
 3. Compute the overall median run time, and the median run time per film rating
 4. For each film except the last, compute how many days have passed until the next film.
-    - Hint: Use `lag(..., order_by = ...)`
+    - Hint: Use `lead(..., order_by = ...)`
 ]
 
 .pull-right[

@@ -56,7 +56,7 @@ my_pixar_films
 
 # Exercises --------------------------------------------------------------------
 
-pixar_films
+pixar_films_raw
 
 # 1. Adapt the ETL workflow to convert the `run_time` column to a duration.
 
