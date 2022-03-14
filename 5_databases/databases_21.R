@@ -161,41 +161,13 @@ pixar_films %>%
 
 # 1. How many rows does the join between `academy` and `pixar_films` contain?
 #    Try to find out without loading all the data into memory. Explain.
-
-left_join(pixar_films, academy, by = "film") %>%
-  count()
-
-count(academy)
-
 # 2. Which films are not yet listed in the `academy` table? What does the
 #    resulting SQL query look like?
 #    - Hint: Use `anti_join()`
-
-anti_join(pixar_films, academy, by = "film")
-
 # 3. Transform `academy` into a wide table so that there is at most one row
 #    per film. Join the resulting table with the `pixar_films` table.
 #    - Hint: Use `pivot_wider()`, `spread()`, `dcast()`, ... . You need to
 #      compute locally, because these functions don't work on the database.
-
-duckdb::duckdb_register(
-  con_duckdb,
-  "academy_wide",
-  pivot_wider(collect(academy), names_from = award_type, values_from = status)
-)
-
-left_join(pixar_films, tbl(con_duckdb, "academy_wide"), by = "film")
-
 # 4. Plot a bar chart with the number of awards won and nominated per year.
 #    Compute as much as possible on the database.
 #    - Hint: "Long form" or "wide form"?
-
-left_join(pixar_films,
-  filter(academy, status %in% c("Nominated", "Won")),
-  by = "film"
-) %>%
-  mutate(year = year(release_date)) %>%
-  group_by(year, status) %>%
-  count() %>%
-  collect() %>%
-  pivot_wider(names_from = status, values_from = n)

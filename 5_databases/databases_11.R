@@ -67,26 +67,7 @@ dbGetQuery(con_duckdb, sql, params = list(as.Date("2020-01-01")))
 con_duckdb
 
 # 1. List all columns from the `box_office` table.
-
-dbListFields(con_duckdb, "box_office")
-
 # 2. Read the `academy` table.
-
-dbReadTable(con_duckdb, "academy")
-
 # 3. Read all records from the `academy` table that correspond to awards won
 #     - Hint: Use the query "SELECT * FROM academy WHERE status = 'Won'"
-
-dbGetQuery(con_duckdb, "SELECT * FROM academy WHERE status = 'Won'")
-
 # 4. Use quoting and/or query parameters to stabilize the previous query.
-
-dbGetQuery(con_duckdb,
-  paste(
-    "SELECT * FROM", dbQuoteIdentifier(con_duckdb, "academy"),
-    "WHERE status = ?"
-  ),
-  params = list(dbQuoteLiteral(con_duckdb, "Won"))
-)
-
-# FIXME: why zero rows? nested quotes?
