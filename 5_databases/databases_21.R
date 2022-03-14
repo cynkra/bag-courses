@@ -49,6 +49,7 @@ academy_won <-
   academy %>%
   filter(status == "Won") %>%
   count(film, name = "n_won")
+academy_won
 
 pixar_films %>%
   left_join(academy_won, by = "film")
