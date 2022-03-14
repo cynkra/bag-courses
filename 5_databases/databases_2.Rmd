@@ -694,7 +694,7 @@ pixar_dm %>%
 Use like a named list.
 
 ```{r databases-2-37, echo = FALSE}
-old <- options(width = 120)
+old <- options(width = 135)
 ```
 
 
@@ -897,7 +897,11 @@ pixar_dm %>%
 
 Join a table to all related tables.
 
-```{r databases-2-53 }
+```{r databases-2-53, echo = FALSE}
+old <- options(width = 135)
+```
+
+```{r databases-2-54 }
 pixar_dm %>%
   dm_flatten_to_tbl(academy)
 ```
@@ -907,10 +911,6 @@ pixar_dm %>%
 # Flattening
 
 A larger example with a different dataset.
-
-```{r databases-2-54, echo = FALSE}
-old <- options(width = 135)
-```
 
 ```{r databases-2-55 }
 dm_nycflights13() %>%
@@ -1012,7 +1012,7 @@ pixar_films_clean <-
   group_by(franchise) %>%
   mutate(sequel = if_else(is.na(sequel) & n() > 1, 1L, sequel)) %>%
   ungroup()
-old <- options(width = 100)
+old <- options(width = 135)
 ```
 
 ```{r databases-2-60 }
@@ -1160,7 +1160,7 @@ pixar_dm_duckdb
 The `temporary = FALSE` argument ensures that tables are permanent.
 
 ```{r databases-2-66, echo = FALSE}
-old <- options(width = 120)
+old <- options(width = 135)
 ```
 
 ```{r databases-2-67 }
