@@ -531,7 +531,7 @@ background-image: url("images/22.webp")
 background-size: 40%
 background-position: 100% 100%
 
-# Data models
+# Data model basics
 
 .pull-left[
 - Compound object for multiple tables
@@ -551,7 +551,7 @@ background-image: url("images/22-frame.webp")
 background-size: 40%
 background-position: 100% 100%
 
-# Data models
+# Data model basics
 
 .pull-left[
 - Compound object for multiple tables
@@ -743,6 +743,18 @@ pixar_films_wrapped$academy[1:2]
 
 ---
 
+background-image: url("images/22-frame.webp")
+background-size: 40%
+background-position: 100% 100%
+
+# Data model basics: Exercises
+
+.pull-left[
+- Experiment!
+]
+
+---
+
 # Schedule
 
 Extract ⇨ Transform ⇨ Load ⇨ Consume
@@ -921,6 +933,18 @@ dm_nycflights13() %>%
 ```{r databases-2-56, echo = FALSE}
 options(old)
 ```
+
+---
+
+background-image: url("images/23-frame.webp")
+background-size: 40%
+background-position: 100% 100%
+
+# Data models: Exercises
+
+.pull-left[
+- Experiment!
+]
 
 ---
 
@@ -1231,6 +1255,10 @@ dm_pixarfilms_small()
 
 ---
 
+background-image: url("images/magic-hat-and-wand-nath-r.svg")
+background-size: 25%
+background-position: 100% 100%
+
 # Consuming with dm
 
 Create a new derived table in the dm object.
@@ -1254,6 +1282,10 @@ my_helper_dm
 ]
 
 ---
+
+background-image: url("images/magic-hat-and-wand-nath-r.svg")
+background-size: 25%
+background-position: 100% 100%
 
 # Consuming with dm
 
@@ -1296,6 +1328,18 @@ ggplot(box_office_vs_awards, aes(x = box_office_mln, y = n_awards_won)) +
   facet_wrap(vars(rating)) +
   theme_bw(20)
 ```
+
+---
+
+background-image: url("images/24-frame.webp")
+background-size: 40%
+background-position: 100% 100%
+
+# The whole game: Exercises
+
+.pull-left[
+- Experiment
+]
 
 ---
 
