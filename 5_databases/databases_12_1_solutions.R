@@ -59,8 +59,6 @@ filter(pixar_films, release_date >= as.Date("2020-01-01"))
 
 filter(pixar_films, is.na(film) | is.na(run_time))
 
-# FIXME: Error: invalid type specifier
-
 # 6. Are a first sequel (the name ends with "2")
 #     - Hint: Bring the data into the R session before filtering
 
