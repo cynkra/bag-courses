@@ -65,4 +65,8 @@ dm_nycflights13() %>%
 
 # Joining is easy, leave the tables separate for as long as possible!
 
-# FIXME: Exercises
+# Exercises --------------------------------------------------------------------
+
+pixar_dm
+
+# 1. Experiment.
