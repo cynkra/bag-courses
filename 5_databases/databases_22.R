@@ -20,10 +20,10 @@ pixar_dm
 pixar_dm %>%
   dm_draw()
 
+names(pixar_dm)
+
 pixar_dm$pixar_films
 pixar_dm$academy
-
-names(pixar_dm)
 
 pixar_dm %>%
   dm_get_tables()
@@ -35,6 +35,6 @@ pixar_films_wrapped <-
   pull_tbl(pixar_films)
 
 pixar_films_wrapped
-pixar_films_wrapped$academy[[1]]
+pixar_films_wrapped$academy[1:2]
 
 # FIXME: Exercises
