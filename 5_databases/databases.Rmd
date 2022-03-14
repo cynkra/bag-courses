@@ -27,6 +27,13 @@ logo: true
 .remark-code {
     font-size: 14px;
 }
+pre {
+ white-space: pre-wrap;       /* css-3 */
+ white-space: -moz-pre-wrap;  /* Mozilla, since 1999 */
+ white-space: -pre-wrap;      /* Opera 4-6 */
+ white-space: -o-pre-wrap;    /* Opera 7 */
+ word-wrap: break-word;       /* Internet Explorer 5.5+ */
+}
 .font17 {
     font-size: 17px;
 }
@@ -43,7 +50,7 @@ library(tidyverse)
 library(DBI)
 library(dm)
 
-options(width = 68)
+options(width = 67)
 
 options(pillar.bold = TRUE)
 options(cli.num_colors = 256)
@@ -1000,7 +1007,7 @@ pixar_films_clean <-
   group_by(franchise) %>%
   mutate(sequel = if_else(is.na(sequel) & n() > 1, 1L, sequel)) %>%
   ungroup()
-old <- options(width = 100)
+old <- options(width = 130)
 ```
 
 ```{r databases-51 }
