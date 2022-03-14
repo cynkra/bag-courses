@@ -80,5 +80,5 @@ pixar_films
 #    for each film
 # 3. Compute the overall median run time, and the median run time per film rating
 # 4. For each film except the last, compute how many days have passed until the next film.
-#     - Hint: Use `lag(..., order_by = ...)`
+#     - Hint: Use `lead(..., order_by = ...)`
 # 4. Find the maximum number of days between releases of two G and two PG films.
