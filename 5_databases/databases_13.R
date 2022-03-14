@@ -59,5 +59,10 @@ my_pixar_films
 pixar_films
 
 # 1. Adapt the ETL workflow to convert the `run_time` column to a duration.
+
+pixar_films_ada <- mutate(pixar_films_clean,
+  run_time = hms::hms(minutes = run_time)
+)
+
 #    - Hint: Use `mutate()` with `hms::hms(minutes = ...)` .
 # 2. Re-run the workflow.
