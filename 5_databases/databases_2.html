@@ -534,6 +534,7 @@ pixarfilms::academy %&gt;%
 # DuckDB: register data frames as database tables
 
 Temporarily use a local data frame as a table.
+Also works for Arrow datasets via `duckdb::duckdb_register_arrow()`.
 
 .pull-left[
 ## Register and access
@@ -579,7 +580,136 @@ academy_small %&gt;%
 &lt;/CODE&gt;&lt;/PRE&gt;
 ]
 
-Also works for Arrow datasets via `duckdb::duckdb_register_arrow()`.
+---
+
+# DuckDB: Performance comparison
+
+Baseline: Data frames.
+
+.pull-left[
+
+```r
+nrow(nycflights13::flights)
+```
+
+```
+[1] 336776
+```
+]
+
+.pull-right[
+
+```r
+system.time(
+  nycflights13::flights %&gt;%
+    count(year, month, day)
+)
+```
+
+```
+   user  system elapsed 
+   0.01    0.00    0.01 
+```
+]
+
+---
+
+# DuckDB: Performance comparison
+
+With registration.
+
+.pull-left[
+
+```r
+system.time(duckdb::duckdb_register(
+  con_duckdb,
+  &quot;flights&quot;,
+  nycflights13::flights
+))
+```
+
+```
+   user  system elapsed 
+  0.003   0.001   0.003 
+```
+
+```r
+flights_register &lt;- tbl(con_duckdb, &quot;flights&quot;)
+flights_register %&gt;%
+  count()
+```
+
+&lt;PRE class=&quot;fansi fansi-output&quot;&gt;&lt;CODE&gt;&lt;span style=&#39;color: #949494;&#39;&gt;# Source:   lazy query [?? x 1]&lt;/span&gt;
+&lt;span style=&#39;color: #949494;&#39;&gt;# Database: duckdb_connection&lt;/span&gt;
+       &lt;span style=&#39;font-weight: bold;&#39;&gt;n&lt;/span&gt;
+   &lt;span style=&#39;color: #949494; font-style: italic;&#39;&gt;&amp;lt;dbl&amp;gt;&lt;/span&gt;
+&lt;span style=&#39;color: #BCBCBC;&#39;&gt;1&lt;/span&gt; &lt;span style=&#39;text-decoration: underline;&#39;&gt;336&lt;/span&gt;776
+&lt;/CODE&gt;&lt;/PRE&gt;
+]
+
+.pull-right[
+
+```r
+system.time(
+  flights_register %&gt;%
+    count(year, month, day) %&gt;%
+    collect()
+)
+```
+
+```
+   user  system elapsed 
+  0.031   0.000   0.030 
+```
+]
+
+---
+
+# DuckDB: Performance comparison
+
+With copy.
+
+.pull-left[
+
+```r
+system.time(
+  flights_copy &lt;- copy_to(con_duckdb, nycflights13::flights)
+)
+```
+
+```
+   user  system elapsed 
+  0.087   0.008   0.095 
+```
+
+```r
+flights_copy %&gt;%
+  count()
+```
+
+&lt;PRE class=&quot;fansi fansi-output&quot;&gt;&lt;CODE&gt;&lt;span style=&#39;color: #949494;&#39;&gt;# Source:   lazy query [?? x 1]&lt;/span&gt;
+&lt;span style=&#39;color: #949494;&#39;&gt;# Database: duckdb_connection&lt;/span&gt;
+       &lt;span style=&#39;font-weight: bold;&#39;&gt;n&lt;/span&gt;
+   &lt;span style=&#39;color: #949494; font-style: italic;&#39;&gt;&amp;lt;dbl&amp;gt;&lt;/span&gt;
+&lt;span style=&#39;color: #BCBCBC;&#39;&gt;1&lt;/span&gt; &lt;span style=&#39;text-decoration: underline;&#39;&gt;336&lt;/span&gt;776
+&lt;/CODE&gt;&lt;/PRE&gt;
+]
+
+.pull-right[
+
+```r
+system.time(
+  flights_copy %&gt;%
+    count(year, month, day) %&gt;%
+    collect()
+)
+```
+
+```
+   user  system elapsed 
+  0.008   0.000   0.006 
+```
+]
 
 ---
 

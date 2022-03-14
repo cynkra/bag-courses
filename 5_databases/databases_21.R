@@ -106,6 +106,44 @@ academy_small %>%
 
 # Also works for Arrow datasets via duckdb::duckdb_register_arrow()
 
+# Performance
+nrow(nycflights13::flights)
+
+system.time(
+  nycflights13::flights %>%
+    count(year, month, day)
+)
+
+system.time(duckdb::duckdb_register(
+  con_duckdb,
+  "flights",
+  nycflights13::flights
+))
+
+flights_register <- tbl(con_duckdb, "flights")
+flights_register %>%
+  count()
+
+system.time(
+  flights_register %>%
+    count(year, month, day) %>%
+    collect()
+)
+
+system.time(
+  flights_copy <- copy_to(con_duckdb, nycflights13::flights)
+)
+
+flights_copy %>%
+  count()
+
+system.time(
+  flights_copy %>%
+    count(year, month, day) %>%
+    collect()
+)
+
+
 # ETL, revisited ---------------------------------------------------------------
 
 db_path <- fs::path_abs("pixar.duckdb")

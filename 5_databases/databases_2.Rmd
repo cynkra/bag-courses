@@ -166,7 +166,7 @@ academy %>%
 ]
 
 .pull-right[
-```{r databases-2-10}
+```{r databases-2-10 }
 academy
 ```
 ]
@@ -180,7 +180,7 @@ The most frequent kind of join.
 .pull-left[
 ## Unsafe
 
-```{r databases-2-11}
+```{r databases-2-11 }
 academy %>%
   left_join(pixar_films)
 ```
@@ -189,7 +189,7 @@ academy %>%
 .pull-right[
 ## Better
 
-```{r databases-2-12}
+```{r databases-2-12 }
 academy %>%
   left_join(pixar_films, by = "film")
 ```
@@ -201,7 +201,7 @@ academy %>%
 
 Computed on the database, original data unchanged.
 
-```{r databases-2-13}
+```{r databases-2-13 }
 academy %>%
   left_join(pixar_films, by = "film") %>%
   show_query()
@@ -216,7 +216,7 @@ The right-hand side in the join should come from a variable.
 .pull-left[
 ## Prepare RHS
 
-```{r databases-2-14}
+```{r databases-2-14 }
 academy_won <-
   academy %>%
   filter(status == "Won") %>%
@@ -227,7 +227,7 @@ academy_won
 
 
 .pull-right[
-```{r databases-2-15}
+```{r databases-2-15 }
 pixar_films %>%
   left_join(academy_won, by = "film")
 ```
@@ -240,7 +240,7 @@ pixar_films %>%
 .pull-left[
 ## Raw result
 
-```{r databases-2-16}
+```{r databases-2-16 }
 pixar_films %>%
   left_join(academy_won, by = "film") %>%
   arrange(release_date)
@@ -251,7 +251,7 @@ pixar_films %>%
 .pull-right[
 ## After postprocessing
 
-```{r databases-2-17}
+```{r databases-2-17 }
 pixar_films %>%
   left_join(academy_won, by = "film") %>%
   mutate(n_won = coalesce(n_won, 0L)) %>%
@@ -265,7 +265,7 @@ pixar_films %>%
 
 Computed on the database, original data unchanged.
 
-```{r databases-2-18}
+```{r databases-2-18 }
 pixar_films %>%
   left_join(academy_won, by = "film") %>%
   mutate(n_won = coalesce(n_won, 0L)) %>%
@@ -282,7 +282,7 @@ Use `copy = TRUE` to enforce, the result is a lazy table if the LHS is a lazy ta
 .pull-left[
 ## Bad
 
-```{r databases-2-19}
+```{r databases-2-19 }
 try(
   academy %>%
     left_join(pixar_films_sqlite, by = "film")
@@ -293,7 +293,7 @@ try(
 .pull-right[
 ## Not too bad
 
-```{r databases-2-20}
+```{r databases-2-20 }
 academy %>%
   left_join(pixar_films_sqlite, by = "film", copy = TRUE)
 ```
@@ -306,7 +306,7 @@ academy %>%
 A temporary table is created on the LHS database.
 If the RHS comes from a different database, results are temporarily loaded into the local session!
 
-```{r databases-2-21}
+```{r databases-2-21 }
 academy %>%
   left_join(pixar_films_sqlite, by = "film", copy = TRUE) %>%
   show_query()
@@ -321,7 +321,7 @@ The result is a data frame too.
 .pull-left[
 ## Bad
 
-```{r databases-2-22}
+```{r databases-2-22 }
 try(
   pixarfilms::academy %>%
     left_join(pixar_films, by = "film")
@@ -332,7 +332,7 @@ try(
 .pull-right[
 ## Could be worse
 
-```{r databases-2-23}
+```{r databases-2-23 }
 pixarfilms::academy %>%
   left_join(pixar_films, by = "film", copy = TRUE)
 ```
@@ -343,11 +343,12 @@ pixarfilms::academy %>%
 # DuckDB: register data frames as database tables
 
 Temporarily use a local data frame as a table.
+Also works for Arrow datasets via `duckdb::duckdb_register_arrow()`.
 
 .pull-left[
 ## Register and access
 
-```{r databases-2-24}
+```{r databases-2-24 }
 duckdb::duckdb_register(
   con_duckdb,
   "academy_small",
@@ -362,13 +363,89 @@ academy_small
 .pull-right[
 ## Use
 
-```{r databases-2-25}
+```{r databases-2-25 }
 academy_small %>%
   left_join(pixar_films, by = "film")
 ```
 ]
 
-Also works for Arrow datasets via `duckdb::duckdb_register_arrow()`.
+---
+
+# DuckDB: Performance comparison
+
+Baseline: Data frames.
+
+.pull-left[
+```{r databases-2-26 }
+nrow(nycflights13::flights)
+```
+]
+
+.pull-right[
+```{r databases-2-27 }
+system.time(
+  nycflights13::flights %>%
+    count(year, month, day)
+)
+```
+]
+
+---
+
+# DuckDB: Performance comparison
+
+With registration.
+
+.pull-left[
+```{r databases-2-28 }
+system.time(duckdb::duckdb_register(
+  con_duckdb,
+  "flights",
+  nycflights13::flights
+))
+
+flights_register <- tbl(con_duckdb, "flights")
+flights_register %>%
+  count()
+```
+]
+
+.pull-right[
+```{r databases-2-29 }
+system.time(
+  flights_register %>%
+    count(year, month, day) %>%
+    collect()
+)
+```
+]
+
+---
+
+# DuckDB: Performance comparison
+
+With copy.
+
+.pull-left[
+```{r databases-2-30 }
+system.time(
+  flights_copy <- copy_to(con_duckdb, nycflights13::flights)
+)
+
+flights_copy %>%
+  count()
+```
+]
+
+.pull-right[
+```{r databases-2-31 }
+system.time(
+  flights_copy %>%
+    count(year, month, day) %>%
+    collect()
+)
+```
+]
 
 ---
 
@@ -376,7 +453,7 @@ Also works for Arrow datasets via `duckdb::duckdb_register_arrow()`.
 
 Insert a second table into our database.
 
-```{r databases-2-26}
+```{r databases-2-32 }
 db_path <- fs::path_abs("pixar.duckdb")
 con <- DBI::dbConnect(duckdb::duckdb(dbdir = db_path))
 DBI::dbWriteTable(con, "academy", pixarfilms::academy, overwrite = TRUE)
