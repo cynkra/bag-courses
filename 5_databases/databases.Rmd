@@ -195,7 +195,7 @@ background-position: 100% 100%
 # Read whole tables
 
 .pull-left[
-- {DBI} package
+- {DBI} and {duckdb} package
 - Connect
 - Discover
 - Read
@@ -224,6 +224,10 @@ con_duckdb
 <duckdb_connection 0faa0 driver=<duckdb_driver 22170 dbdir=':memory:' read_only=FALSE>>
 ```
 
+Connection options: <https://dbi.r-dbi.org/reference/dbconnect>
+
+Further information: <https://db.rstudio.com/>
+
 ---
 
 background-image: url("images/magic-hat-and-wand-nath-r.svg")
@@ -249,10 +253,17 @@ dm::copy_dm_to(
 
 Where is my data?
 
+.pull-left[
 ```{r databases-6 }
 dbListTables(con_duckdb)
+```
+]
+
+.pull-right[
+```{r databases-6-a }
 dbListFields(con_duckdb, "pixar_films")
 ```
+]
 
 Caveat: schemas, catalogs, ...
 
@@ -357,6 +368,9 @@ sql <- "
 SELECT count(*) FROM pixar_films
 WHERE release_date >= ?
 "
+```
+
+```{r databases-16-a }
 dbGetQuery(con_duckdb, sql,
   params = list(as.Date("2020-01-01"))
 )
