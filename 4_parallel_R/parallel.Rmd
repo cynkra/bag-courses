@@ -11,6 +11,7 @@ output:
       highlightLines: yes
       countIncrementalSlides: yes
       slideNumberFormat: '%current%/%total%'
+      beforeInit: "js/macros.js"
     seal: yes
 fontsize: 10pt
 lang: english
@@ -29,6 +30,7 @@ resource_files:
 xaringanExtra::use_tile_view()
 xaringanExtra::use_fit_screen()
 xaringanExtra::use_scribble()
+xaringanExtra::use_webcam()
 xaringanExtra::use_extra_styles(
   hover_code_line = TRUE,
   mute_unhighlighted_code = TRUE
@@ -101,6 +103,10 @@ htmltools::tagList(
   font-size: 85%;
 }
 
+.code08 .remark-code {
+  font-size: 0.8em;
+}
+
 .info {
   background-color: rgb(31 101 183);
   font-weight: 600;
@@ -115,6 +121,11 @@ code {
   font-size: 0.9em;
 }
 
+.code-small,
+remark-code {
+  font-size: 0.8em;
+}
+
 .remark-slide-number {
   color: inherit !important;
   opacity: 0.9 !important;
@@ -126,6 +137,33 @@ a {
 
 ```
 
+## Who I am
+
+.fl.w-50.pr1[
+
+.center[
+![:scale 30%](fig/ich.jpeg)
+]
+
+- M.Sc. Geoinformatics
+- Previously researcher at University of **Jena** and LMU **Munich**
+- **Head of Infrastructure** at cynkra
+- PhD Candidate (Environmental modelling)
+
+]
+
+.fl.w-50.pr1[
+- Unix & R enthusiast
+
+- [Gitea](https://gitea.io/en-us/) (https://gitea.io) contributor
+
+- Member of mlr-org core team; Machine learning in R ![:scale 10%](fig/mlr.png)
+  - [{mlr3}](https://github.com/mlr-org/mlr3)
+  - [{mlr}](https://github.com/mlr-org/mlr)
+
+]
+
+---
 
 # What's in the box?
 
@@ -134,6 +172,9 @@ a {
 1. BLAS/LAPACK
 
 1. Parallelization
+  - for-loops
+  - apply-family
+  - Reproducibility
 
 1. Profiling
 
@@ -242,6 +283,23 @@ To link against such external libraries, R needs to be **installed from source**
 This is usually recommended for centrally managed R installations on servers or HPC clusters.
 
 More information: https://cran.r-project.org/doc/manuals/r-release/R-admin.html#Linear-algebra
+
+---
+
+### Unoffical R interpreters
+
+[Microsoft R Application Network (MRAN)](https://mran.microsoft.com/)
+
+- Available on all platforms
+- With optimized BLAS/LAPACK by default
+
+[fastR](https://github.com/oracle/fastr)
+
+- A high-performance implementation of the R programming language, built on GraalVM.
+- Speed up around 36x
+- Not all R packages are supported
+- Needs "GraalVM" (https://www.graalvm.org)
+
 
 ---
 
@@ -396,13 +454,10 @@ At the point of forking child processes share exactly the same state including t
 **{foreach}** - https://github.com/RevolutionAnalytics/foreach
 
 ```{r eval=FALSE}
-dat_list <- split(iris, iris$Species)
-mod_list <- vector("list", length(dat_list))
-
-for (i in seq_along(dat_list)) {
-  mod_list[[i]] <- lm(Sepal.Length ~ Sepal.Width +
-    Petal.Length + Petal.Width, data = dat_list[[i]])
-}
+  vec = c(2, 2, 2)
+  for (i in vec) {
+    Sys.sleep(i)
+  }
 ```
 
 ---
@@ -417,9 +472,9 @@ Sequential
 
 ```{r eval=FALSE}
 library(foreach)
-mod_list2 <- foreach(dat = dat_list) %do% {
-  lm(Sepal.Length ~ Sepal.Width + Petal.Length +
-    Petal.Width, data = dat)
+vec = c(2, 2, 2)
+foreach (i = vec) %do% {
+  Sys.sleep(i)
 }
 ```
 
@@ -433,13 +488,15 @@ mod_list2 <- foreach(dat = dat_list) %do% {
 Parallel
 ]
 
-Note the `%dopar%` adaptor.
+Note the `%dopar%` adaptor and cluster initialization
 
 ```{r eval=FALSE}
 library(foreach)
-mod_list2 <- foreach(dat = dat_list) %dopar% {
-  lm(Sepal.Length ~ Sepal.Width + Petal.Length +
-    Petal.Width, data = dat)
+library(doParallel)
+registerDoParallel(3)
+
+foreach (i = vec) %dopar% {
+  Sys.sleep(i)
 }
 ```
 
@@ -460,13 +517,49 @@ mod_list2 <- foreach(dat = dat_list) %dopar% {
 
 ### Benefits of the {doFuture} parallel adaptor
 
-- Takes care of exports and packages automatically
+- Takes care of object and package exports automatically
 
 - Allows to select the backend via the cannonical {future} syntax (`plan(<backend>)`)
 
 - Only one package to deal with for users
 
 - Actively maintained
+
+---
+
+### Parallelization - Exercises
+
+.info[
+  Duration: 10 mins
+]
+
+The code on the next slide finishes in a little bit more than two seconds in parallel (when using 3 cores) and in about six seconds sequentially.
+
+Rewrite the code using different parallel variations in R:
+
+- {foreach} and {doParallel}
+- {foreach} and {doFuture} using the `"multisession"` backend
+
+(hint: do research how to init parallel backends via {future})
+
+---
+
+### Parallelization - Exercises
+
+```{r eval = FALSE}
+vec = c(2, 2, 2)
+system.time({
+  for (i in vec) {
+    Sys.sleep(i)
+  }
+})
+```
+
+👉️ Inspect the time differences between the different parallel options.
+
+.small[
+(Solutions can be found in `exercises/parallelization-solutions.R`)
+]
 
 ---
 
@@ -497,7 +590,7 @@ mod_list2 <- foreach(dat = dat_list) %dopar% {
 - {purrr} functions are prefixed with `future_`
 - Go parallel with `plan(<parallel plan>)`
 
-Examples:
+{purrr} ➡️ {furrr} equivalent:
 
 - `map()` - `future_map()`
 - `walk()` - `future_walk()`
@@ -513,7 +606,7 @@ Examples:
 - Similar as {furrr} but for base R `apply*` functions.
 - Go parallel with `plan(<parallel plan>)`.
 
-Examples:
+base R ➡️ {future.apply} equivalent:
 
 - `lapply()` - `future_lapply()`
 - `mapply()` - `future_mapply()`
@@ -563,27 +656,25 @@ Available {future} backends:
 - `multisession` (= socket parallelization)
 - `multicore` (= forking parallelization)
 - `callr` (via {future.callr}) (possibly >> multisession)
-- `batchtools`
+- `batchtools` (not of interest for local executions)
 
 ---
 
 ### Parallelization - Exercises
 
 .info[
-  Duration: 30 mins
+  Duration: 20 mins
 ]
 
-The code on the next slide should finish in a little bit more than two seconds in parallel and in about four seconds sequentially.
+The code on the next slide finishes in a little bit more than two seconds in parallel and in about six seconds sequentially.
 
-Rewrite the code using different parallel variations in R
+Rewrite the code using different parallel variations in R:
 
-- {foreach} and {doParallel}
-- {foreach} and {doFuture}
-- `parLapply()` and a PSOCK cluster
-- `furrr::future_walk()`
-- {future.apply}
-- {future} + `lapply()` + `future()`
-- {future.callr} + `future_lapply()`
+- `furrr::future_walk()` and a {future} plan
+- Using the {future.apply} package and a {future} plan
+- Using {future} via `lapply()` + `future()` + `value()`
+- Using `parallel::parLapply()` and a PSOCK cluster from the {parallel}
+- {future.callr} as the {future} backend and `future_lapply()`
 
 ---
 
@@ -592,13 +683,136 @@ Rewrite the code using different parallel variations in R
 ```{r eval = FALSE}
 system.time({
   vec = c(2, 2, 2)
-  for (i in vec) {
-    Sys.sleep(i)
-  }
+  lapply(vec, Sys.sleep)
 })
 ```
 
 👉️ Inspect the time differences between the different parallel options.
+
+.small[
+(Solutions can be found in `exercises/parallelization-solutions.R`)
+]
+
+---
+
+### Parallelization - Reproducibility
+
+The default Random Number Generator (RNG) kind in R (`"Mersenne-Twister"`) **does not** ensure numerical reproducibility in parallel scenarios.
+
+Instead, *most often* the `"L'Ecuyer-CMRG"` RNG kind needs to be used, e.g.
+
+```r
+set.seed(<seed>, "L'Ecuyer-CMRG")
+```
+
+Depending on the parallel framework used, the ways how to set this RNG kind differs.
+
+---
+
+### Parallelization - Reproducibility
+
+- Forking: `set.seed(<seed>, "L'Ecuyer-CMRG")`
+
+- Socket-parallelization: `parallel::clusterSetRNGStream(iseed = <seed>)` - after the socket cluster has been created (!)
+
+- {future.apply}: `future_lapply(future.seed = TRUE)`
+
+- {doFuture}:
+.code08[
+  ```r
+  library("doRNG")
+  registerDoRNG(<seed>)
+
+  # or
+  set.seed(<seed>, "L'Ecuyer-CMRG")
+  foreach(i = <list>) %dorng%
+  ```
+  ]
+
+---
+
+### Parallelization - Reproducibility
+
+.info[
+  Not reproducible
+]
+
+.code08[
+```{r warning=FALSE}
+library("future.apply")
+
+plan(multisession, workers = 2)
+
+set.seed(42)
+r1 <- future_lapply(rep(3, 2), runif)
+set.seed(42)
+r2 <- future_lapply(rep(3, 2), runif)
+
+all.equal(r1, r2)
+```
+]
+
+---
+
+### Parallelization - Reproducibility
+
+.info[
+  Reproducible
+]
+
+```{r warning=FALSE}
+plan(multisession, workers = 2)
+
+set.seed(42)
+r3 <- future_lapply(rep(3, 2), runif, future.seed = TRUE)
+set.seed(42)
+r4 <- future_lapply(rep(3, 2), runif, future.seed = TRUE)
+
+all.equal(r3, r4)
+```
+
+See https://pat-s.me/reproducibility-when-going-parallel for more examples.
+
+---
+
+### Parallelization - Progress
+
+`print()`, `message()`, `cat()` do not work by default in parallel.
+The output is hold back until the process has finished.
+
+Three alternatives exists:
+
+1. Logging to a file (`cat(file = )`)
+
+1. Using a progress bar ({progressr} package)
+
+1. Using `system()`
+
+
+---
+
+### Parallelization - Progress
+
+.code08[
+```{r eval=FALSE}
+library(foreach); library(doFuture); library(progressr)
+handlers(global = TRUE)
+registerDoFuture()
+plan(multisession, workers = 2)
+
+my_fun <- function(x) {
+  p <- progressr::progressor(along = x)
+  foreach (kk = x) %dopar% {
+    Sys.sleep(2)
+    system(sprintf('echo "Iter %s"', kk)) # workaround
+    cat(sprintf("Iter %s", kk), # file logging
+      file = "log.txt", fill = TRUE, append = TRUE)
+    p(message = sprintf("Added %g", x[kk])) # progress bar
+  }
+}
+y = my_fun(1:10)
+```
+]
 
 ---
 
@@ -606,13 +820,13 @@ system.time({
 
 **Do you like for-loops?**
 
- ➡️ {foreach} + {doFuture} + `%doRNG%` adaptor for reproducibility (optional)
+➡️ {foreach} + {doFuture} + (optional) `%doRNG%` adaptor for reproducibility
 
-**Do you like the apply family?**
+**Do you favor the apply family?**
 
-Do you like {purrr}? ➡️ {furrr} or {future}
+➡️ Do you like {purrr}? ➡️ {furrr}
 
-Do you favor the classical apply functions? ➡️ `future()` + `lapply()` & friends or `future_*apply()` via {future.apply}
+➡️ Do you favor the classical apply functions? ➡️ `future()` + `lapply()` & friends or `future_*apply()` via {future.apply}
 
 ---
 
@@ -628,8 +842,9 @@ class: center, inverse, middle
 
   - execution time
   - memory consumption
+  - and more helpful statistics
 
-This can help to optimize code and reduce runtime and resource usage.
+The idea is to get insights into code execution statistics which can help to optimize code and reduce runtime and resource usage.
 
 ---
 
@@ -669,8 +884,8 @@ system.time({
 ### Profiling - Example (slow)
 
 ```{r, eval=FALSE}
-library(proffer)
-px <- pprof({
+library(profvis)
+px <- profvis({
   n <- 1e5
   x <- data.frame(x = rnorm(n), y = rnorm(n))
   for (i in seq_len(n)) {
@@ -763,6 +978,24 @@ autoplot(bm)
 
 ## Benchmarking
 
+Excursion: R's Garbage Collector
+
+> GC automatically releases memory when an object is no longer used. It does this by tracking how many names point to each object, and when there are no names pointing to an object, it deletes that object.
+
+.small[
+Source: http://adv-r.had.co.nz/memory.html#gc
+]
+
+> Level 0 collects only the youngest generation, level 1 collects the two youngest generations and level 2 collects all generations. After 20 level-0 collections the next collection is at level 1, and after 5 level-1 collections at level 2.
+
+.small[
+Source: https://cran.r-project.org/doc/manuals/r-release/R-ints.html#The-write-barrier
+]
+
+---
+
+## Benchmarking
+
 Examples of efficient implementations in R
 
 {fastmatch}
@@ -777,6 +1010,8 @@ bm_match = bench::mark(
   match(s,x)
 )
 ```
+
+{fastmatch} creates a hash table of matches in memory which speeds up lookups after the first iteration
 
 ---
 
@@ -928,11 +1163,11 @@ Alternatives to R's native `saveRDS()` and `readRDS()`
 Helpful instructions at: https://arrow.apache.org/docs/r/articles/dataset.html
 
 1. Download the NYC Taxi data **for the year 2010**.
-  (don't copy all data, one year takes already few minutes and is about 5GB in size)
+  .small[(don't copy all data, one year already takes a few minutes and is about 5GB in size)]
 
-1. Print the overall passenger count for March
+1. Return the overall passenger count for March (hint: you can use {dplyr} syntax)
 
-1. List and sum the file size of the downloaded data (potentially skip - somewhat tricky)
+1. List and sum the file size of the downloaded data (⚠️ tricky)
 
 ---
 
@@ -942,17 +1177,24 @@ Helpful instructions at: https://arrow.apache.org/docs/r/articles/dataset.html
 
 - [Video: Barret Schloerke || Maximize computing resources using future_promise()](https://www.youtube.com/watch?v=3gtk8uRrrL4)
 - [{future} documentation and vignettes](https://future.futureverse.org/)
+- [{progressr}](https://progressr.futureverse.org/)
 
 **R Configuration**
 
 - [CRAN: R admin manual](https://cran.r-project.org/doc/manuals/r-release/R-admin.html)
 
+---
+
+## Resources
+
 **General best practices**
 
 - [Book: "Efficient R" - Colin Gillespie & Robin Lovelace](https://csgillespie.github.io/efficientR)
+- [Book: "Advanced R" - Hadley Wickham](http://adv-r.had.co.nz/)
 
 **BLAS/LAPACK**
 
 - [Benchmark of BLAS libraries in R](https://github.com/andre-wojtowicz/blas-benchmarks)
+- [MRAN LAPACK comparison](https://mran.microsoft.com/documents/rro/multithread)
 
 

@@ -1,0 +1,2997 @@
+---
+title: "Databases"
+author: ["Kirill & Nicolas", "cynkra GmbH"]
+date: "March 15, 2022"
+output:
+  cynkradown::cynkra_slides:
+    nature:
+      highlightStyle: github
+      highlightLines: true
+      countIncrementalSlides: false
+      ratio: "16:9"
+    seal: true
+lang: english
+font: frutiger
+wide: false
+colorlinks: false
+logo: true
+---
+
+<style type="text/css">
+.pull-left {
+  margin-top: -25px;
+}
+.pull-right {
+  margin-top: -25px;
+}
+.remark-code {
+    font-size: 14px;
+}
+pre {
+ white-space: pre-wrap;       /* css-3 */
+ white-space: -moz-pre-wrap;  /* Mozilla, since 1999 */
+ white-space: -pre-wrap;      /* Opera 4-6 */
+ white-space: -o-pre-wrap;    /* Opera 7 */
+ word-wrap: break-word;       /* Internet Explorer 5.5+ */
+}
+.font17 {
+    font-size: 17px;
+}
+.font14 {
+    font-size: 14px;
+}
+</style>
+
+
+```{r databases-1, include = FALSE}
+knitr::opts_chunk$set(cache = TRUE, comment = "")
+
+library(tidyverse)
+library(DBI)
+library(dm)
+
+options(width = 67)
+
+options(pillar.bold = TRUE)
+options(cli.num_colors = 256)
+
+fansi::set_knit_hooks(knitr::knit_hooks, c("output", "message", "warning", "error"))
+```
+
+
+# Introduction
+
+Organization of half-day R courses:
+
+- Intro courses:
+  * Tidyverse intro I
+  * Base R intro/Tidyverse intro II
+  * Data visualization I
+  * Data visualization II
+- Advanced courses:
+  * Advanced tidyverse
+  * R package creation
+  * Working with database systems
+  * Parallelization & efficient R programming
+  * Databases (this course)
+
+---
+
+# Course material
+
+Our course material currently is available from GitHub at
+
+https://github.com/cynkra/bag-courses
+
+Today we will be looking at the folder `5_databases`
+
+---
+
+# Download course material
+
+![how to download](cynkra-repo-dl.png)
+
+---
+
+# General remarks
+
+- We hope for these courses to be interactive: go ahead and ask if something is unclear!
+- You can also write into the chat, which I will try to monitor when Kirill is presenting.
+- We were asked to provide recordings of the courses for those of you who cannot join, so recording is activated.
+- Per course unit, we offer 4 hours of follow up time; approach us with questions (nicolas@cynkra.com)!
+
+---
+
+# Goals for today
+
+Playing the whole game!
+
+- Extract
+- Transform
+- Load
+- **Consume**
+
+---
+
+# Schedule
+
+Extract ⇨ Transform ⇨ Load ⇨ Consume
+
+.pull-left[
+## One table
+
+- Read whole tables
+- Let the database do the heavy lifting
+- Basic ETL for one table
+- Subtle issues to watch out for
+]
+
+.pull-right[
+## Multiple tables
+
+- Joins
+- The {dm} package
+- A bit of theory
+- Playing the whole game
+]
+
+## Bonus: Bring your own data + questions
+
+---
+
+# Schedule
+
+Extract ⇨ Transform ⇨ Load ⇨ Consume
+
+.pull-left[
+## One table
+
+- **Read whole tables**
+- Let the database do the heavy lifting
+- Basic ETL for one table
+- Subtle issues to watch out for
+]
+
+.pull-right[
+## Multiple tables
+
+- Joins
+- The {dm} package
+- A bit of theory
+- Playing the whole game
+]
+
+## Bonus: Bring your own data + questions
+
+---
+
+background-image: url("images/11.webp")
+background-size: contain
+background-position: 100% 100%
+
+# Read whole tables
+
+.pull-left[
+- {DBI} and {duckdb} package
+- Connect
+- Discover
+- Read
+- Query
+
+Script: `databases_11.R`
+
+```{r databases-2 }
+library(tidyverse)
+library(DBI)
+```
+]
+
+---
+
+background-image: url("images/11-frame.webp")
+background-size: contain
+background-position: 100% 100%
+
+# Read whole tables
+
+.pull-left[
+- {DBI} and {duckdb} package
+- Connect
+- Discover
+- Read
+- Query
+
+Script: `databases_11.R`
+
+```{r databases-3 }
+library(tidyverse)
+library(DBI)
+```
+]
+
+---
+
+# Connect to the database
+
+First step when accessing the database.
+
+```{r databases-4, results='hide', message=FALSE, cache=FALSE}
+con_duckdb <- dbConnect(duckdb::duckdb())
+con_duckdb
+```
+
+```
+<duckdb_connection 0faa0 driver=<duckdb_driver 22170 dbdir=':memory:' read_only=FALSE>>
+```
+
+Connection options: <https://dbi.r-dbi.org/reference/dbconnect>
+
+Further information: <https://db.rstudio.com/>
+
+---
+
+background-image: url("images/magic-hat-and-wand-nath-r.svg")
+background-size: 25%
+background-position: 100% 100%
+
+# Prepare database
+
+Normally done in a preparatory step.
+
+```{r databases-5, cache=FALSE}
+dm::copy_dm_to(
+  con_duckdb,
+  dm::dm_pixarfilms(),
+  set_key_constraints = FALSE,
+  temporary = FALSE
+)
+```
+
+---
+
+# Discover tables
+
+Where is my data?
+
+.pull-left[
+```{r databases-6 }
+dbListTables(con_duckdb)
+```
+]
+
+.pull-right[
+```{r databases-6-a }
+dbListFields(con_duckdb, "pixar_films")
+```
+]
+
+Caveat: schemas, catalogs, ...
+
+```sql
+SELECT * FROM INFORMATION_SCHEMA.TABLES
+```
+
+---
+
+# Read tables
+
+Read entire tables into your local session, if you can afford it.
+
+```{r databases-7 }
+df_pixar_films <- dbReadTable(con_duckdb, "pixar_films")
+df_pixar_films
+```
+
+---
+
+# Read tables
+
+Use `as_tibble()` to convert to a tibble for better display
+and more robust operation.
+
+```{r databases-8 }
+df_pixar_films <- dbReadTable(con_duckdb, "pixar_films")
+as_tibble(df_pixar_films)
+```
+
+---
+
+# Execute queries
+
+Write SQL code to define what data you want to see.
+
+```{r databases-9 }
+dbGetQuery(con_duckdb, "SELECT * FROM pixar_films")
+```
+
+---
+
+# Execute queries
+
+Write complex SQL code to define what data you want to see.
+
+```{r databases-10 }
+sql <- "
+SELECT * FROM pixar_films
+WHERE release_date >= '2020-01-01'
+"
+```
+
+```{r databases-11 }
+dbGetQuery(con_duckdb, sql)
+```
+
+---
+
+# Execute queries
+
+R 4.0 or later: use new-style string literals for mixing quotes.
+
+```{r databases-12, eval = FALSE}
+sql <- r"(
+SELECT * FROM "pixar_films"
+WHERE "release_date" >= '2020-01-01'
+)"
+```
+
+```{r databases-13 }
+dbGetQuery(con_duckdb, sql)
+```
+
+---
+
+background-image: url("images/magic-hat-and-wand-nath-r.svg")
+background-size: 25%
+background-position: 100% 100%
+
+# Further pointers
+
+.pull-left[
+## Quoting
+
+```{r databases-14 }
+dbQuoteIdentifier(con_duckdb, "academy")
+dbQuoteLiteral(con_duckdb, "Toy Story")
+dbQuoteLiteral(con_duckdb, as.Date("2020-01-01"))
+```
+
+```{r databases-15, eval = FALSE}
+glue::glue_sql(...)
+```
+]
+
+.pull-right[
+## Parameterized queries
+
+```{r databases-16 }
+sql <- "
+SELECT count(*) FROM pixar_films
+WHERE release_date >= ?
+"
+```
+
+```{r databases-16-a }
+dbGetQuery(con_duckdb, sql,
+  params = list(as.Date("2020-01-01"))
+)
+```
+]
+
+---
+
+background-image: url("images/11-frame.webp")
+background-size: contain
+background-position: 100% 100%
+
+# Read whole tables: Exercises
+
+.pull-left[
+1. List all columns from the `box_office` table.
+2. Read the `academy` table.
+3. Read all records from the `academy` table that correspond to awards won
+    - Hint: Use the query `"SELECT * FROM academy WHERE status = 'Won'"`
+4. Use quoting and/or query parameters to stabilize the previous query.
+]
+
+---
+
+# Schedule
+
+Extract ⇨ Transform ⇨ Load ⇨ Consume
+
+.pull-left[
+## One table
+
+- Read whole tables
+- **Let the database do the heavy lifting 1/2**
+- Basic ETL for one table
+- Subtle issues to watch out for
+]
+
+.pull-right[
+## Multiple tables
+
+- Joins
+- The {dm} package
+- A bit of theory
+- Playing the whole game
+]
+
+## Bonus: Bring your own data + questions
+
+---
+
+background-image: url("images/12.webp")
+background-size: 40%
+background-position: 100% 100%
+
+# Downsizing on the database
+
+.pull-left[
+- {dbplyr} package (part of the tidyverse)
+- Lazy tables
+- `collect()`
+- `select()`
+- `filter()`
+- `count()`
+
+Script: `databases_12_1.R`
+
+```{r databases-17 }
+library(tidyverse)
+```
+]
+
+---
+
+background-image: url("images/12-frame.webp")
+background-size: 40%
+background-position: 100% 100%
+
+# Downsizing on the database
+
+.pull-left[
+- {dbplyr} package (part of the tidyverse)
+- Lazy tables
+- `collect()`
+- `select()`
+- `filter()`
+- `group_by()`, `summarize()`, `ungroup()`, `count()`
+
+Script: `databases_12_1.R`
+
+```{r databases-18 }
+library(tidyverse)
+```
+]
+
+---
+
+# Lazy tables
+
+A pointer to a SQL table. The data is still on the database!
+
+```{r databases-19, cache = FALSE}
+pixar_films <- tbl(con_duckdb, "pixar_films")
+pixar_films
+```
+
+---
+
+# Read the whole table
+
+```{r databases-20 }
+df_pixar_films <-
+  pixar_films %>%
+  collect()
+df_pixar_films
+```
+
+---
+
+# Select columns
+
+With `select()`, like with data frames.
+
+.pull-left[
+```{r databases-21 }
+pixar_films %>%
+  select(1:3)
+```
+]
+
+.pull-right[
+## Under the hood
+
+```{r databases-22 }
+pixar_films %>%
+  select(1:3) %>%
+  show_query()
+```
+]
+
+---
+
+# Select columns and read
+
+.pull-left[
+```{r databases-23 }
+df_pixar_films_3 <-
+  pixar_films %>%
+  select(1:3) %>%
+  collect()
+df_pixar_films_3
+```
+]
+
+.pull-right[
+## Data on the database not affected
+
+```{r databases-24 }
+pixar_films %>%
+  collect()
+```
+]
+
+---
+
+# Select rows
+
+With `filter()`, like with data frames.
+
+.pull-left[
+```{r databases-25 }
+pixar_films %>%
+  filter(release_date >= "2020-01-01")
+```
+]
+
+.pull-right[
+## Under the hood
+
+```{r databases-26 }
+pixar_films %>%
+  filter(release_date >= "2020-01-01") %>%
+  show_query()
+```
+]
+
+---
+
+# Select rows and read
+
+.pull-left[
+```{r databases-27 }
+df_pixar_films_202x <-
+  pixar_films %>%
+  filter(release_date >= "2020-01-01") %>%
+  collect()
+df_pixar_films_202x
+```
+]
+
+.pull-right[
+## Data on the database not affected
+
+```{r databases-28 }
+pixar_films %>%
+  collect()
+```
+]
+
+---
+
+# Aggregate
+
+With `group_by()` + `summarize()` + `ungroup()`, like with data frames.
+
+.pull-left[
+```{r databases-29 }
+pixar_films %>%
+  group_by(film_rating) %>%
+  summarize(n = n()) %>%
+  ungroup()
+```
+]
+
+.pull-right[
+## Under the hood
+
+```{r databases-30 }
+pixar_films %>%
+  group_by(film_rating) %>%
+  summarize(n = n()) %>%
+  ungroup() %>%
+  show_query()
+```
+]
+
+---
+
+# Aggregate
+
+With `count()`, like with data frames.
+
+.pull-left[
+```{r databases-31 }
+pixar_films %>%
+  #
+  #
+  count(film_rating)
+```
+]
+
+.pull-right[
+## Under the hood
+
+```{r databases-32 }
+pixar_films %>%
+  #
+  #
+  count(film_rating) %>%
+  show_query()
+```
+]
+
+---
+
+# Aggregate and read
+
+.pull-left[
+```{r databases-33 }
+df_pixar_films_by_rating <-
+  pixar_films %>%
+  count(film_rating) %>%
+  collect()
+df_pixar_films_by_rating
+```
+]
+
+.pull-right[
+## Data on the database not affected
+
+```{r databases-34 }
+pixar_films %>%
+  collect()
+```
+]
+
+---
+
+background-image: url("images/12-frame.webp")
+background-size: 40%
+background-position: 100% 100%
+
+# Downsizing on the database: Exercises 1
+
+*  Find several ways to select the 3 first columns
+*  What happens if you include the name of a variable multiple times in a `select()` call?
+*  Select all columns that contain underscores (use `contains()`)
+*  Use `all_of()` to select 2 columns of your choice
+
+---
+
+background-image: url("images/12-frame.webp")
+background-size: 40%
+background-position: 100% 100%
+
+# Downsizing on the database: Exercises 2
+
+.pull-left[
+Find all films that
+1. Are rated "PG"
+2. Had a run time below 95
+3. Had a rating of "N/A" or "Not Rated"
+4. Were released after and including year 2020
+5. Have a missing name (`film` column) or `run_time`
+6. Are a first sequel (the name ends with "2")
+    - Hint: Bring the data into the R session before filtering
+]
+
+---
+
+background-image: url("images/12-frame.webp")
+background-size: 40%
+background-position: 100% 100%
+
+# Downsizing on the database: Exercises 3
+
+1. How many films are stored in the table?
+2. How many films released after 2005 are stored in the table?
+3. What is the total run time of all films?
+    - Hint: Use `summarize(sum(...))`, watch out for the warning
+4. What is the total run time of all films, per rating?
+    - Hint: Use `group_by()`
+
+---
+
+# Schedule
+
+Extract ⇨ Transform ⇨ Load ⇨ Consume
+
+.pull-left[
+## One table
+
+- Read whole tables
+- **Let the database do the heavy lifting 2/2**
+- Basic ETL for one table
+- Subtle issues to watch out for
+]
+
+.pull-right[
+## Multiple tables
+
+- Joins
+- The {dm} package
+- A bit of theory
+- Playing the whole game
+]
+
+## Bonus: Bring your own data + questions
+
+---
+
+background-image: url("images/12_2.webp")
+background-size: 40%
+background-position: 100% 100%
+
+# Computing on the database
+
+.pull-left[
+- {dbplyr} package (part of the tidyverse)
+- `mutate()`
+- `arrange()`
+- Grouped `summarize()` / `mutate()`
+
+Script: `databases_12_2.R`
+
+```{r databases-35 }
+library(tidyverse)
+```
+]
+
+---
+
+background-image: url("images/12_2-frame.webp")
+background-size: 40%
+background-position: 100% 100%
+
+# Computing on the database
+
+.pull-left[
+- {dbplyr} package (part of the tidyverse)
+- `mutate()`
+- `arrange()`
+- Grouped `summarize()` / `mutate()`
+
+Script: `databases_12_2.R`
+
+```{r databases-36 }
+library(tidyverse)
+```
+]
+
+---
+
+# Transform
+
+With `mutate()`, like with data frames.
+
+.pull-left[
+```{r databases-37 }
+pixar_films %>%
+  select(film, release_date) %>% 
+  mutate(release_year = year(release_date))
+```
+]
+
+.pull-right[
+## Under the hood
+
+```{r databases-38 }
+pixar_films %>%
+  select(film, release_date) %>% 
+  mutate(release_year = year(release_date)) %>%
+  show_query()
+```
+]
+
+---
+
+# Transform and read
+
+.pull-left[
+```{r databases-39 }
+df_pixar_films_with_release_year <-
+  pixar_films %>%
+  select(film, release_date) %>% 
+  mutate(release_year = year(release_date)) %>%
+  collect()
+df_pixar_films_with_release_year
+```
+]
+
+.pull-right[
+## Data on the database not affected
+
+```{r databases-40 }
+pixar_films %>%
+  collect()
+```
+]
+
+---
+
+# Aggregate (complex)
+
+With `group_by()` + `summarize()` + `ungroup()`, like with data frames.
+
+.pull-left[
+```{r databases-41 }
+pixar_films %>%
+  group_by(film_rating) %>%
+  summarize(mean_run_time = mean(run_time)) %>%
+  ungroup()
+```
+]
+
+.pull-right[
+## Under the hood
+
+```{r databases-42 }
+pixar_films %>%
+  group_by(film_rating) %>%
+  summarize(mean_run_time = mean(run_time)) %>%
+  ungroup() %>% 
+  show_query()
+```
+]
+
+---
+
+# Transform and aggregate
+
+With `count()`, like with data frames.
+
+.pull-left[
+```{r databases-43 }
+pixar_films %>%
+  count(release_year = year(release_date))
+```
+]
+
+.pull-right[
+## Under the hood
+
+```{r databases-44 }
+pixar_films %>%
+  mutate(release_year = year(release_date)) %>%
+  count(release_year) %>%
+  show_query()
+```
+]
+
+---
+
+# In-place aggregate (window functions)
+
+With `add_count()`, like with data frames.
+
+.pull-left[
+```{r databases-45 }
+pixar_films %>%
+  add_count(release_year = year(release_date)) %>%
+  filter(n > 1) %>%
+  select(film, release_year, n) %>% 
+  arrange(release_date)
+```
+]
+
+.pull-right[
+## Under the hood
+
+```{r databases-46 }
+pixar_films %>%
+  add_count(release_year = year(release_date)) %>%
+  filter(n > 1) %>%
+  arrange(release_date) %>% 
+  select(film, release_year, n) %>% 
+  show_query()
+```
+]
+
+---
+
+background-image: url("images/12_2-frame.webp")
+background-size: 40%
+background-position: 100% 100%
+
+# Computing on the database: Exercises
+
+.pull-left[
+1. Add new columns `release_year` and `release_month`.
+2. Use the new columns to compute the number of months since January 1970
+   for each film
+3. Compute the overall median run time, and the median run time per film rating
+4. For each film except the last, compute how many days have passed until the next film.
+    - Hint: Use `lead(..., order_by = ...)`
+]
+
+.pull-right[
+5. Find the maximum number of days between releases of two G and two PG films.
+]
+
+---
+
+# Schedule
+
+Extract ⇨ Transform ⇨ Load ⇨ Consume
+
+.pull-left[
+## One table
+
+- Read whole tables
+- Let the database do the heavy lifting
+- **Basic ETL for one table**
+- Subtle issues to watch out for
+]
+
+.pull-right[
+## Multiple tables
+
+- Joins
+- The {dm} package
+- A bit of theory
+- Playing the whole game
+]
+
+## Bonus: Bring your own data + questions
+
+---
+
+background-image: url("images/13.webp")
+background-size: 40%
+background-position: 100% 100%
+
+# Extract, Transform, Load
+
+.pull-left[
+- Obtain raw data
+- Prepare database table
+- Write it to a new database
+- Consume
+
+Script: `databases_13.R`
+
+```{r databases-47 }
+library(tidyverse)
+```
+]
+
+---
+
+background-image: url("images/13-frame.webp")
+background-size: 40%
+background-position: 100% 100%
+
+# Extract, Transform, Load
+
+.pull-left[
+- Obtain raw data
+- Prepare database table
+- Write it to a new database
+- Consume
+
+Script: `databases_13.R`
+
+```{r databases-48 }
+library(tidyverse)
+```
+]
+
+---
+
+# Extract: Raw data
+
+From arbitrary source: CSV, Excel, web API, other database, ...
+
+```{r databases-49 }
+pixar_films_raw <- pixarfilms::pixar_films
+pixar_films_raw
+```
+
+---
+
+background-image: url("images/magic-hat-and-wand-nath-r.svg")
+background-size: 25%
+background-position: 100% 100%
+
+# Transform: Derived data
+
+- Fix type of `number` column
+- Extract `franchise` and `sequel` columns
+
+```{r databases-50, echo = FALSE}
+pixar_films_clean <-
+  pixar_films_raw %>%
+  separate(film, into = c("franchise", "sequel"),
+    sep = " (?=[0-9]+$)", fill = "right", remove = FALSE
+  ) %>%
+  mutate(across(c(number, sequel), as.integer)) %>%
+  group_by(franchise) %>%
+  mutate(sequel = if_else(is.na(sequel) & n() > 1, 1L, sequel)) %>%
+  ungroup()
+old <- options(width = 130)
+```
+
+```{r databases-51 }
+pixar_films_clean
+```
+
+```{r databases-52, echo = FALSE}
+options(old)
+```
+
+
+---
+
+# Create target database
+
+Depending on workflow, often an existing database is used.
+
+```{r databases-53 }
+db_path <- fs::path_abs("pixar.duckdb")
+db_path
+```
+
+```{r databases-54, message = FALSE}
+fs::file_delete(db_path)
+con <- dbConnect(duckdb::duckdb(dbdir = db_path))
+con
+```
+
+```
+<duckdb_connection b1490 driver=<duckdb_driver b5870 dbdir='/Users/kirill/git/cynkra/bag/bag-courses/5_databases/pixar.duckdb' read_only=FALSE>>
+```
+
+---
+
+# Load: Write table to the database
+
+```{r databases-55 }
+dbWriteTable(con, "pixar_films", pixar_films_clean)
+dbExecute(con, "CREATE UNIQUE INDEX pixarfilms_pk ON pixar_films (film)")
+nrow(dbReadTable(con, "pixar_films"))
+dbDisconnect(con)
+```
+
+---
+
+# Consume: share the file, open it
+
+.pull-left[
+```{r databases-56 }
+fs::dir_info() %>%
+  arrange(desc(birth_time)) %>%
+  head(2)
+```
+]
+
+.pull-right[
+```{r databases-57 }
+con <- dbConnect(duckdb::duckdb(dbdir = db_path, read_only = TRUE))
+my_pixar_films <- tbl(con, "pixar_films")
+my_pixar_films
+```
+]
+
+---
+
+background-image: url("images/13-frame.webp")
+background-size: 40%
+background-position: 100% 100%
+
+# Exercises
+
+1. Adapt the ETL workflow to convert the `run_time` column to a duration.
+   - Hint: Use `mutate()` with `hms::hms(minutes = ...)` .
+2. Re-run the workflow.
+
+---
+
+# Schedule
+
+Extract ⇨ Transform ⇨ Load ⇨ Consume
+
+.pull-left[
+## One table
+
+- Read whole tables
+- Let the database do the heavy lifting
+- Basic ETL for one table
+- **Subtle issues to watch out for**
+]
+
+.pull-right[
+## Multiple tables
+
+- Joins
+- The {dm} package
+- A bit of theory
+- Playing the whole game
+]
+
+## Bonus: Bring your own data + questions
+
+---
+
+background-image: url("images/14.webp")
+background-size: 40%
+background-position: 100% 100%
+
+# Caveats
+
+.pull-left[
+- Lazy tables vs. data frames/tibbles
+- Order
+- Logical/Boolean data type
+- Imperfect translation
+- Materialization
+
+Script: `databases_14.R`
+
+```{r databases-58 }
+library(tidyverse)
+```
+]
+
+---
+
+background-image: url("images/14-frame.webp")
+background-size: 40%
+background-position: 100% 100%
+
+# Caveats
+
+.pull-left[
+- Differences between database backends
+- Lazy tables vs. data frames/tibbles
+- Order
+- Logical/Boolean data type
+- Imperfect translation
+- Materialization
+
+Script: `databases_14.R`
+
+```{r databases-59 }
+library(tidyverse)
+```
+]
+
+---
+
+background-image: url("images/magic-hat-and-wand-nath-r.svg")
+background-size: 25%
+background-position: 100% 100%
+
+# Prepare SQLite database
+
+Very similar to DuckDB, subtle differences.
+
+```{r databases-60, cache=FALSE}
+con_sqlite <- DBI::dbConnect(RSQLite::SQLite(), extended_types = TRUE)
+dm::copy_dm_to(
+  con_sqlite,
+  dm::dm_pixarfilms(),
+  set_key_constraints = FALSE,
+  temporary = FALSE
+)
+```
+
+---
+
+# SQLite table
+
+```{r databases-61, cache = FALSE}
+pixar_films_sqlite <- tbl(con_sqlite, "pixar_films")
+pixar_films_sqlite
+```
+
+---
+
+# Lazy tables are not data frames
+
+The bracket operators `[` and `[[` don't work.
+
+.pull-left[
+## Bad
+
+```{r databases-62 }
+pixar_films[c("film", "film_rating")]
+```
+]
+
+.pull-right[
+
+## Good
+
+```{r databases-63 }
+pixar_films %>%
+  select(film, film_rating)
+```
+]
+
+---
+
+# Lazy tables are not data frames
+
+Concatenation requires `union_all()`.
+
+.pull-left[
+## Bad
+
+```{r databases-64 }
+try(
+  bind_rows(pixar_films, pixar_films)
+)
+```
+]
+
+.pull-right[
+
+## Good
+
+```{r databases-65 }
+union_all(pixar_films, pixar_films) %>%
+  arrange(release_date)
+```
+]
+
+---
+
+# Lazy tables are not data frames
+
+The bracket operator `[` doesn't work for row subsetting.
+
+.pull-left[
+## Bad
+
+```{r databases-66 }
+try(
+  pixar_films[1:3, ]
+)
+```
+]
+
+.pull-right[
+## Still bad
+
+```{r databases-67 }
+df_pixar_films <-
+  pixar_films %>%
+  collect()
+df_pixar_films[1:3, ]
+```
+]
+
+---
+
+# Lazy tables are set-oriented
+
+No intrinsic order, `slice()` doesn't work.
+
+.pull-left[
+## Bad
+
+```{r databases-68 }
+try(
+  pixar_films %>%
+    slice(1:3)
+)
+```
+]
+
+.pull-right[
+## Better
+
+```{r databases-69 }
+pixar_films %>%
+  filter(between(row_number(), 1, 3))
+```
+]
+
+---
+
+# Lazy tables are set-oriented
+
+Introduce row numbering via `row_number()` (based on a specific order) as a replacement for `slice()`.
+
+.pull-left[
+```{r databases-70 }
+pixar_films %>%
+  filter(between(row_number(release_date), 1, 3))
+```
+]
+
+.pull-right[
+```{r databases-71 }
+pixar_films %>%
+  dbplyr::window_order(release_date) %>%
+  filter(between(row_number(), 1, 3))
+```
+]
+
+---
+
+# Lazy tables are set-oriented
+
+Use the `order_by` argument or `dbplyr::window_order()` (but not `arrange()`) to set the order in `cumsum()`, `lag()` etc..
+
+.pull-left[
+## Bad
+
+```{r databases-72 }
+try(
+  pixar_films %>%
+    group_by(film_rating) %>%
+    mutate(total_run_time = cumsum(run_time)) %>%
+    ungroup()
+)
+```
+]
+
+.pull-right[
+
+## Good
+
+```{r databases-73 }
+pixar_films %>%
+  group_by(film_rating) %>%
+  dbplyr::window_order(release_date) %>%
+  mutate(total_run_time = cumsum(run_time)) %>%
+  ungroup()
+```
+]
+
+---
+
+# Lazy tables are set-oriented
+
+Use `arrange()` to fix the order, but only at the end of a query!
+
+.pull-left[
+## Bad
+
+```{r databases-74 }
+pixar_films %>%
+  arrange(film) %>%
+  mutate(run_time_hr = run_time / 60) %>%
+  filter(run_time_hr < 2)
+```
+]
+
+.pull-right[
+
+## Good
+
+```{r databases-75 }
+pixar_films %>%
+  mutate(run_time_hr = run_time / 60) %>%
+  filter(run_time_hr < 2) %>%
+  arrange(film)
+```
+]
+
+---
+
+# Sort order of missing values
+
+`NA` sort last in data frames, but first on databases.
+
+.pull-left[
+```{r databases-76 }
+pixar_films %>%
+  arrange(run_time)
+```
+]
+
+.pull-right[
+```{r databases-77 }
+pixar_films %>%
+  arrange(is.na(run_time), run_time)
+```
+]
+
+---
+
+# Logical/Boolean data type
+
+Support differs across databases.
+
+.pull-left[
+## DuckDB
+
+```{r databases-78 }
+pixar_films %>%
+  count(film_rating == "PG")
+```
+]
+
+.pull-right[
+## SQLite
+```{r databases-79 }
+pixar_films_sqlite %>%
+  count(film_rating == "PG")
+```
+]
+
+---
+
+# Logical/Boolean data type
+
+Use `if_else()` or `case_when()` if in doubt.
+
+.pull-left[
+## SQLite
+```{r databases-80 }
+pixar_films_sqlite %>%
+  count(film_rating == "PG")
+```
+]
+
+.pull-right[
+## SQL Server (universal)
+
+```{r databases-81 }
+pixar_films_sqlite %>%
+  count(if_else(film_rating == "PG", 1L, 0L))
+```
+]
+
+---
+
+# Imperfect translations
+
+Numeric values always use a decimal point.
+
+.pull-left[
+## Numeric
+
+```{r databases-82 }
+pixar_films %>%
+  filter(run_time < 120) %>%
+  show_query()
+```
+]
+
+.pull-right[
+## Integer
+
+```{r databases-83 }
+pixar_films %>%
+  filter(run_time < 120L) %>%
+  show_query()
+```
+]
+
+---
+
+# Imperfect translations
+
+Not all R functions are supported.
+
+.pull-left[
+```{r databases-84 }
+try(
+  pixar_films %>%
+    filter(grepl("^Toy", film)) %>%
+    print()
+)
+```
+]
+
+.pull-right[
+```{r databases-85 }
+try(
+  pixar_films %>%
+    filter(str_detect(film, "^Toy")) %>%
+    print()
+)
+```
+]
+
+---
+
+# Imperfect translations
+
+Unknown functions and operators are passed on verbatim.
+
+.pull-left[
+## Lazy table
+
+```{r databases-86 }
+pixar_films %>%
+  filter(film %LIKE% "Toy%")
+```
+]
+
+.pull-right[
+## Data frame
+
+```{r databases-87 }
+try(
+  pixar_films %>%
+    collect() %>%
+    filter(film %LIKE% "Toy%")
+)
+```
+]
+
+---
+
+# Imperfect translations
+
+Unknown functions and operators are passed on verbatim.
+
+.pull-left[
+## Lazy table
+
+```{r databases-88 }
+pixar_films %>%
+  summarize(MAX(run_time))
+```
+]
+
+.pull-right[
+## Data frame
+
+```{r databases-89 }
+try(
+  pixar_films %>%
+    collect() %>%
+    summarize(MAX(run_time))
+)
+```
+]
+
+---
+
+# Imperfect translations
+
+Aggregation functions don't support `na.rm = FALSE` (the default in R).
+
+.pull-left[
+## Warning
+
+```{r databases-90 }
+pixar_films %>%
+  summarize(total_run_time = sum(run_time)) %>%
+  show_query()
+```
+]
+
+.pull-right[
+## Hackaround
+
+```{r databases-91 }
+pixar_films %>%
+  summarize(total_run_time = SUM(run_time)) %>%
+  show_query()
+```
+]
+
+---
+
+# Imperfect translations
+
+Escape hatch: `sql()` to pass through arbitrary SQL.
+
+.pull-left[
+## Fine-grained
+
+```{r databases-92 }
+pixar_films %>%
+  mutate(number = CAST(number %AS% sql("integer")))
+```
+]
+
+.pull-right[
+## Everything
+
+```{r databases-93 }
+pixar_films %>%
+  mutate(number = CAST(number %AS% sql("integer")))
+```
+]
+
+---
+
+# Imperfect translations
+
+On the up side: `sql()` is rarely needed.
+
+
+.pull-left[
+## Manual
+
+```{r databases-94 }
+pixar_films %>%
+  transmute(number = CAST(number %AS% sql("integer"))) %>%
+  show_query()
+```
+]
+
+.pull-right[
+## Translated
+
+```{r databases-95 }
+pixar_films %>%
+  transmute(number = as.integer(number)) %>% 
+  show_query()
+```
+]
+
+---
+
+# Lazy tables are recomputed on every access
+
+Saving to a variable doesn't help.
+
+.pull-left[
+```{r databases-96 }
+films_two_per_year <-
+  pixar_films %>%
+  transmute(film, y = year(release_date)) %>% 
+  add_count(y) %>%
+  filter(n > 1)
+
+films_two_per_year %>%
+  show_query()
+```
+]
+
+.pull-right[
+```{r databases-97 }
+films_two_per_year %>%
+  arrange(release_date) %>%
+  show_query()
+```
+]
+
+---
+
+# Materialize temporary results
+
+Remedy: materialize with `compute()`. Requires write access to the database (at least for temporary tables).
+
+.pull-left[
+```{r databases-98 }
+films_two_per_year_mat <-
+  films_two_per_year %>%
+  compute(unique_indexes = list(c("film")))
+
+films_two_per_year_mat
+```
+]
+
+.pull-right[
+```{r databases-99 }
+films_two_per_year_mat %>%
+  arrange(release_date) %>%
+  show_query()
+```
+]
+
+---
+
+background-image: url("images/14-frame.webp")
+background-size: 40%
+background-position: 100% 100%
+
+# Exercises
+
+1. Experiment.
+
+---
+
+# Schedule
+
+Extract ⇨ Transform ⇨ Load ⇨ Consume
+
+.pull-left[
+## One table
+
+- Read whole tables
+- Let the database do the heavy lifting
+- Basic ETL for one table
+- Subtle issues to watch out for
+]
+
+.pull-right[
+## Multiple tables
+
+- **Joins**
+- The {dm} package
+- A bit of theory
+- Playing the whole game
+]
+
+## Bonus: Bring your own data + questions
+
+---
+
+background-image: url("images/21.webp")
+background-size: 40%
+background-position: 100% 100%
+
+# Joins
+
+.pull-left[
+- Usage
+- Join sources
+- Mounting
+
+Script: `databases_21.R`
+
+```{r databases-100 }
+library(tidyverse)
+```
+]
+
+---
+
+background-image: url("images/21-frame.webp")
+background-size: 40%
+background-position: 100% 100%
+
+# Joins
+
+.pull-left[
+- Usage
+- Join sources
+- Mounting
+
+Script: `databases_21.R`
+
+```{r databases-101 }
+library(tidyverse)
+```
+]
+
+---
+
+# A second table
+
+.pull-left[
+```{r databases-102, cache = FALSE}
+academy <- tbl(con_duckdb, "academy")
+academy_sqlite <- tbl(con_sqlite, "academy")
+
+academy %>%
+  count(status)
+```
+]
+
+.pull-right[
+```{r databases-103 }
+academy
+```
+]
+
+---
+
+# Left join
+
+The most frequent kind of join.
+
+.pull-left[
+## Unsafe
+
+```{r databases-104 }
+academy %>%
+  left_join(pixar_films)
+```
+]
+
+.pull-right[
+## Better
+
+```{r databases-105 }
+academy %>%
+  left_join(pixar_films, by = "film")
+```
+]
+
+---
+
+# Left join
+
+Computed on the database, original data unchanged.
+
+```{r databases-106 }
+academy %>%
+  left_join(pixar_films, by = "film") %>%
+  show_query()
+```
+
+---
+
+# Join with preparation
+
+The right-hand side in the join should come from a variable.
+
+.pull-left[
+## Prepare RHS
+
+```{r databases-107 }
+academy_won <-
+  academy %>%
+  filter(status == "Won") %>%
+  count(film, name = "n_won")
+academy_won
+```
+]
+
+
+.pull-right[
+```{r databases-108 }
+pixar_films %>%
+  left_join(academy_won, by = "film")
+```
+]
+
+---
+
+# Join with postprocessing
+
+.pull-left[
+## Raw result
+
+```{r databases-109 }
+pixar_films %>%
+  left_join(academy_won, by = "film") %>%
+  arrange(release_date)
+```
+]
+
+
+.pull-right[
+## After postprocessing
+
+```{r databases-110 }
+pixar_films %>%
+  left_join(academy_won, by = "film") %>%
+  mutate(n_won = coalesce(n_won, 0L)) %>%
+  arrange(release_date)
+```
+]
+
+---
+
+# Join with processing
+
+Computed on the database, original data unchanged.
+
+```{r databases-111 }
+pixar_films %>%
+  left_join(academy_won, by = "film") %>%
+  mutate(n_won = coalesce(n_won, 0L)) %>%
+  arrange(release_date) %>%
+  show_query()
+```
+
+---
+
+# Tables must be on the same source
+
+Use `copy = TRUE` to enforce, the result is a lazy table if the LHS is a lazy table.
+
+.pull-left[
+## Bad
+
+```{r databases-112 }
+try(
+  academy %>%
+    left_join(pixar_films_sqlite, by = "film")
+)
+```
+]
+
+.pull-right[
+## Not too bad
+
+```{r databases-113 }
+academy %>%
+  left_join(pixar_films_sqlite, by = "film", copy = TRUE)
+```
+]
+
+---
+
+# Copying is expensive!
+
+A temporary table is created on the LHS database.
+If the RHS comes from a different database, results are temporarily loaded into the local session!
+
+```{r databases-114 }
+academy %>%
+  left_join(pixar_films_sqlite, by = "film", copy = TRUE) %>%
+  show_query()
+```
+
+---
+
+# Joining data frames with lazy tables
+
+The result is a data frame too.
+
+.pull-left[
+## Bad
+
+```{r databases-115 }
+try(
+  pixarfilms::academy %>%
+    left_join(pixar_films, by = "film")
+)
+```
+]
+
+.pull-right[
+## Could be worse
+
+```{r databases-116 }
+pixarfilms::academy %>%
+  left_join(pixar_films, by = "film", copy = TRUE)
+```
+]
+
+---
+
+# DuckDB: register data frames as database tables
+
+Temporarily use a local data frame as a table.
+Also works for Arrow datasets via `duckdb::duckdb_register_arrow()`.
+
+.pull-left[
+## Register and access
+
+```{r databases-117 }
+duckdb::duckdb_register(
+  con_duckdb,
+  "academy_small",
+  pixarfilms::academy[1:3, ]
+)
+
+academy_small <- tbl(con_duckdb, "academy_small")
+academy_small
+```
+]
+
+.pull-right[
+## Use
+
+```{r databases-118 }
+academy_small %>%
+  left_join(pixar_films, by = "film")
+```
+]
+
+---
+
+# DuckDB: Performance comparison
+
+Baseline: Data frames.
+
+.pull-left[
+```{r databases-119 }
+nrow(nycflights13::flights)
+```
+]
+
+.pull-right[
+```{r databases-120 }
+system.time(
+  nycflights13::flights %>%
+    count(year, month, day)
+)
+```
+]
+
+---
+
+# DuckDB: Performance comparison
+
+With registration.
+
+.pull-left[
+```{r databases-121 }
+system.time(duckdb::duckdb_register(
+  con_duckdb,
+  "flights",
+  nycflights13::flights
+))
+
+flights_register <- tbl(con_duckdb, "flights")
+flights_register %>%
+  count()
+```
+]
+
+.pull-right[
+```{r databases-122 }
+system.time(
+  flights_register %>%
+    count(year, month, day) %>%
+    collect()
+)
+```
+]
+
+---
+
+# DuckDB: Performance comparison
+
+With copy.
+
+.pull-left[
+```{r databases-123 }
+system.time(
+  flights_copy <- copy_to(con_duckdb, nycflights13::flights)
+)
+
+flights_copy %>%
+  count()
+```
+]
+
+.pull-right[
+```{r databases-124 }
+system.time(
+  flights_copy %>%
+    count(year, month, day) %>%
+    collect()
+)
+```
+]
+
+---
+
+# ETL, revisited
+
+Insert a second table into our database.
+
+```{r databases-125 }
+db_path <- fs::path_abs("pixar.duckdb")
+con <- DBI::dbConnect(duckdb::duckdb(dbdir = db_path))
+DBI::dbWriteTable(con, "academy", pixarfilms::academy, overwrite = TRUE)
+DBI::dbExecute(con, "CREATE UNIQUE INDEX academy_pk ON academy (film, award_type)")
+DBI::dbExecute(con, "CREATE INDEX academy_fk ON academy (film)")
+DBI::dbDisconnect(con)
+```
+
+---
+
+background-image: url("images/21-frame.webp")
+background-size: 40%
+background-position: 100% 100%
+
+# Joins: Exercises 1
+
+.pull-left[
+1. How many rows does the join between `academy` and `pixar_films` contain?
+   Try to find out without loading all the data into memory. Explain.
+2. Which films are not yet listed in the `academy` table? What does the
+   resulting SQL query look like?
+   - Hint: Use `anti_join()`
+]
+
+---
+
+background-image: url("images/21-frame.webp")
+background-size: 40%
+background-position: 100% 100%
+
+# Joins: Exercises 2
+
+.pull-left[
+3. Transform `academy` into a wide table so that there is at most one row
+   per film. Join the resulting table with the `pixar_films` table.
+   - Hint: Use `pivot_wider()`, `spread()`, `dcast()`, ... . You need to
+     compute locally, because these functions don't work on the database.
+]
+
+.pull-right[
+4. Plot a bar chart with the number of awards won and nominated per year.
+   Compute as much as possible on the database.
+   - Hint: "Long form" or "wide form"?
+]
+
+---
+
+# Schedule
+
+Extract ⇨ Transform ⇨ Load ⇨ Consume
+
+.pull-left[
+## One table
+
+- Read whole tables
+- Let the database do the heavy lifting
+- Basic ETL for one table
+- Subtle issues to watch out for
+]
+
+.pull-right[
+## Multiple tables
+
+- Joins
+- **The {dm} package**
+- A bit of theory
+- Playing the whole game
+]
+
+## Bonus: Bring your own data + questions
+
+---
+
+background-image: url("images/22.webp")
+background-size: 40%
+background-position: 100% 100%
+
+# Data model basics
+
+.pull-left[
+- Compound object for multiple tables
+- Features
+
+Script: `databases_22.R`
+
+```{r databases-126 }
+library(tidyverse)
+library(dm)
+```
+]
+
+---
+
+background-image: url("images/22-frame.webp")
+background-size: 40%
+background-position: 100% 100%
+
+# Data model basics
+
+.pull-left[
+- Compound object for multiple tables
+- Features
+
+Script: `databases_22.R`
+
+```{r databases-127 }
+library(tidyverse)
+library(dm)
+```
+]
+
+---
+
+# Data model objects
+
+.pull-left[
+Store multiple tables in an object.
+
+```{r databases-128 }
+pixar_dm <- dm_pixarfilms()
+pixar_dm
+```
+
+```{r databases-129, results="hide"}
+pixar_dm %>%
+  dm_draw()
+```
+]
+
+.pull-right[
+<!-- Generated by graphviz version 2.40.1 (20161225.0304)
+ -->
+<!-- Title: %0 Pages: 1 -->
+<svg width="315pt" height="330pt"
+ viewBox="-100.00 0.00 315.00 330.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 326)">
+<title>%0</title>
+<g id="a_graph0"><a xlink:title="Data Model">
+<polygon fill="#ffffff" stroke="transparent" points="-4,4 -4,-326 211,-326 211,4 -4,4"/>
+</a>
+</g>
+<!-- academy -->
+<g id="node1" class="node">
+<title>academy</title>
+<polygon fill="#ed7d31" stroke="transparent" points="1.5,-301 1.5,-321 100.5,-321 100.5,-301 1.5,-301"/>
+<text text-anchor="start" x="26.1255" y="-306.4" font-family="Times,serif" font-size="14.00" fill="#ffffff">academy</text>
+<polygon fill="#fbe5d5" stroke="transparent" points="1.5,-281 1.5,-301 100.5,-301 100.5,-281 1.5,-281"/>
+<text text-anchor="start" x="3.5" y="-286.4" font-family="Times,serif" font-size="14.00" fill="#444444">film</text>
+<polygon fill="#fbe5d5" stroke="transparent" points="1.5,-261 1.5,-281 100.5,-281 100.5,-261 1.5,-261"/>
+<text text-anchor="start" x="3.183" y="-267.4" font-family="Times,serif" text-decoration="underline" font-size="14.00" fill="#444444">film, award_type</text>
+<polygon fill="none" stroke="#9e5320" stroke-opacity="0.666667" points="0,-260 0,-322 101,-322 101,-260 0,-260"/>
+</g>
+<!-- pixar_films -->
+<g id="node4" class="node">
+<title>pixar_films</title>
+<polygon fill="#5b9bd5" stroke="transparent" points="138,-161 138,-181 206,-181 206,-161 138,-161"/>
+<text text-anchor="start" x="139.7286" y="-166.4" font-family="Times,serif" font-size="14.00" fill="#ffffff">pixar_films</text>
+<polygon fill="#deebf6" stroke="transparent" points="138,-141 138,-161 206,-161 206,-141 138,-141"/>
+<text text-anchor="start" x="140" y="-147.4" font-family="Times,serif" text-decoration="underline" font-size="14.00" fill="#444444">film</text>
+<polygon fill="none" stroke="#3c678e" stroke-opacity="0.666667" points="137,-140 137,-182 207,-182 207,-140 137,-140"/>
+</g>
+<!-- academy&#45;&gt;pixar_films -->
+<g id="edge2" class="edge">
+<title>academy:film&#45;&gt;pixar_films:film</title>
+<path fill="none" stroke="#555555" d="M100.5,-291C161.0155,-291 84.073,-167.4399 127.9432,-152.4775"/>
+<polygon fill="#555555" stroke="#555555" points="128.615,-155.9165 138,-151 127.5974,-148.9909 128.615,-155.9165"/>
+</g>
+<!-- box_office -->
+<g id="node2" class="node">
+<title>box_office</title>
+<polygon fill="#ed7d31" stroke="transparent" points="18.5,-221 18.5,-241 82.5,-241 82.5,-221 18.5,-221"/>
+<text text-anchor="start" x="20.1795" y="-226.4" font-family="Times,serif" font-size="14.00" fill="#ffffff">box_office</text>
+<polygon fill="#fbe5d5" stroke="transparent" points="18.5,-201 18.5,-221 82.5,-221 82.5,-201 18.5,-201"/>
+<text text-anchor="start" x="20.5" y="-207.4" font-family="Times,serif" text-decoration="underline" font-size="14.00" fill="#444444">film</text>
+<polygon fill="none" stroke="#9e5320" stroke-opacity="0.666667" points="17.5,-200 17.5,-242 83.5,-242 83.5,-200 17.5,-200"/>
+</g>
+<!-- box_office&#45;&gt;pixar_films -->
+<g id="edge3" class="edge">
+<title>box_office:film&#45;&gt;pixar_films:film</title>
+<path fill="none" stroke="#555555" d="M82.5,-211C114.9945,-211 104.6973,-162.9888 128.1654,-152.8615"/>
+<polygon fill="#555555" stroke="#555555" points="128.8254,-156.2988 138,-151 127.5235,-149.4209 128.8254,-156.2988"/>
+</g>
+<!-- genres -->
+<g id="node3" class="node">
+<title>genres</title>
+<polygon fill="#ed7d31" stroke="transparent" points="18.5,-161 18.5,-181 83.5,-181 83.5,-161 18.5,-161"/>
+<text text-anchor="start" x="32.7328" y="-166.4" font-family="Times,serif" font-size="14.00" fill="#ffffff">genres</text>
+<polygon fill="#fbe5d5" stroke="transparent" points="18.5,-141 18.5,-161 83.5,-161 83.5,-141 18.5,-141"/>
+<text text-anchor="start" x="20.5" y="-146.4" font-family="Times,serif" font-size="14.00" fill="#444444">film</text>
+<polygon fill="#fbe5d5" stroke="transparent" points="18.5,-121 18.5,-141 83.5,-141 83.5,-121 18.5,-121"/>
+<text text-anchor="start" x="20.2889" y="-127.4" font-family="Times,serif" text-decoration="underline" font-size="14.00" fill="#444444">film, genre</text>
+<polygon fill="none" stroke="#9e5320" stroke-opacity="0.666667" points="17,-120 17,-182 84,-182 84,-120 17,-120"/>
+</g>
+<!-- genres&#45;&gt;pixar_films -->
+<g id="edge4" class="edge">
+<title>genres:film&#45;&gt;pixar_films:film</title>
+<path fill="none" stroke="#555555" d="M83.5,-151C103.9375,-151 111.4419,-151 127.8378,-151"/>
+<polygon fill="#555555" stroke="#555555" points="128,-154.5001 138,-151 128,-147.5001 128,-154.5001"/>
+</g>
+<!-- pixar_people -->
+<g id="node5" class="node">
+<title>pixar_people</title>
+<polygon fill="#70ad47" stroke="transparent" points="12.5,-81 12.5,-101 89.5,-101 89.5,-81 12.5,-81"/>
+<text text-anchor="start" x="14.4572" y="-86.4" font-family="Times,serif" font-size="14.00" fill="#ffffff">pixar_people</text>
+<polygon fill="#e2eeda" stroke="transparent" points="12.5,-61 12.5,-81 89.5,-81 89.5,-61 12.5,-61"/>
+<text text-anchor="start" x="14.5" y="-66.4" font-family="Times,serif" font-size="14.00" fill="#444444">film</text>
+<polygon fill="none" stroke="#4a732f" stroke-opacity="0.666667" points="11,-60 11,-102 90,-102 90,-60 11,-60"/>
+</g>
+<!-- pixar_people&#45;&gt;pixar_films -->
+<g id="edge1" class="edge">
+<title>pixar_people:film&#45;&gt;pixar_films:film</title>
+<path fill="none" stroke="#555555" d="M89.5,-71C127.1813,-71 102.2491,-136.7031 128.1904,-149.0225"/>
+<polygon fill="#555555" stroke="#555555" points="127.5055,-152.4547 138,-151 128.8889,-145.5928 127.5055,-152.4547"/>
+</g>
+<!-- public_response -->
+<g id="node6" class="node">
+<title>public_response</title>
+<polygon fill="#ed7d31" stroke="transparent" points="3.5,-21 3.5,-41 97.5,-41 97.5,-21 3.5,-21"/>
+<text text-anchor="start" x="5.0126" y="-26.4" font-family="Times,serif" font-size="14.00" fill="#ffffff">public_response</text>
+<polygon fill="#fbe5d5" stroke="transparent" points="3.5,-1 3.5,-21 97.5,-21 97.5,-1 3.5,-1"/>
+<text text-anchor="start" x="5.5" y="-7.4" font-family="Times,serif" text-decoration="underline" font-size="14.00" fill="#444444">film</text>
+<polygon fill="none" stroke="#9e5320" stroke-opacity="0.666667" points="2.5,0 2.5,-42 98.5,-42 98.5,0 2.5,0"/>
+</g>
+<!-- public_response&#45;&gt;pixar_films -->
+<g id="edge5" class="edge">
+<title>public_response:film&#45;&gt;pixar_films:film</title>
+<path fill="none" stroke="#555555" d="M97.5,-11C158.3517,-11 83.4456,-134.5601 127.8579,-149.5225"/>
+<polygon fill="#555555" stroke="#555555" points="127.5999,-153.0217 138,-151 128.6091,-146.0949 127.5999,-153.0217"/>
+</g>
+</g>
+</svg>
+]
+
+---
+
+# Data model objects
+
+Use like a named list.
+
+```{r databases-130, echo = FALSE}
+old <- options(width = 135)
+```
+
+
+```{r databases-131 }
+names(pixar_dm)
+```
+
+```{r databases-132, echo = FALSE}
+options(old)
+```
+
+.pull-left[
+```{r databases-133 }
+pixar_dm$pixar_films
+```
+]
+
+.pull-right[
+```{r databases-134 }
+pixar_dm$academy
+```
+]
+
+---
+
+# Showcase: wrapping all tables in a data model
+
+One of the many operations supported by {dm}.
+
+.pull-left[
+```{r databases-135 }
+pixar_films_wrapped <-
+  pixar_dm %>%
+  dm_wrap_tbl(pixar_films) %>%
+  pull_tbl(pixar_films)
+
+pixar_films_wrapped
+```
+]
+
+.pull-right[
+```{r databases-136 }
+pixar_films_wrapped$academy[1:2]
+```
+]
+
+---
+
+background-image: url("images/22-frame.webp")
+background-size: 40%
+background-position: 100% 100%
+
+# Data model basics: Exercises
+
+.pull-left[
+- Experiment!
+]
+
+---
+
+# Schedule
+
+Extract ⇨ Transform ⇨ Load ⇨ Consume
+
+.pull-left[
+## One table
+
+- Read whole tables
+- Let the database do the heavy lifting
+- Basic ETL for one table
+- Subtle issues to watch out for
+]
+
+.pull-right[
+## Multiple tables
+
+- Joins
+- The {dm} package
+- **A bit of theory**
+- Playing the whole game
+]
+
+## Bonus: Bring your own data + questions
+
+---
+
+background-image: url("images/23.webp")
+background-size: 40%
+background-position: 100% 100%
+
+# Data models
+
+.pull-left[
+- Keys, relationships, constraints
+- Zooming
+
+Script: `databases_23.R`
+
+```{r databases-137 }
+library(tidyverse)
+library(dm)
+```
+]
+
+---
+
+background-image: url("images/23-frame.webp")
+background-size: 40%
+background-position: 100% 100%
+
+# Data models
+
+.pull-left[
+- Keys, relationships, constraints
+- Zooming
+
+Script: `databases_23.R`
+
+```{r databases-138 }
+library(tidyverse)
+library(dm)
+```
+]
+
+---
+
+# Primary keys
+
+Column(s) that uniquely identify rows in a table.
+
+.pull-left[
+```{r databases-139 }
+any(duplicated(pixar_dm$pixar_films$film))
+check_key(pixar_dm$pixar_films, film)
+```
+]
+
+.pull-right[
+```{r databases-140 }
+any(duplicated(pixar_dm$academy[c("film", "award_type")]))
+check_key(pixar_dm$academy, film, award_type)
+try(
+  check_key(pixar_dm$academy, film)
+)
+```
+]
+
+---
+
+# Foreign keys
+
+Column(s) that point to a primary key in another table.
+
+```{r databases-141 }
+all(pixar_dm$academy$film %in% pixar_dm$pixar_films$film)
+check_subset(pixar_dm$academy, film, pixar_dm$pixar_films, film)
+try(
+  check_subset(pixar_dm$pixar_films, film, pixar_dm$academy, film)
+)
+```
+
+---
+
+# Constraints
+
+Properties of primary and foreign keys can be checked.
+
+```{r databases-142 }
+pixar_dm %>%
+  dm_examine_constraints()
+
+dm_pixarfilms(consistent = TRUE) %>%
+  dm_examine_constraints()
+```
+
+---
+
+# Constraints
+
+An example from another dataset.
+
+```{r databases-143 }
+dm_nycflights13() %>%
+  dm_examine_constraints()
+```
+
+---
+
+# Zooming
+
+Focusing on one table in a dm object.
+Allows applying data transformations on that table inside a dm object.
+
+.pull-left[
+```{r databases-144 }
+pixar_dm %>%
+  dm_zoom_to(academy)
+```
+]
+
+.pull-right[
+```{r databases-145 }
+pixar_dm %>%
+  dm_zoom_to(academy) %>%
+  left_join(pixar_films, select = c(film, release_date))
+```
+]
+
+---
+
+# Flattening
+
+Join a table to all related tables.
+
+```{r databases-146, echo = FALSE}
+old <- options(width = 135)
+```
+
+```{r databases-147 }
+pixar_dm %>%
+  dm_flatten_to_tbl(academy)
+```
+
+---
+
+# Flattening
+
+A larger example with a different dataset.
+
+```{r databases-148 }
+dm_nycflights13() %>%
+  dm_select(weather, -year, -month, -day, -hour) %>%
+  dm_flatten_to_tbl(flights)
+```
+
+```{r databases-149, echo = FALSE}
+options(old)
+```
+
+---
+
+background-image: url("images/23-frame.webp")
+background-size: 40%
+background-position: 100% 100%
+
+# Data models: Exercises
+
+.pull-left[
+- Experiment!
+]
+
+---
+
+# Schedule
+
+Extract ⇨ Transform ⇨ Load ⇨ Consume
+
+.pull-left[
+## One table
+
+- Read whole tables
+- Let the database do the heavy lifting
+- Basic ETL for one table
+- Subtle issues to watch out for
+]
+
+.pull-right[
+## Multiple tables
+
+- Joins
+- The {dm} package
+- A bit of theory
+- **Playing the whole game**
+]
+
+## Bonus: Bring your own data + questions
+
+---
+
+background-image: url("images/24.webp")
+background-size: 40%
+background-position: 100% 100%
+
+# The whole game
+
+.pull-left[
+- Build a local data model
+- Copy it to the database
+- Consume it
+
+Script: `databases_24.R`
+
+```{r databases-150 }
+library(tidyverse)
+library(dm)
+```
+]
+
+---
+
+background-image: url("images/24-frame.webp")
+background-size: 40%
+background-position: 100% 100%
+
+# The whole game
+
+.pull-left[
+- Build a local data model
+- Copy it to the database
+- Consume it
+
+Script: `databases_24.R`
+
+```{r databases-151 }
+library(tidyverse)
+library(dm)
+```
+]
+
+---
+
+background-image: url("images/magic-hat-and-wand-nath-r.svg")
+background-size: 25%
+background-position: 100% 100%
+
+# Define transformed table
+
+- Fix type of `number` column
+- Extract `franchise` and `sequel` columns
+
+```{r databases-152, echo = FALSE}
+pixar_films_clean <-
+  pixarfilms::pixar_films %>%
+  filter(!is.na(film)) %>% 
+  separate(film, into = c("franchise", "sequel"),
+    sep = " (?=[0-9]+$)", fill = "right", remove = FALSE
+  ) %>%
+  mutate(across(c(number, sequel), as.integer)) %>%
+  group_by(franchise) %>%
+  mutate(sequel = if_else(is.na(sequel) & n() > 1, 1L, sequel)) %>%
+  ungroup()
+old <- options(width = 135)
+```
+
+```{r databases-153 }
+pixar_films_clean
+```
+
+```{r databases-154, echo = FALSE}
+options(old)
+```
+
+---
+
+# Define dm object
+
+Use `dm()` to create a dm object, pass tables (data frames or lazy tables).
+
+```{r databases-155 }
+base_dm <- dm(
+  pixar_films = pixar_films_clean,
+  academy = pixarfilms::academy,
+  box_office = pixarfilms::box_office,
+)
+base_dm
+```
+
+---
+
+# Add keys
+
+Using `dm_add_pk()` and `dm_add_fk()`.
+
+.pull-left[
+```{r databases-156 }
+full_dm <-
+  base_dm %>%
+  dm_add_pk(pixar_films, film) %>%
+  dm_add_pk(box_office, film) %>%
+  dm_add_fk(academy, film, pixar_films) %>%
+  dm_add_fk(box_office, film, pixar_films)
+full_dm
+```
+```{r databases-157, results="hide"}
+full_dm %>%
+  dm_draw(view_type = "all")
+```
+]
+
+.pull-right[
+<!-- Generated by graphviz version 2.40.1 (20161225.0304)
+ -->
+<!-- Title: %0 Pages: 1 -->
+<svg width="252pt" height="230pt"
+ viewBox="0.00 0.00 252.00 230.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 226)">
+<title>%0</title>
+<g id="a_graph0"><a xlink:title="Data Model">
+<polygon fill="#ffffff" stroke="transparent" points="-4,4 -4,-226 248,-226 248,4 -4,4"/>
+</a>
+</g>
+<!-- academy -->
+<g id="node1" class="node">
+<title>academy</title>
+<polygon fill="#efebdd" stroke="transparent" points="32.5,-201 32.5,-221 101.5,-221 101.5,-201 32.5,-201"/>
+<text text-anchor="start" x="42.1255" y="-206.4" font-family="Times,serif" font-size="14.00" fill="#000000">academy</text>
+<polygon fill="#ffffff" stroke="transparent" points="32.5,-181 32.5,-201 101.5,-201 101.5,-181 32.5,-181"/>
+<text text-anchor="start" x="34.5" y="-186.4" font-family="Times,serif" font-size="14.00" fill="#444444">film</text>
+<polygon fill="#ffffff" stroke="transparent" points="32.5,-161 32.5,-181 101.5,-181 101.5,-161 32.5,-161"/>
+<text text-anchor="start" x="34.3492" y="-166.4" font-family="Times,serif" font-size="14.00" fill="#444444">award_type</text>
+<polygon fill="#ffffff" stroke="transparent" points="32.5,-141 32.5,-161 101.5,-161 101.5,-141 32.5,-141"/>
+<text text-anchor="start" x="34.5" y="-146.4" font-family="Times,serif" font-size="14.00" fill="#444444">status</text>
+<polygon fill="none" stroke="#555555" points="31,-140 31,-222 102,-222 102,-140 31,-140"/>
+</g>
+<!-- pixar_films -->
+<g id="node3" class="node">
+<title>pixar_films</title>
+<polygon fill="#efebdd" stroke="transparent" points="170.5,-171 170.5,-191 243.5,-191 243.5,-171 170.5,-171"/>
+<text text-anchor="start" x="174.7286" y="-176.4" font-family="Times,serif" font-size="14.00" fill="#000000">pixar_films</text>
+<polygon fill="#ffffff" stroke="transparent" points="170.5,-151 170.5,-171 243.5,-171 243.5,-151 170.5,-151"/>
+<text text-anchor="start" x="172.5" y="-156.4" font-family="Times,serif" font-size="14.00" fill="#444444">number</text>
+<polygon fill="#ffffff" stroke="transparent" points="170.5,-131 170.5,-151 243.5,-151 243.5,-131 170.5,-131"/>
+<text text-anchor="start" x="172.5" y="-137.4" font-family="Times,serif" text-decoration="underline" font-size="14.00" fill="#444444">film</text>
+<polygon fill="#ffffff" stroke="transparent" points="170.5,-111 170.5,-131 243.5,-131 243.5,-111 170.5,-111"/>
+<text text-anchor="start" x="172.5" y="-116.4" font-family="Times,serif" font-size="14.00" fill="#444444">franchise</text>
+<polygon fill="#ffffff" stroke="transparent" points="170.5,-91 170.5,-111 243.5,-111 243.5,-91 170.5,-91"/>
+<text text-anchor="start" x="172.5" y="-96.4" font-family="Times,serif" font-size="14.00" fill="#444444">sequel</text>
+<polygon fill="#ffffff" stroke="transparent" points="170.5,-71 170.5,-91 243.5,-91 243.5,-71 170.5,-71"/>
+<text text-anchor="start" x="172.413" y="-76.4" font-family="Times,serif" font-size="14.00" fill="#444444">release_date</text>
+<polygon fill="#ffffff" stroke="transparent" points="170.5,-51 170.5,-71 243.5,-71 243.5,-51 170.5,-51"/>
+<text text-anchor="start" x="172.5" y="-56.4" font-family="Times,serif" font-size="14.00" fill="#444444">run_time</text>
+<polygon fill="#ffffff" stroke="transparent" points="170.5,-31 170.5,-51 243.5,-51 243.5,-31 170.5,-31"/>
+<text text-anchor="start" x="172.5" y="-36.4" font-family="Times,serif" font-size="14.00" fill="#444444">film_rating</text>
+<polygon fill="none" stroke="#555555" points="169,-30 169,-192 244,-192 244,-30 169,-30"/>
+</g>
+<!-- academy&#45;&gt;pixar_films -->
+<g id="edge1" class="edge">
+<title>academy:film&#45;&gt;pixar_films:film</title>
+<path fill="none" stroke="#555555" d="M101.5,-191C135.5254,-191 133.5378,-150.6405 160.2481,-142.4425"/>
+<polygon fill="#555555" stroke="#555555" points="161.0852,-145.8593 170.5,-141 160.1099,-138.9275 161.0852,-145.8593"/>
+</g>
+<!-- box_office -->
+<g id="node2" class="node">
+<title>box_office</title>
+<polygon fill="#efebdd" stroke="transparent" points="1.5,-101 1.5,-121 132.5,-121 132.5,-101 1.5,-101"/>
+<text text-anchor="start" x="36.6795" y="-106.4" font-family="Times,serif" font-size="14.00" fill="#000000">box_office</text>
+<polygon fill="#ffffff" stroke="transparent" points="1.5,-81 1.5,-101 132.5,-101 132.5,-81 1.5,-81"/>
+<text text-anchor="start" x="3.5" y="-87.4" font-family="Times,serif" text-decoration="underline" font-size="14.00" fill="#444444">film</text>
+<polygon fill="#ffffff" stroke="transparent" points="1.5,-61 1.5,-81 132.5,-81 132.5,-61 1.5,-61"/>
+<text text-anchor="start" x="3.5" y="-66.4" font-family="Times,serif" font-size="14.00" fill="#444444">budget</text>
+<polygon fill="#ffffff" stroke="transparent" points="1.5,-41 1.5,-61 132.5,-61 132.5,-41 1.5,-41"/>
+<text text-anchor="start" x="3.5" y="-46.4" font-family="Times,serif" font-size="14.00" fill="#444444">box_office_us_canada</text>
+<polygon fill="#ffffff" stroke="transparent" points="1.5,-21 1.5,-41 132.5,-41 132.5,-21 1.5,-21"/>
+<text text-anchor="start" x="3.5" y="-26.4" font-family="Times,serif" font-size="14.00" fill="#444444">box_office_other</text>
+<polygon fill="#ffffff" stroke="transparent" points="1.5,-1 1.5,-21 132.5,-21 132.5,-1 1.5,-1"/>
+<text text-anchor="start" x="3.2447" y="-6.4" font-family="Times,serif" font-size="14.00" fill="#444444">box_office_worldwide</text>
+<polygon fill="none" stroke="#555555" points="0,0 0,-122 133,-122 133,0 0,0"/>
+</g>
+<!-- box_office&#45;&gt;pixar_films -->
+<g id="edge2" class="edge">
+<title>box_office:film&#45;&gt;pixar_films:film</title>
+<path fill="none" stroke="#555555" d="M132.5,-91C156.2685,-91 146.8719,-127.2579 160.7946,-138.022"/>
+<polygon fill="#555555" stroke="#555555" points="159.9132,-141.4126 170.5,-141 161.9666,-134.7205 159.9132,-141.4126"/>
+</g>
+</g>
+</svg>
+]
+
+---
+
+# ETL, revisited
+
+All tables and keys in a dm object can be copied in one swoop.
+
+```{r databases-158 }
+db_path <- fs::path_abs("pixar.duckdb")
+fs::file_delete(db_path)
+con <- DBI::dbConnect(duckdb::duckdb(dbdir = db_path))
+pixar_dm_duckdb <- copy_dm_to(con, full_dm, temporary = FALSE)
+pixar_dm_duckdb
+```
+
+---
+
+# ETL, revisited
+
+The `temporary = FALSE` argument ensures that tables are permanent.
+
+```{r databases-159, echo = FALSE}
+old <- options(width = 135)
+```
+
+```{r databases-160 }
+pixar_dm_duckdb$pixar_films
+```
+
+
+---
+
+# ETL, revisited
+
+Operations on the database dm work the same as for the local dm.
+
+```{r databases-161 }
+pixar_dm_duckdb %>%
+  dm_flatten_to_tbl(academy)
+```
+
+---
+
+# Consume, revisited
+
+Keys are not (yet) loaded for DuckDB.
+This works better for SQL Server and Postgres.
+
+```{r databases-162 }
+DBI::dbDisconnect(con)
+
+con <- DBI::dbConnect(duckdb::duckdb(dbdir = db_path))
+pixar_dm_learned <- dm_from_src(con)
+pixar_dm_learned
+```
+
+```{r databases-163, echo = FALSE}
+options(old)
+```
+
+---
+
+# Consume, revisited
+
+Implement a helper function for your data model.
+
+.pull-left[
+```{r databases-164 }
+dm_pixarfilms_small <- function() {
+  db_path <- fs::path_abs("pixar.duckdb")
+  con <- DBI::dbConnect(duckdb::duckdb(dbdir = db_path))
+  table_names <- c("academy", "box_office", "pixar_films")
+  dm_from_src(
+    con, 
+    table_names = table_names, 
+    learn_keys = FALSE
+  ) %>%
+    dm_add_pk(pixar_films, film) %>%
+    dm_add_pk(box_office, film) %>%
+    dm_add_fk(academy, film, pixar_films) %>%
+    dm_add_fk(box_office, film, pixar_films)
+}
+```
+]
+
+.pull-right[
+```{r databases-165 }
+dm_pixarfilms_small()
+```
+]
+
+---
+
+background-image: url("images/magic-hat-and-wand-nath-r.svg")
+background-size: 25%
+background-position: 100% 100%
+
+# Consuming with dm
+
+Create a new derived table in the dm object.
+
+.pull-left[
+```{r databases-166 }
+my_dm <- dm_pixarfilms_small()
+my_helper_dm <-
+  my_dm %>%
+  dm_zoom_to(academy) %>%
+  filter(status == "Won") %>%
+  count(film, name = "n_awards_won") %>%
+  dm_insert_zoomed("academy_won")
+```
+]
+
+.pull-right[
+```{r databases-167 }
+my_helper_dm
+```
+]
+
+---
+
+background-image: url("images/magic-hat-and-wand-nath-r.svg")
+background-size: 25%
+background-position: 100% 100%
+
+# Consuming with dm
+
+Use the derived table to cross-reference box office and awards won per film.
+
+.pull-left[
+```{r databases-168 }
+box_office_vs_awards <-
+  my_helper_dm %>%
+  dm_zoom_to(pixar_films) %>%
+  left_join(
+    box_office, 
+    select = c(film, box_office_worldwide)
+  ) %>%
+  left_join(academy_won) %>%
+  transmute(
+    rating = film_rating,
+    box_office_mln = box_office_worldwide / 1e6,
+    n_awards_won = coalesce(n_awards_won, 0)
+  ) %>%
+  pull_tbl() %>%
+  collect()
+```
+]
+
+.pull-right[
+```{r databases-169 }
+box_office_vs_awards
+```
+]
+
+---
+
+# Consuming with dm
+
+```{r databases-170, message=FALSE, warning=FALSE, fig.width=12, fig.height=5}
+ggplot(box_office_vs_awards, aes(x = box_office_mln, y = n_awards_won)) +
+  geom_smooth() +
+  geom_point() +
+  facet_wrap(vars(rating)) +
+  theme_bw(20)
+```
+
+---
+
+background-image: url("images/24-frame.webp")
+background-size: 40%
+background-position: 100% 100%
+
+# The whole game: Exercises
+
+.pull-left[
+- Experiment
+]
+
+---
+
+# Recap
+
+<table>
+<tr>
+<td rowspan=2>
+<img src="images/11-frame.webp" width="200px" />
+</td>
+<td><img src="images/12-frame.webp" width="200px" /></td>
+<td><img src="images/12_2-frame.webp" width="200px" /></td>
+<td><img src="images/13-frame.webp" width="200px" /></td>
+<td><img src="images/14-frame.webp" width="200px" /></td>
+</tr>
+<tr style="background:transparent">
+<td><img src="images/21-frame.webp" width="200px" /></td>
+<td><img src="images/22-frame.webp" width="200px" /></td>
+<td><img src="images/23-frame.webp" width="200px" /></td>
+<td><img src="images/24-frame.webp" width="200px" /></td>
+</tr>
+</table>
+
+---
+
+# Schedule
+
+Extract ⇨ Transform ⇨ Load ⇨ Consume
+
+.pull-left[
+## One table
+
+- Read whole tables
+- Let the database do the heavy lifting
+- Basic ETL for one table
+- Subtle issues to watch out for
+]
+
+.pull-right[
+## Multiple tables
+
+- Joins
+- The {dm} package
+- A bit of theory
+- Playing the whole game
+]
+
+## Bonus: Bring your own data + questions
