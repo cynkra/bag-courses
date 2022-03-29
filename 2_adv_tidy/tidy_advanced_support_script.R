@@ -21,7 +21,6 @@ slide_viewer <- function(path) {
 }
 slide_viewer("2_adv_tidy/tidy_advanced_1_Programming_with_dplyr.html")
 slide_viewer("2_adv_tidy/tidy_advanced_2_Higher_order_functions.html")
-slide_viewer("2_adv_tidy/tidy_advanced_3_Style_and_design.html")
 
 ### Programming_with_dplyr #####################################################
 
