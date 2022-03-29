@@ -754,6 +754,16 @@ test:
 * `config::get(&quot;trials&quot;)`, if we set `Sys.setenv(R_CONFIG_ACTIVE = &quot;production&quot;)`, 
   will return `30`
   
+  
+---
+
+# Robust code
+
+* Verbose code
+* overwriting variables
+* DRY
+* Long data
+
 ---
 
 # Robust code: verbose code
@@ -768,15 +778,6 @@ Strive to have silent code when you can.
   * Avoid messages too when you can :
     * Give an explicit argument to {dplyr} join functions
     * Provide the `col_types` argument to `readr::read_csv`
-    
----
-
-# Robust code
-
-* Verbose code
-* overwriting variables
-* DRY
-
 
 ---
 
@@ -784,14 +785,14 @@ Strive to have silent code when you can.
 
 Ungroup your data!
 
-    * Ungroup all grouped data.frames
-    * strive to always call `summarize()` with `.groups = &quot;drop&quot;`
-    * Keeping groups is dangerous and makes
-    functions like `mutate()` and `filter()` MUCH slower. 
-    * If you really want a grouped data frame suffix its name with `_grouped`
+* Ungroup all grouped data.frames
+* strive to always call `summarize()` with `.groups = &quot;drop&quot;`
+* Keeping groups is dangerous and makes
+functions like `mutate()` and `filter()` MUCH slower. 
+* If you really want a grouped data frame suffix its name with `_grouped`
     
-The function `bagtools::detect_ambiguous_summarize_calls()` can be used to
-detect problematic summarize calls.
+`bagtools::detect_ambiguous_summarize_calls()` can be used to
+detect problematic summarize calls. Let&#39;s try it!
 
 ---
     
@@ -802,6 +803,8 @@ Overwriting a variable in a code block is OK because the intent is clear
 
 Overwriting a variable in another script is a good way to make mistake because we skipped
 a script or ran one twice.
+
+`bagtools::chatty()` can be used to track the calls to a variable and its modifications
 
 ---
 
@@ -826,6 +829,8 @@ These are all dangerous and hard to read:
   
 `bagtools::detect_similar_code()` can help detect some of these instances
   
+---
+
 ## Robust code: Long data 
 
 Long data is often :

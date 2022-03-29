@@ -747,19 +747,6 @@ some reports would be correct, other wouldn't.
 If this needs to be updated at some point the developper will need to know there are
 2 places to update, it's better to avoid this.
 
-### Let's take a look at this function and try to finish it.
-
-<!-- FIXME: -->
-<!-- We start by some slides suggesting good practice to follow for: -->
-<!-- * argument names -->
-<!-- * argument specification (as string or var name) -->
-<!-- * error messages -->
-<!-- * etc -->
-<!-- Then we show what function we get when modifying f_make_age_groups -->
-
-This function takes a data frame and adds a column containing the age group,
-the names of the input column and the output columns are parameters, along with the breaks.
-A boolean argument allow us to drop rows for which we don't have a category defined
 
 ### Minor issue : style consistency
 
@@ -788,71 +775,6 @@ options(tidyselect_verbosity = "verbose")
 
 We find that `f_altersklassen_meta()` is the guilty function
 and correct the select call by using `all_of(.x)` as the message advises
-
-# Refactoring tip
-
-When you need to bind rows or columns after a map* call, you might use the 
-`map_dfr` or `map_dfc` variants
-
-```{r, eval = FALSE}
-    daten <- purrr::map2(names_list, breaks_list, .f = ~ {
-      daten %>%
-        f_make_age_groups(new_age_var_name = !!.x, age_breaks = .y) %>%
-        dplyr::select(all_of(.x)) }) %>%
-      dplyr::bind_cols(daten, .)
-```
-
-becomes :
-
-```{r, eval = FALSE}
-    daten <- purrr::map2_dfc(names_list, breaks_list, .f = ~ {
-      daten %>%
-        f_make_age_groups(new_age_var_name = !!.x, age_breaks = .y) %>%
-        dplyr::select(all_of(.x)) })
-```
-
-Minor comment here but since we're overwriting a variable with something different, 
-we could have changed the name of the variable.
-
-# The `ws_PGM_372_make_dfs_rKTN_impfmonitoring.R` script
-
-## More problems with summarize
-
-When running the script we find that it builds datasets and shows a lot of grouping
-warnings. Most of them can be solved in the script directly by using `.groups = "drop"`
-
-Others are harder to debug because the error is nested into the function `vaccinations.add_sums()`
-
-This function take as its inpout a grouped data frame and summarizes it.
-
-The use of this function is always preceded by a group by.
-
-I believe it is more intuitive to avoid as much as possible building a function
-that takes a grouped data frame as an input, especially if this function
-is not documented. It's much easier to pass the arguments to group_by to this
-function directly.
-
-FIXME : basic intro to environments ?
-
-This script is building somne datasets (it used to also build the function `isoyear` but we've removed that part above)
-
-To know which data sets are built without checking manually I restart can
-source the first script in the global environment then source this script in a new environment and look at what was created.
-
-save the variables that are in the environment.
-
-```{r}
-source(here::here("bag-code-example/scripts/ws_PGM_init.R"))
-env <- new.env()
-source(here::here("bag-code-example/scripts/ws_PGM_372_make_dfs_rKTN_impfmonitoring.R"), env)
-eapply(env, class)
-```
-
-By glancing at this I can see if this script created only data or if I missed some
-function definitions.
-
-We could wrap this all in a function definition that returns a list,
-but I suspect that we're not going to need all of those
 
 ## Avoid nesting multiline pipe calls
 
@@ -977,7 +899,7 @@ Note that since we have already grouped categories we could define one with
 The function above splits observations by age range, we already have a function
 that does it, `f_make_age_groups()`, which we refactored into `f_add_age_group()`.
 
-Let's use it so we harmoinze the code and make it more understandable, even if it's a
+Let's use it so we harmonize the code and make it more understandable, even if it's a
 couple lines longer :
 
 ```{r}
