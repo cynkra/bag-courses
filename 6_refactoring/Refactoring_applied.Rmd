@@ -65,20 +65,20 @@ trick that is not flexible as the comment warns.
 CTRL - SHIFT - F shows me `script_path_01` is not used anywhere else, so we can
 change the code to :
 
-```{r}
+```{r, eval = FALSE}
 dir_sources <- here::here("bag-code-example/scripts")
 ```
 
 Or even simply the following, since we don't have other calls to `setwd()`
 in the code so relative paths will be "well behaved"
 
-```{r}
+```{r, eval = FALSE}
 dir_sources <- "bag-code-example/scripts"
 ```
 
 In any case `dir_sources` is not used further in the code so we don't need this code at all.
 
-### absolute paths
+### Absolute paths
 
 We run `lintr::lint_dir(linters = lintr::absolute_path_linter())` to make sure we're
 not using absolute paths. We find a few.
@@ -87,7 +87,7 @@ not using absolute paths. We find a few.
 This instruction might take long to run on the huge code base, better call it on seperate folders or
 files one by one. e.g.
 
-```{r}
+```{r, eval = FALSE}
 lintr::lint_dir("MM_stack", linters = lintr::absolute_path_linter())
 ```
 
@@ -161,7 +161,7 @@ library(zoo)
 
 We use `bagtools::find_pkg_funs` to check what we really need from all of these packages
 
-```{r}
+```{r, eval = FALSE}
 # we use a lot of functions, we can keep the library call as is
 # we can use library(,include.only=) if we  want to prepare to switch to a package
 bagtools::find_pkg_funs("dplyr", exclude = "%>%") 
@@ -188,7 +188,7 @@ bagtools::find_pkg_funs("purrr", exclude = "%>%")
 `bagtools::use_namespace_check()` provides code that checks if required namespaces
 are installed. We can place this code right below our library calls.
 
-```{r}
+```{r, eval = FALSE}
 required_pkgs <-
   c("assertthat", "bag.epi.dboard.etl", "bag.epi.io", "bag.epi.shapes", 
   "data.table", "dplyr", "dtplyr", "forcats", "httr", "janitor", 
@@ -250,7 +250,7 @@ By calling the following we can see at the top every instance of variable being 
 There are a lot of false positives because of NSE (non standard evaluation).
 Functions from other packages are also shown unless the package is attached, then they are recognized and hidden.
 
-```{r}
+```{r, eval = FALSE}
 bagtools::inspect_variables("bag-code-example/ws_PGM_372_make_dfs_rKTN_impfmonitoring.R")
 ```
 
@@ -266,7 +266,7 @@ confusion and mistakes.
 There is a bit too much to see here though, let's focus on identifying the outputs of this script,
 and show only the first occurrence of a variable in every script.
 
-```{r}
+```{r, eval = FALSE}
 bagtools::inspect_variables("bag-code-example/scripts/ws_PGM_372_make_dfs_rKTN_impfmonitoring.R", only_first = TRUE, focus = "outputs")
 ```
 
@@ -284,7 +284,7 @@ an output.
 
 Now we can try to figure out our inputs 
 
-```{r}
+```{r, eval = FALSE}
 bagtools::inspect_variables("bag-code-example/scripts/ws_PGM_372_make_dfs_rKTN_impfmonitoring.R", only_first = TRUE, focus = "inputs")
 ```
 
@@ -309,7 +309,7 @@ The remaining inputs are :
 
 Thus we can build a function : 
 
-```{r}
+```{r, eval = FALSE}
 update_validation_data <- function(
   daily_raw_vaccination_data,
   f_altersklassen_meta,
@@ -327,7 +327,7 @@ update_validation_data <- function(
 This function can be put in its own file, sourced at the top of the main script,
 and then we can replace the whole script with :
 
-```{r}
+```{r, eval = FALSE}
 daily_raw_vaccination_data <- update_validation_data(
   daily_raw_vaccination_data,
   f_altersklassen_meta,
@@ -353,7 +353,7 @@ and yet no need to mention it explicitly in our project code
 * We saw that some objects in this function are defined but end up not being used to build
 the output. We can see those graphically using the function `flow::flow_view_vars()`
 
-```{r}
+```{r, eval = FALSE}
 flow::flow_view_vars(update_validation_data)
 ```
 
@@ -365,7 +365,7 @@ including possible error messages. Here we see we could trim a lot of code.
 
 We are still afraid to do mistakes though, the package {refactor} and the function `%refactor_value%` can help with this. The syntax works as follow :
 
-```{r}
+```{r, eval = FALSE}
 my_fun <- function(...) {
   # original body, which we won't touch
 } %refactor_value% {
@@ -400,7 +400,7 @@ as parameters in a configuration file. For instance :
 
 `dashboard.assign_timeframes()` uses the following dates :
 
-```{r}
+```{r, eval = FALSE}
 dashboard.phase2_start <- lubridate::ymd("2020-06-08")
 dashboard.phase2b_start <- lubridate::ymd("2020-09-28")
 dashboard.phase3_start <- lubridate::ymd("2021-02-15")
@@ -416,7 +416,7 @@ as soon as these values need to be updated.
 In this other example below we have some values rigidly encoded, we might make
 this code more flexible.
 
-```{r}
+```{r, eval = FALSE}
 vaccinations.get_azure_token <- function(password) {
   tenantId <- "beee95bb-7bef-4392-95b3-c42fd7305a53"
   clientId <- "90c57945-80fe-4621-9745-a02623eb466e"
@@ -428,7 +428,7 @@ vaccinations.get_azure_token <- function(password) {
 Finally below we find some production and test settings, also hardcoded,
 which would nicely fit a config file canevas.
 
-```{r}
+```{r, eval = FALSE}
 vaccinations.download_csv <- function(token,
                                       api = "v2",
                                       dataset = "full",
@@ -474,7 +474,7 @@ And our functions might become (after a bit of refactoring):
 dashboard.assign_timeframes <- function(
   dataframe, 
   current_date = lubridate::today(), 
-  phases = conflict::get("phases")
+  phases = config::get("phases")
   ) {
   names(phases) <- paste0("timeframe_", names(phases))
   dataframe %>%
@@ -497,7 +497,7 @@ vaccinations.get_azure_token <- function(password, azure_config = config::get("a
 }
 ```
 
-```{r}
+```{r, eval = FALSE}
 vaccinations.download_csv <- function(token,
                                       api = "v2",
                                       dataset = "full",
@@ -537,7 +537,7 @@ calls that we might want to add `.groups = "drop"` to.
 
 We see this in the code : 
 
-```{r}
+```{r, eval = FALSE}
 # data wrangling ---------------------------------------------------------------------------------
 # add shots_until_complete_vaccination to daily_raw_vaccination_data
 daily_raw_vaccination_data <-
@@ -579,7 +579,7 @@ later.
 
 In the code we find in `dates.R` : 
 
-```{r}
+```{r, eval = FALSE}
 dates.isoyearweek <- function(date) {
   lubridate::isoyear(date) * 100 + lubridate::isoweek(date)
 }
@@ -587,7 +587,7 @@ dates.isoyearweek <- function(date) {
 
 In `ws_PGM_372_make_dfs_rKTN_impfmonitoring.R` we find :
 
-```{r}
+```{r, eval = FALSE}
 isoyearweek <- function(datum) {
   jahrwoche <- lubridate::isoyear(datum) * 100 + lubridate::isoweek(datum)
   return(jahrwoche)
@@ -636,7 +636,7 @@ f_make_age_groups <- function (df, age_var = altersjahr, age_breaks = c(0, 10, 2
 
 In the `vaccinations.R` script I find : 
 
-```{r}
+```{r, eval = FALSE}
 
 # FIXME: as soon as the function bag.epi.dboard.etl::f_make_age_groups is
 # available, the two following functions can be replaced by it
@@ -712,7 +712,7 @@ is given in 2 instances
 
 in `f_altersklassen_meta`
 
-```{r}
+```{r, eval = FALSE}
 names_list <- c("altersklasse_sti", "altersklasse_influ",
                 "altersklasse_covid19", # <- this one
                 "altersklasse_covid_5er",
@@ -733,7 +733,7 @@ breaks_list <- list(
 
 And in the default of `f_make_age_groups`
 
-```{r}
+```{r, eval = FALSE}
 f_make_age_groups <- function (
   df, age_var = altersjahr, 
   age_breaks = c(0, 10, 20, 30, 40, 50, 60, 70, 80, Inf), 
@@ -769,7 +769,7 @@ This indicates that the code doesn't follow good practice in at least one instan
 the problem is that the note is only displayed once, we can display it every time by
 setting :
 
-```{r}
+```{r, eval = FALSE}
 options(tidyselect_verbosity = "verbose")
 ```
 
@@ -782,7 +782,7 @@ It is more readable to create a temp object, or to reshuffle the pipe
 
 This: 
 
-```{r}
+```{r, eval = FALSE}
 vacc_repktn_u65_u75_d <-
   vaccinations.calculate_sum_vacc_u65_u75(daily_vaccination_data %>% vaccinations.remove_unwanted_vacc_events(., vollstaendigkeitsmarkierung), vacc_dt, reporting_unit_location_ctn) %>%
   vaccinations.add_sum_pop_ktn_u65_u75(., bfs_pop, reporting_unit_location_ctn) %>%
@@ -791,7 +791,7 @@ vacc_repktn_u65_u75_d <-
 
 Can be rewritten as (also removing the inconsistencies in uses of explicit dot)
 
-```{r}
+```{r, eval = FALSE}
 vacc_repktn_u65_u75_d <-
   daily_vaccination_data %>% 
   vaccinations.remove_unwanted_vacc_events(vollstaendigkeitsmarkierung) %>% 
@@ -834,7 +834,7 @@ Taking also into account that :
 * `.pop_data` doesn't need `{{}}` since we're only interested in its value
 * The `.groups = "drop"` are missing
 
-```{r}
+```{r, eval = FALSE}
 vaccinations.add_sum_pop_ktn_u65_u75 <- function(df, .pop_data, .canton_type) {
   df_pop <- df %>%
     rename(ktn = {{.canton_type}}) %>%
@@ -857,7 +857,7 @@ vaccinations.add_sum_pop_ktn_u65_u75 <- function(df, .pop_data, .canton_type) {
 
 Can be rewritten as :
 
-```{r}
+```{r, eval = FALSE}
 vaccinations.add_sum_pop_ktn_u65_u75 <- function(df, .pop_data, .canton_type) {
   lkp <- .pop_data %>%
     group_by(altersjahr, ktn) %>%
@@ -882,7 +882,7 @@ vaccinations.add_sum_pop_ktn_u65_u75 <- function(df, .pop_data, .canton_type) {
 
 Though we can do better as we'll see next section
 
-# tidy format and pivoting
+# Tidy format and pivoting
 
 We see that we are defining :
 
@@ -902,7 +902,7 @@ that does it, `f_make_age_groups()`, which we refactored into `f_add_age_group()
 Let's use it so we harmonize the code and make it more understandable, even if it's a
 couple lines longer :
 
-```{r}
+```{r, eval = FALSE}
 vaccinations.add_sum_pop_ktn_u65_u75 <- function(df, .pop_data, .canton_type) {
   pop_data_65 <- f_add_age_groups(
     .pop_data,
@@ -934,7 +934,7 @@ vaccinations.add_sum_pop_ktn_u65_u75 <- function(df, .pop_data, .canton_type) {
 
 We can use the same principles in our much more complex functions:
 
-```{r}
+```{r, eval = FALSE}
 vaccinations.calculate_sum_vacc_u65_u75 <-
   function(daily_vaccination_data, .time_frame, .canton_type) {
     data_by_canton_over_age <-
@@ -1071,9 +1071,6 @@ vaccinations.calculate_sum_vacc_u65_u75 <-
 
 ```
 
-We have the same issue with all the functions defined in `vaccinations.R`, this can be made much simpler
-
-
 # Harmonized namespace calls
 
 We find some calls to `dplyr::group_by`, `dplyr::mutate` etc.
@@ -1084,31 +1081,8 @@ Most importantly it's good to be consistent. If you are attaching a package with
 (which you shouldn't do too much), you might use the naked function name unless it's
 a lesser known function and you want to advertise where it comes from.
 
-
-# dotted values
-
-* values don't need to be `.dotted` since we don't have `...` (dotted names
-  are used in the tidyverse to avoid conflict with the names the user might choose
-  in `...`)
-
 # simplify conditions
 
-In the following we have a redundant condition :
-
-```
-((vacc_count == shots_until_complete_vacc & serie == 1) | (vacc_count == 1 & person_recovered_from_covid == TRUE)) & 
-            person_age >= 12 & person_age < 16 & serie == 1
-```
-
-Can be written as 
-
-```
-(vacc_count == shots_until_complete_vacc | (vacc_count == 1 & person_recovered_from_covid == TRUE)) & 
-            person_age >= 12 & person_age < 16 & serie == 1
-```
-
-It's not necessary to type `person_recovered_from_covid == TRUE` in conditions, `person_recovered_from_covid` is enough
-
 
 ```
 sum(
@@ -1123,28 +1097,14 @@ sum(
   )
 ```
 
-is 
+is :
 
 ```
 sum(
   serie == 1 &
-    (vacc_count == shots_until_complete_vacc | 
-       (vacc_count == 1 & person_recovered_from_covid)
-    ), 
-  na.rm = TRUE
-) -
-  sum(serie == 1 & vacc_count == 2 & person_recovered_from_covid & shots_until_complete_vacc == 2,
-      na.rm = TRUE
-  )
-```
-
-
-```
-sum(
-  serie == 1 &
-    ((vacc_count == shots_until_complete_vacc & vacc_count != 2) | 
-       vacc_count == 1 & person_recovered_from_covid |
-       vacc_count == shots_until_complete_vacc & vacc_count == 2 & !person_recovered_from_covid
+    (vacc_count == 1 & person_recovered_from_covid |
+      vacc_count == 2 & !person_recovered_from_covid & vacc_count == shots_until_complete_vacc |
+      vacc_count != 2 & vacc_count == shots_until_complete_vacc
     ), 
   na.rm = TRUE
 )

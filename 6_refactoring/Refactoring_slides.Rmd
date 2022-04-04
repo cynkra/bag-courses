@@ -37,8 +37,9 @@ We take the following steps :
 * 1- How not to break code (in an ideal world)
 * 2- Fix code
 * 3- Improve code structure
-* 4- Make code robust
-* 5- Style
+* 4- Global variable and config files
+* 5- Make code robust
+* 6- Style
 
 ---
 
@@ -51,6 +52,7 @@ install.packages("lintr")
 install.packages("flow")
 install.packages("config")
 install.packages("conflicted")
+Sys.setenv(http_proxy="http://proxy-bvcol.admin.ch:8080")
 remotes::install_github("moodymudskipper/refactor")
 remotes::install_github("cynkra/bagtools")
 ```
@@ -59,6 +61,11 @@ We'll also use the repositories :
 
 * https://github.com/cynkra/bag-consulting/
 * https://github.com/dsdo-workshops/covid19-madmurdock/
+
+---
+class: center, middle
+
+# Breaking code
 
 ---
 
@@ -75,7 +82,7 @@ The proper way not to break things is :
 
 Without version control :
 
-* Email team about updates.
+* Email team about updates
 * Updates directly on production server
 * Previous code is lost, accidental deletions are deadly
 * No trace of who made the changes
@@ -122,16 +129,20 @@ Unit tests ensure that behavior that works keeps working.
 Having formal tests should be a short/medium term goal too, but we need functions first!
 
 ---
+class: center, middle
+
+# Fix code
+
+---
 
 # Fix code
 
 * Make sure your R code is valid everywhere
 
-Your code "works", you run it later, or send it to someone, it doesn't work anymore, why ?
-
-* Absolute paths vs relative paths
-* Package dependencies
-* Versions and systems
+* Your code "works", you run it later, or send it to someone, it doesn't work anymore, why ?
+  * Absolute paths vs relative paths
+  * Package dependencies
+  * Versions and systems
 
 ---
 
@@ -144,7 +155,12 @@ R scripts are really Rscripts and that their code is syntactic.
 bagtools::check_files_parse()
 ```
 
-Let's try it!
+<span style="color: red;">Let's try it!</span>
+
+---
+class: center, middle
+
+# Fix code: Absolute paths
 
 ---
 
@@ -187,9 +203,7 @@ it fetches the current working directory (often but not always the project root 
 
 # Fix code: Absolute paths  
   
-If you trust users won't set the working directory in random scripts and you don't use
-nested projectes it's fine to use relative paths without `here::here()` in your R scripts.
-In particular source calls like `source("my/path.R")`.
+If you trust users won't set the working directory in random scripts it's fine to use relative paths without `here::here()` in your R scripts.
   
 Note : If for some reason you want to change your working directory locally in
 a function, and not affect the rest of the code, use `withr::local_dir(your_dir)`
@@ -215,21 +229,26 @@ here::here("foo", "bar.baz")
 `lint()` applies checks on a file, `lint_dir()` applies them on all the files
 contained in a folder (recursively).
 
-We'll use it now to detect absolute paths and calls to `setwd()` or `getwd()`
-so we can clean up and use `here::here()` instead.
+We'll use it now to detect absolute paths and calls to `setwd()` or `getwd()`.
 
 ```{r, eval = FALSE}
 # Find absolute paths (there might be couple false positives!)
 lint_dir(linters = absolute_path_linter())
 # Find uses of undesirable functions setwd and getwd
-lint_dir(linters = undesirable_function_linter(c(setwd = NA, getwd = NA)))
+lint_dir(linters = undesirable_function_linter(
+  c(setwd = NA, getwd = NA)))
 ```
 
 ---
 
 # Fix code: Absolute paths
 
-Let's apply those ideas on your code!
+<span style="color: red;">Let's apply those ideas on your code!</span>
+
+---
+class: center, middle
+
+# Fix code: Dependencies
 
 ---
 
@@ -285,7 +304,9 @@ lint_dir(linters = undesirable_function_linter(
 ))
 ```
   
-Let's apply what we've seen so far!  
+
+<span style="color: red;">Let's apply what we've seen so far!</span>
+
   
 ---
 
@@ -302,7 +323,7 @@ to choose explicitly their favored version.
 * Use `conflict_prefer()` after attaching a package to deal with those conflicts
 * Restart session and make sure the sequence now runs without error
 
-Let's try it! 
+<span style="color: red;">Let's try it!</span>
   
 ---
 
@@ -352,6 +373,8 @@ bagtools::find_pkg_funs("tidyr", exclude = "%>%")
 # ...
 ```
 
+<span style="color: red;">Let's use it!</span>
+
 ---
 
 # Fix code: Dependencies
@@ -367,11 +390,16 @@ a new tab in RStudio with code to be pasted on top of the library calls.
 bagtools::use_namespace_check()
 ```
 
-Let's try it in our project!  
+<span style="color: red;">Let's try it in our project!  !</span>
+
+---
+class: center, middle
+
+# Fix code: Versions and systems
 
 ---
 
-# Fix code: versions and systems
+# Fix code: Versions and systems
 
 Reproducibility is a complex problem and we've done well to grab the lower
 hanging fruits, to go further we can :
@@ -380,6 +408,11 @@ hanging fruits, to go further we can :
 * Avoid using recent additions to R so our code runs on previous versions
  (avoid `|>`, `deparse1()`, `str2lang()`, ...)
 * Avoid windows/unix specific functions or make sure to deal with all cases
+
+---
+class: center, middle
+
+# Code structure
 
 ---
 
@@ -391,10 +424,15 @@ hanging fruits, to go further we can :
 * Build a package
 
 ---
+class: center, middle
 
-# Code structure : nested source()
+# Code structure : Nested source()
 
-* A complex web of scripts makes it hard to understand what variables will be used at which place. 
+---
+
+# Code structure : Nested source()
+
+* A complex web of scripts makes it hard to understand what variables will be used at which place
 * A script being sourced several times is a very good sign that it should be made
  as a function or collection of functions and be sourced once at startup, or even
  made into its own package
@@ -402,7 +440,7 @@ hanging fruits, to go further we can :
  
 ---
 
-# Code structure : nested source()
+# Code structure : Nested source()
  
 ```{r, eval = FALSE}
 bagtools:::flow_view_source_calls(out = "pdf")
@@ -411,13 +449,18 @@ bagtools:::flow_view_source_calls(out = "pdf")
 This will evaluate independently the first argument of `source()` in all relevant code,
 if it cannot evaluate it will try to guess from the code, e.g. `source(paste0(my_dir, "/my/path.R"))` will look for a "path.R" file in the project.
 
-Let's try it!
+<span style="color: red;">Let's try it!</span>
+
+---
+class: center, middle
+
+# Code structure : Isolate functions
 
 ---
 
 # Code structure : Isolate functions
 
-function definitions :
+Function definitions :
 
 * Are not expensive to source
 * Have no dependencies (though we need the dependencies to call the functions)
@@ -440,10 +483,15 @@ and other object definitions.
 Once identified, we can move the function definitions to a new file and source them
 at the top of our main script (or setup script), right below the library calls (that's to make the library calls more visible, these scripts don't need packages to be loaded).
 
-For now we can store those into a file suffixed with `_funs.R` located at the same
+At first we can store those into a file suffixed with `_funs.R` located at the same
 place.
 
-Let's try it!
+<span style="color: red;">Let's try it!</span>
+
+---
+class: center, middle
+
+# Code structure : Scripts to functions
 
 ---
 
@@ -557,11 +605,14 @@ We might have a lot of results and often seeing the first instance of a variable
 is enough, so we can use `only_first` to display only those.
 
 ```{r, eval = FALSE}
-bagtools::inspect_variables(path, scope, focus = "inputs", only_first = TRUE)
-bagtools::inspect_variables(path, scope, focus = "outputs", only_first = TRUE)
+bagtools::inspect_variables(
+  path, scope, focus = "inputs", only_first = TRUE)
+bagtools::inspect_variables(
+  path, scope, focus = "outputs", only_first = TRUE)
 ```
 
-Let's use it on our project!
+<span style="color: red;">Let's use it on our project!</span>
+
 
 ---
 
@@ -578,14 +629,15 @@ so our script can be rewritten.
 
 # Code structure : Scripts to functions
 
-if the script is producing a data output we build a pure function :
+If the script is producing a data output we build a pure function :
 
 ```{r, eval = FALSE}
 # if the script was producing an output
 my_script_fun <- function(input1, input2, ...) {
   # copy script there
   output 
-  # OR if several outputs: list(output1 = output1, output2 = output2)
+  # OR if several outputs: 
+  # list(output1 = output1, output2 = output2)
 }
 output <- my_script_fun(input1, input2, ...)
 # AND if several outputs
@@ -603,7 +655,8 @@ If the script was producing side effects we build a side effect function
 my_script_fun <- function(input1, input2, ...) {
   # copy script there
   output # or list(output1 = output1, output2 = output2)
-  invisible(NULL) # or invisible(input1) if we have a main data input 
+  invisible(NULL) 
+  # or invisible(input1) if we have a main data input
 }
 my_script_fun(input1, input2, ...)
 ```
@@ -623,7 +676,8 @@ and we don't populate the global environment but we don't want to mix free code
 and function definitions, so we should isolate the function in a function script 
 and source it at the top level.
 
-Let's try it on our code!
+<span style="color: red;">Let's try it on our code!</span>
+
 
 ---
 
@@ -638,7 +692,12 @@ Now that our code is in a function
 * We can build unit tests
 * We can refactor its code
 
-Let's try it on our code!
+<span style="color: red;">Let's try it on our code!</span>
+
+---
+class: center, middle
+
+# Code structure : Packages
 
 ---
 
@@ -675,7 +734,12 @@ using {pkgverse}.
 
 # Code structure : Packages
 
-Let's create packages!
+<span style="color: red;">Let's create packages!</span>
+
+---
+class: center, middle
+
+# Global variables and config files
 
 ---
 
@@ -721,10 +785,15 @@ test:
 * `config::get("values")` will return `c(1, 2, 3)`, we can use this syntax to
   evaluate options or environment variables too
 * `config::get("trials", "test")` will return `30`
-* `config::get("trials", "production")` will return `30` as well, inheriting from "test"
 * `config::get("trials")`, if we set `Sys.setenv(R_CONFIG_ACTIVE = "production")`, 
   will return `30`
   
+<span style="color: red;">Let's apply it to our project!</span>  
+  
+---
+class: center, middle
+
+# Robust code
   
 ---
 
@@ -763,11 +832,11 @@ functions like `mutate()` and `filter()` MUCH slower.
 * If you really want a grouped data frame suffix its name with `_grouped`
     
 `bagtools::detect_ambiguous_summarize_calls()` can be used to
-detect problematic summarize calls. Let's try it!
+detect problematic summarize calls. <span style="color: red;">Let's try it!</span>
 
 ---
     
-## Robust code: overwriting variables
+# Robust code: overwriting variables
 
 Overwriting a variable in a code block is OK because the intent is clear
 (though we can use the pipe!).
@@ -779,7 +848,7 @@ a script or ran one twice.
 
 ---
 
-## Robust code: DRY
+# Robust code: DRY
 
 DRY: Don't Repeat Yourself, strive to provide for a single source of truth
 
@@ -790,7 +859,7 @@ DRY: Don't Repeat Yourself, strive to provide for a single source of truth
 
 ---
 
-## Robust code: DRY
+# Robust code: DRY
 
 These are all dangerous and hard to read:
 * If one is wrong, several need to be updated
@@ -802,15 +871,15 @@ These are all dangerous and hard to read:
   
 ---
 
-## Robust code: Long data 
+# Robust code: Long data 
 
-Long data is often :
-* faster
-* easier to manipulate
-* easier to plot
+Long data often :
+* leads to more efficient code
+* is easier to manipulate
+* is easier to plot
 
-wide data is often a recipe for slow and messy code, so widening the data
-is better done right before reporting.
+Wide data is often a recipe for slow and messy code, so widening the data
+is better done right before reporting. Or we can have specific functions for intermediate data inspection.
 
 ---
 
@@ -836,3 +905,9 @@ A few general comments about style (2/2):
   `...` argument. There is no reason to use them in other cases.
 * Use `bagtools::use_lintr_template_on_dir()` and `bagtools::use_lintr_template_on_file()`
   to easily apply in turn various linters on your code `
+
+---
+class: center, middle
+
+# Thank you!
+
