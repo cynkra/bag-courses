@@ -1,7 +1,7 @@
 ---
 title: "Databases"
 author: ["Kirill & Nicolas", "cynkra GmbH"]
-date: "March 15, 2022"
+date: "May 3, 2022"
 output:
   cynkradown::cynkra_slides:
     nature:
@@ -1045,7 +1045,7 @@ db_path
 ```
 
 ```{r databases-54, message = FALSE}
-fs::file_delete(db_path)
+try(fs::file_delete(db_path))
 con <- dbConnect(duckdb::duckdb(dbdir = db_path))
 con
 ```
