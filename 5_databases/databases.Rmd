@@ -1242,7 +1242,7 @@ try(
 
 ## Good
 
-```{r databases-65 }
+```{r databases-65, eval = FALSE }
 union_all(pixar_films, pixar_films) %>%
   arrange(release_date)
 ```

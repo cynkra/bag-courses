@@ -39,10 +39,13 @@ try(
 )
 
 # Good:
-union_all(pixar_films, pixar_films)
+try(print(union_all(pixar_films, pixar_films)))
 
-union_all(pixar_films, pixar_films) %>%
-  arrange(release_date)
+try(
+  union_all(pixar_films, pixar_films) %>%
+    arrange(release_date) %>%
+    print()
+)
 
 # Bad:
 try(
