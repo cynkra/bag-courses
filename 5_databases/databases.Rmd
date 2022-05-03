@@ -1132,6 +1132,7 @@ background-position: 100% 100%
 # Caveats
 
 .pull-left[
+- Differences between database backends
 - Lazy tables vs. data frames/tibbles
 - Order
 - Logical/Boolean data type
@@ -1600,7 +1601,7 @@ pixar_films %>%
 
 ```{r databases-93 }
 pixar_films %>%
-  mutate(number = CAST(number %AS% sql("integer")))
+  mutate(number = sql("CAST(number AS integer)"))
 ```
 ]
 
@@ -2188,6 +2189,8 @@ pixar_dm
 pixar_dm %>%
   dm_draw()
 ```
+
+<https://cynkra.github.io/dm>
 ]
 
 .pull-right[
