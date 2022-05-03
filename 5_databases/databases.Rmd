@@ -238,7 +238,7 @@ background-position: 100% 100%
 
 Normally done in a preparatory step.
 
-```{r databases-5, cache=FALSE}
+```{r databases-5, cache=FALSE, warning=FALSE}
 dm::copy_dm_to(
   con_duckdb,
   dm::dm_pixarfilms(),
