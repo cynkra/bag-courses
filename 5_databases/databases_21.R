@@ -91,6 +91,12 @@ try(
 pixarfilms::academy %>%
   left_join(pixar_films, by = "film", copy = TRUE)
 
+pixar_films_db <-
+  copy_to(con_duckdb, pixarfilms::pixar_films)
+
+academy %>%
+  left_join(pixar_films_db, by = "film")
+
 # DuckDB only: register data frames as local tables ----------------------------
 
 # Register data frame as table in DuckDB
